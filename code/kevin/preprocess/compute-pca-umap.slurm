@@ -10,4 +10,4 @@
 #SBATCH --error=/home/users/kzlin/lab/projects/subject-de/out/kevin/preprocess/slurm/slurm_%j.err
 #SBATCH --output=/home/users/kzlin/lab/projects/subject-de/out/kevin/preprocess/slurm/slurm_%j.out
 
-R CMD BATCH --no-save --no-restore Demo1_compute-pca-umap.R ../../../../../out/kevin/preprocess/slurm_$SLURM_JOB_ID.Rout
+R CMD BATCH --no-save --no-restore compute-pca-umap.R ../../../../../out/kevin/preprocess/slurm/slurm_$SLURM_JOB_ID.Rout
