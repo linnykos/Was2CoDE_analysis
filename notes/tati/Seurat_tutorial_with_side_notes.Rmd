@@ -1,0 +1,225 @@
+---
+title: "Seurat tutorial with side notes"
+author: "Tati Zhang"
+date: "2023-11-10"
+output: html_document
+---
+
+```{r setup options, include = FALSE}
+knitr::opts_chunk$set(fig.height = 4, fig.width = 5, echo = TRUE)
+library(dplyr)
+library(Seurat)
+library(patchwork)
+
+# This is a simple comment
+```
+
+
+\tableofcontents
+\newpage
+# Setup the Seurat Object
+```{r}
+# Load the PBMC dataset
+pbmc.data <- Read10X(data.dir = "/Users/tatithegreat/Documents/Seurat/filtered_gene_bc_matrices/hg19/")
+# Initialize the Seurat object with the raw (non-normalized data).
+pbmc <- CreateSeuratObject(counts = pbmc.data, project = "pbmc3k", min.cells = 3, min.features = 200)
+pbmc
+## Terminology question*: It is said that the raw(non-normalized) data is read as a unique molecular identified (UMI) count matrix. Each row of the UMI matrix represents a feature and each column represents a single cell. A feature is a gene? The values in the matrix represent the number of RNA molecules mapped to each gene in each cell?
+```
+
+```{r}
+# Lets examine a few genes in the first thirty cells
+pbmc.data[c("CD3D", "TCL1A", "MS4A1"), 1:30]
+## The . values in the matrix represent 0s (no molecules detected).A sparse matrix is a matrix in which most of the elements are zero.(I googled it). So the count matrix is one single matrix that contains all the gene types and all the cell information?
+```
+
+#Standard pre-processing workflow
+```{r}
+# The [[ operator can add columns to object metadata. This is a great place to stash QC stats
+pbmc[["percent.mt"]] <- PercentageFeatureSet(pbmc, pattern = "^MT-")
+##This function gives the percentage of number of unique genes detected over a set of all genes(MT) in each cell.
+```
+
+
+```{r}
+# Show QC metrics for the first 5 cells
+head(pbmc@meta.data, 5)
+# Visualize QC metrics as a violin plot
+VlnPlot(pbmc, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+# FeatureScatter is typically used to visualize feature-feature relationships, but can be used
+# for anything calculated by the object, i.e. columns in object metadata, PC scores etc.
+
+plot1 <- FeatureScatter(pbmc, feature1 = "nCount_RNA", feature2 = "percent.mt")
+plot2 <- FeatureScatter(pbmc, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+plot1 + plot2
+```
+
+```{r}
+pbmc <- subset(pbmc, subset = nFeature_RNA > 200 & nFeature_RNA < 2500 & percent.mt < 5)
+## Q: How were these thresholds generated?
+```
+
+# Normalizing the data
+
+```{r}
+pbmc <- NormalizeData(pbmc, normalization.method = "LogNormalize", scale.factor = 10000)
+##Q: Why do we normalize the data by taking the logarithm of the counts? Is the data distribution highly skewed and why is it the case?
+```
+
+# Identification of highly variable features (feature selection)
+```{r}
+pbmc <- FindVariableFeatures(pbmc, selection.method = "vst", nfeatures = 2000)
+
+# Identify the 10 most highly variable genes
+top10 <- head(VariableFeatures(pbmc), 10)
+
+# plot variable features with and without labels
+plot1 <- VariableFeaturePlot(pbmc)
+plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
+plot1 
+plot2
+
+```
+
+# Scaling the data
+
+```{r}
+all.genes <- rownames(pbmc)
+# pbmc <- ScaleData(pbmc, features = VariableFeatures(pbmc)) skylar's note: this did not keep
+# relevant genes in scale.data
+pbmc <- ScaleData(pbmc, features = all.genes)
+## We're doing this because PCA is sensitive to the scale of the variables. 
+```
+
+# Perform linear dimensional reduction
+```{r}
+pbmc <- RunPCA(pbmc, features = VariableFeatures(object = pbmc))
+
+# Examine and visualize PCA results a few different ways
+print(pbmc[["pca"]], dims = 1:5, nfeatures = 5)
+## '[red]' This could be a dumb question...is a principle component a cell or a gene? I'm not sure how deep I am supposed to go behind the maths, but could you explain what PCA scores are?(I will also look it up later.) I'm also curious about how the matrix manipulation is done behind this.
+##[Answered on Friday] PC loading (genes) vectors are directions in feature space along which the data vary the most and the PC scores are projections along these directions. 
+## To compute for PCs: the 1st PC is a linear combination (vector) of the sample feature values that has the largest sample variance (capture as much of the information as possible from the original data). Solved by eigen-decomposition. 
+## Another question: it was mentioned in Daniela's book that PC_1 is orthogonal to PC_2. Why?
+## How do we find PC_3 and so on?
+```
+
+```{r}
+VizDimLoadings(pbmc, dims = 1:2, reduction = "pca") #Visualize top genes associated with reduction components
+
+```
+
+```{r}
+DimPlot(pbmc, reduction = "pca") + NoLegend() #output of a dimensional reduction technique on a 2D scatter plot where each point is a cell and it's positioned based on the cell embeddings determined by the reduction technique. 
+## The cloud of dots represent all the cells. 
+```
+```{r}
+DimHeatmap(pbmc, dims = 1, cells = 500, balanced = TRUE)
+##I have some problems interpreting the heatmaps. Does a yellow color represent for a high value(PC score) and a purple color represents a low value? What does the gradient of color tell us?
+```
+```{r}
+DimHeatmap(pbmc, dims = 1:15, cells = 500, balanced = TRUE)
+## My understanding is that these graph displays show how much of the PC1,..., PC15 correspond to features. My question is how do we know which PCs to include for further analyses based on these heatmaps.
+```
+
+```{r}
+DimHeatmap(pbmc, dims = 1:15, cells = 500, balanced = TRUE)
+```
+# Determine the ‘dimensionality’ of the dataset
+```{r}
+ElbowPlot(pbmc) #‘Elbow plot’: a ranking of principle components based on the percentage of variance explained by each one
+```
+
+# Cluster the cells
+```{r}
+#construct a KNN graph based on the euclidean distance in PCA space, and refine the edge weights between any two cells
+pbmc <- FindNeighbors(pbmc, dims = 1:10)
+#construct a shared nearest neighbor graph by calculating the neighborhood overlap (Jaccard index) between every cell and its k.param nearest neighbors
+pbmc <- FindClusters(pbmc, resolution = 0.5)
+## I don't quite understand this part. Are the dimensions corresonded to the genes in the knn space?
+```
+
+```{r}
+# Look at cluster IDs of the first 5 cells
+head(Idents(pbmc), 5)
+##Why are we using knn? can we also use other algorithms?
+```
+
+#Run non-linear dimensional reduction (UMAP/tSNE)
+
+```{r}
+pbmc <- RunUMAP(pbmc, dims = 1:10)
+# note that you can set `label = TRUE` or use the LabelClusters function to help label
+# individual clusters
+DimPlot(pbmc, reduction = "umap")
+##Why is a non-linear dimensional reduction is needed using UMAP/tSNE? since we already assume linearity (after we've gone through all the preprocessing steps) when we performed PCA and it can serve both dimensionality reduction and data visualization. Wouldn't the UMAP be less adaptive to our data compared with PCA?
+##i know tt's not a matter of one being strictly better than the other but rather about using the most suitable one for specific goals...so what different emphisises do we have on each of them?
+```
+
+# Finding differentially expressed features (cluster biomarkers)
+```{r}
+# find all markers of cluster 2
+cluster2.markers <- FindMarkers(pbmc, ident.1 = 2)
+head(cluster2.markers, n = 5)
+## This is taking so long to run.
+## What are the numbers in the pct.1 and pct.2 columns in the output?
+```
+
+```{r}
+# find all markers distinguishing cluster 5 from clusters 0 and 3
+cluster5.markers <- FindMarkers(pbmc, ident.1 = 5, ident.2 = c(0, 3))
+head(cluster5.markers, n = 5)
+```
+```{r}
+# find markers for every cluster compared to all remaining cells, report only the positive
+# ones
+pbmc.markers <- FindAllMarkers(pbmc, only.pos = TRUE)
+pbmc.markers %>%
+    group_by(cluster) %>%
+    dplyr::filter(avg_log2FC > 1)
+```
+
+```{r}
+cluster0.markers <- FindMarkers(pbmc, ident.1 = 0, logfc.threshold = 0.25, test.use = "roc", only.pos = TRUE)
+## what is a roc test?
+```
+
+```{r}
+VlnPlot(pbmc, features = c("MS4A1", "CD79A"))
+```
+
+```{r}
+# you can plot raw counts as well
+VlnPlot(pbmc, features = c("NKG7", "PF4"), slot = "counts", log = TRUE)
+```
+
+```{r}
+FeaturePlot(pbmc, features = c("MS4A1", "GNLY", "CD3E", "CD14", "FCER1A", "FCGR3A", "LYZ", "PPBP",
+    "CD8A"))
+```
+
+```{r}
+pbmc.markers %>%
+    group_by(cluster) %>%
+    dplyr::filter(avg_log2FC > 1) %>%
+    slice_head(n = 10) %>%
+    ungroup() -> top10
+DoHeatmap(pbmc, features = top10$gene) + NoLegend()
+```
+
+# Assigning cell type identity to clusters
+```{r}
+new.cluster.ids <- c("Naive CD4 T", "CD14+ Mono", "Memory CD4 T", "B", "CD8 T", "FCGR3A+ Mono",
+    "NK", "DC", "Platelet")
+## seems like we match the unbiased clustering to known cell types by hand? before we type them into our code
+names(new.cluster.ids) <- levels(pbmc)
+pbmc <- RenameIdents(pbmc, new.cluster.ids)
+DimPlot(pbmc, reduction = "umap", label = TRUE, pt.size = 0.5) + NoLegend()
+```
+
+```{r}
+library(ggplot2)
+plot <- DimPlot(pbmc, reduction = "umap", label = TRUE, label.size = 4.5) + xlab("UMAP 1") + ylab("UMAP 2") +
+    theme(axis.title = element_text(size = 18), legend.text = element_text(size = 18)) + guides(colour = guide_legend(override.aes = list(size = 10)))
+ggsave(filename = "../output/images/pbmc3k_umap.jpg", height = 7, width = 12, plot = plot, quality = 50)
+```
