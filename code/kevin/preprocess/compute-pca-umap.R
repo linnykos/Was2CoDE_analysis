@@ -3,6 +3,7 @@ library(Seurat)
 set.seed(10)
 
 load("~/lab/data/microglia-prater-2023/Prater_Green_PU1_MGsubset_10clusters_DeID.rdata")
+ss_data_norm <- Seurat::UpdateSeuratObject(ss_data_norm)
 
 ss_data_norm
 head(ss_data_norm@meta.data)
