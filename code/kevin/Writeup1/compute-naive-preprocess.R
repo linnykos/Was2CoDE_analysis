@@ -44,7 +44,7 @@ note <- paste("Original data from ~/lab/data/microglia-prater-2023/Prater_Green_
 
 save(ss_data_norm, 
      date_of_run, session_info, note,
-     file = "~/lab/projects/subject-de/out/kevin/preprocess/naive-preprocess.RData")
+     file = "~/lab/projects/subject-de/out/kevin/Writeup1/naive-preprocess.RData")
 
 print("Done! :)")
 
