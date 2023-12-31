@@ -1,4 +1,7 @@
 rm(list=ls())
+library(foreach)
+library(future)
+library(rngtools)
 library(Seurat)
 library(nebula)
 set.seed(10)
@@ -15,7 +18,7 @@ ss_data_norm <- subset(ss_data_norm, features = gene_vec)
 tmp <- paste0("ID_", as.character(ss_data_norm$Pt_ID))
 ss_data_norm$Pt_ID <- factor(tmp)
 
-categorical_vars <- c("Sex", "SeqBatch", "Race")
+categorical_vars <- c("Sex", "SeqBatch", "Race", "CognitiveStatus")
 numerical_vars <- c("PMI", "BrainPh", "FreshBrainWeight", "coded_Age")
 
 tmp <- as.character(ss_data_norm$coded_Age)
@@ -113,9 +116,9 @@ summary(zz)
 neb_data <- nebula::scToNeb(obj = ss_data_norm,
                             assay = "RNA",
                             id = "Pt_ID",
-                            pred = c("Sex", "PMI", "SeqBatch", "BrainPh", "Race", "FreshBrainWeight", "coded_Age"),
+                            pred = c("CognitiveStatus", "Sex", "PMI", "SeqBatch", "BrainPh", "Race", "FreshBrainWeight", "coded_Age"),
                             offset = "nCount_RNA")
-df <- model.matrix( ~ Sex + PMI + SeqBatch + BrainPh + Race + FreshBrainWeight + coded_Age,
+df <- model.matrix( ~ CognitiveStatus + Sex + PMI + SeqBatch + BrainPh + Race + FreshBrainWeight + coded_Age + CognitiveStatus,
                     data = neb_data$pred)
 start_time <- Sys.time()
 nebula_res <- nebula::nebula(count = neb_data$count,
