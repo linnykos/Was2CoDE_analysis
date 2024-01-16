@@ -11,7 +11,7 @@ var_vec <- c("seurat_clusters", "Pt_ID", "CognitiveStatus",
              "BraakStage", "CERAD", "LATEScore", "coded_Age",
              "SeqBatch")
 
-pdf("../../../figures/kevin/Writeup1/naive-preprocess_umap-covariates.pdf",
+pdf("../../../figures/kevin/Writeup1/Writeup1_umap-covariates.pdf",
     onefile = T, width = 5, height = 5)
 
 for(variable in var_vec){
@@ -23,3 +23,5 @@ for(variable in var_vec){
 }
 
 dev.off()
+
+print("Done! :)")
