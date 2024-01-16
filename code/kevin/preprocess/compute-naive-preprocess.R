@@ -39,12 +39,12 @@ ss_data_norm <- Seurat::RunUMAP(object = ss_data_norm, dims = 1:30)
 
 date_of_run <- Sys.time()
 session_info <- devtools::session_info()
-note <- paste("Original data from ~/lab/data/microglia-prater-2023/Prater_Green_PU1_MGsubset_10clusters_DeID.rdata.",
+note <- paste("Original data from ~/kzlinlab/data/microglia-prater-2023/Prater_Green_PU1_MGsubset_10clusters_DeID.rdata.",
               "Trying with no integration at all.")
 
 save(ss_data_norm, 
      date_of_run, session_info, note,
-     file = "~/lab/projects/subject-de/out/kevin/Writeup1/naive-preprocess.RData")
+     file = "~/kzlinlab/projects/subject-de/out/kevin/preprocess/naive-preprocess.RData")
 
 print("Done! :)")
 
