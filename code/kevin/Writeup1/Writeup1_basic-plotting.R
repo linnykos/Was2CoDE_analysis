@@ -2,7 +2,7 @@ rm(list=ls())
 library(Seurat)
 set.seed(10)
 
-load("~/lab/projects/subject-de/out/kevin/Writeup1/naive-preprocess.RData")
+load("~/kzlinlab/projects/subject-de/out/kevin/preprocess/processed.RData")
 
 var_vec <- c("seurat_clusters", "Pt_ID", "CognitiveStatus", 
              "Study_Designation", "Sex", "genotype_APOE",
