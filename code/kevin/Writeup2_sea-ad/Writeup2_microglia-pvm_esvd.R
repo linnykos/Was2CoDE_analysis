@@ -72,6 +72,10 @@ eSVD_obj <- eSVD2:::initialize_esvd(dat = mat,
                                     verbose = 1)
 time_end1 <- Sys.time()
 
+
+save(eSVD_obj,
+     file = "../../../../../out/kevin/Writeup1/Writeup1_esvd.RData")
+
 eSVD_obj <- eSVD2:::.reparameterization_esvd_covariates(
   input_obj = eSVD_obj,
   fit_name = "fit_Init",
