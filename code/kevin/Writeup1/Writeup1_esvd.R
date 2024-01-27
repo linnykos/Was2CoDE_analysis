@@ -5,7 +5,7 @@ set.seed(10)
 
 print("Starting")
 
-load("~/lab/projects/subject-de/out/kevin/Writeup1/naive-preprocess.RData")
+load("~/kzlinlab/projects/subject-de/out/kevin/preprocess/naive-preprocess.RData")
 
 #########
 
@@ -220,7 +220,7 @@ time_end5 <- Sys.time()
 
 date_of_run <- Sys.time()
 session_info <- devtools::session_info()
-note <- paste("Working from ~/lab/projects/subject-de/out/kevin/Writeup1/naive-preprocess.RData.",
+note <- paste("Working from ~/kzlinlab/projects/subject-de/out/kevin/preprocess/naive-preprocess.RData.",
               "Applying eSVD2.")
 
 save(date_of_run, session_info, note,
