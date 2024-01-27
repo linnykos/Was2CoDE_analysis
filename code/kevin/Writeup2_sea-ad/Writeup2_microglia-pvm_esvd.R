@@ -14,12 +14,17 @@ seurat_obj$`Years of education` <- NULL
 seurat_obj$FractionMitochrondrialUMIs <- seurat_obj$`Fraction mitochrondrial UMIs`  
 seurat_obj$`Fraction mitochrondrial UMIs` <- NULL
 
-tmp <- seurat_obj$CognitiveStatus
-seurat_obj$CognitiveStatus <- factor(gsub(
-  pattern = " ",
-  replacement = "_",
-  x = tmp
-))
+# remove all spaces in all covariates
+meta_vars <- colnames(seurat_obj@meta.data)
+for(variable in meta_vars){
+  vec <- seurat_obj@meta.data[,variable]
+  if(is.character(vec) | is.factor(vec)){
+    vec <- as.character(vec)
+    vec <- gsub(pattern = "[^[:alnum:] ]", replacement = "", x = vec)
+    vec <- gsub(pattern = " ", replacement = "", x = vec)
+    seurat_obj@meta.data[,variable] <- factor(vec)
+  }
+}
 
 #########
 
@@ -72,9 +77,8 @@ eSVD_obj <- eSVD2:::initialize_esvd(dat = mat,
                                     verbose = 1)
 time_end1 <- Sys.time()
 
-
 save(eSVD_obj,
-     file = "../../../../../out/kevin/Writeup1/Writeup1_esvd.RData")
+     file = "../../../../../out/kevin/Writeup2/Writeup2_sea-ad_microglia_esvd.RData")
 
 eSVD_obj <- eSVD2:::.reparameterization_esvd_covariates(
   input_obj = eSVD_obj,
@@ -146,7 +150,7 @@ time_end5 <- Sys.time()
 
 date_of_run <- Sys.time()
 session_info <- devtools::session_info()
-note <- paste("Working from ~/lab/projects/subject-de/out/kevin/Writeup1/naive-preprocess.RData.",
+note <- paste("Working from ~/kzlinlab/data/sea-ad/microglia-pvm_dpc.rds.",
               "Applying eSVD2.")
 
 save(date_of_run, session_info, note,
@@ -154,7 +158,7 @@ save(date_of_run, session_info, note,
      time_start1, time_end1, time_start2, time_end2,
      time_start3, time_end3, time_start4, time_end4,
      time_start5, time_end5,
-     file = "../../../../../out/kevin/Writeup1/Writeup1_esvd.RData")
+     file = "../../../../../out/kevin/Writeup2/Writeup2_sea-ad_microglia_esvd.RData")
 
 print("Done! :)")
 
