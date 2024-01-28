@@ -1,30 +1,8 @@
 rm(list=ls())
 library("Seurat")
 
-seurat_obj <- readRDS("~/kzlinlab/data/sea-ad/microglia-pvm_dpc.rds")
-
-#########
-
-seurat_obj$CognitiveStatus <- seurat_obj$`Cognitive status`  
-seurat_obj$`Cognitive status` <- NULL
-seurat_obj$AgeAtDeath <- seurat_obj$`Age at death`  
-seurat_obj$`Age at death` <- NULL
-seurat_obj$YearsOfEducation <- seurat_obj$`Years of education`  
-seurat_obj$`Years of education` <- NULL
-seurat_obj$FractionMitochrondrialUMIs <- seurat_obj$`Fraction mitochrondrial UMIs`  
-seurat_obj$`Fraction mitochrondrial UMIs` <- NULL
-
-# remove all spaces in all covariates
-meta_vars <- colnames(seurat_obj@meta.data)
-for(variable in meta_vars){
-  vec <- seurat_obj@meta.data[,variable]
-  if(is.character(vec) | is.factor(vec)){
-    vec <- as.character(vec)
-    vec <- gsub(pattern = "[^[:alnum:] ]", replacement = "", x = vec)
-    vec <- gsub(pattern = " ", replacement = "", x = vec)
-    seurat_obj@meta.data[,variable] <- factor(vec)
-  }
-}
+load("~/kzlinlab/projects/subject-de/out/kevin/Writeup2/Writeup2_sea-ad_microglia_preprocess.RData")
+set.seed(10)
 
 #########
 
@@ -39,17 +17,16 @@ for(variable in categorical_vars){
 
 ###########
 
-gene_vec <- Seurat::VariableFeatures(seurat_obj[["RNA"]])
-seurat_obj <- subset(seurat_obj, features = gene_vec)
-
 # remove the reference cells
 keep_vec <- rep(FALSE, ncol(seurat_obj))
 keep_vec[seurat_obj$CognitiveStatus != "Reference"] <- TRUE
 seurat_obj$keep <- keep_vec
 seurat_obj <- subset(seurat_obj, keep == TRUE)
 
+Seurat::DefaultAssay(seurat_obj) <- "RNA"
 mat <- Matrix::t(SeuratObject::LayerData(seurat_obj, 
                                          assay = "RNA", 
+                                         features = Seurat::VariableFeatures(seurat_obj),
                                          layer = "counts"))
 
 covariate_dat <- seurat_obj@meta.data[,c("donor_id", categorical_vars, numerical_vars)]
@@ -76,9 +53,6 @@ eSVD_obj <- eSVD2:::initialize_esvd(dat = mat,
                                     metadata_individual = covariate_df[,"donor_id"],
                                     verbose = 1)
 time_end1 <- Sys.time()
-
-save(eSVD_obj,
-     file = "../../../../../out/kevin/Writeup2/Writeup2_sea-ad_microglia_esvd.RData")
 
 eSVD_obj <- eSVD2:::.reparameterization_esvd_covariates(
   input_obj = eSVD_obj,
@@ -150,7 +124,7 @@ time_end5 <- Sys.time()
 
 date_of_run <- Sys.time()
 session_info <- devtools::session_info()
-note <- paste("Working from ~/kzlinlab/data/sea-ad/microglia-pvm_dpc.rds.",
+note <- paste("Working from ~/kzlinlab/projects/subject-de/out/kevin/Writeup2/Writeup2_sea-ad_microglia_preprocess.RData.",
               "Applying eSVD2.")
 
 save(date_of_run, session_info, note,
@@ -158,7 +132,7 @@ save(date_of_run, session_info, note,
      time_start1, time_end1, time_start2, time_end2,
      time_start3, time_end3, time_start4, time_end4,
      time_start5, time_end5,
-     file = "../../../../../out/kevin/Writeup2/Writeup2_sea-ad_microglia_esvd.RData")
+     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup2/Writeup2_sea-ad_microglia_esvd.RData")
 
 print("Done! :)")
 
