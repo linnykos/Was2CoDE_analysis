@@ -22,7 +22,7 @@ plot1 <-  EnhancedVolcano::EnhancedVolcano(de_results_wilcoxon,
                                         y = "p_val_adj",
                                         pCutoff = pCutoff,
                                         FCcutoff = FCcutoff)
-ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de_tati/git/subject-de/figures/tati/Writeup1/Writeup1_de-volcano_wilcoxon.png"),
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de-volcano_wilcoxon.png"),
                 plot1, device = "png", width = 7, height = 7, units = "in")
 
 ###########
