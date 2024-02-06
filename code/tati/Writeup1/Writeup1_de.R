@@ -9,6 +9,7 @@ ss_data_norm
 head(ss_data_norm@meta.data)
 table(ss_data_norm$Pt_ID, ss_data_norm$CognitiveStatus)
 
+print("Starting wilcoxon tests")
 Seurat::DefaultAssay(ss_data_norm) <- "integrated"
 Seurat::Idents(ss_data_norm) <- "CognitiveStatus"
 de_results_wilcoxon <- Seurat::FindMarkers(ss_data_norm, 
@@ -21,8 +22,9 @@ de_results_wilcoxon <- Seurat::FindMarkers(ss_data_norm,
                                            verbose = TRUE)
 
 save(de_results_wilcoxon, 
-     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup1/Writeup1_de.RData")
+     file = "~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_de.RData")
 
+print("Starting t-tests")
 de_results_t <- Seurat::FindMarkers(ss_data_norm, 
                                     features = Seurat::VariableFeatures(ss_data_norm),
                                     test.use = "t",
