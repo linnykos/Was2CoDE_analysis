@@ -1,3 +1,6 @@
+.icloud
+*.icloud
+
 .DS_Store
 *.DS_Store
 .nfs
