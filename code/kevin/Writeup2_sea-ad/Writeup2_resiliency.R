@@ -3,6 +3,10 @@ library(openxlsx)
 
 metadata <- openxlsx::read.xlsx("~/Dropbox/Collaboration-and-People/alzheimer/data/sea-ad/sea-ad_cohort_donor_metadata_082222.xlsx")
 
+donor_id <- metadata$Donor.ID
+write.csv(donor_id, 
+          file = "~/Dropbox/Collaboration-and-People/alzheimer/data/sea-ad/donor_id.csv")
+
 # extract the specific columns I need
 metadata_ss <- metadata[,c("Last.CASI.Score",
                            "Interval.from.last.CASI.in.months",
@@ -18,6 +22,18 @@ metadata_ss <- metadata[,c("Last.CASI.Score",
 tmp <- factor(metadata_ss$Braak, levels = c("Braak 0", "Braak II", "Braak III", "Braak IV", "Braak V", "Braak VI"))
 tmp2 <- as.numeric(tmp)
 metadata_ss$Braak <- tmp2
+
+table(metadata$Braak, metadata$CERAD.score)
+table(metadata$Braak, metadata$Cognitive.Status)
+table(metadata$Braak, metadata$Last.CASI.Score)
+
+idx <- intersect(
+  intersect(which(metadata$Braak %in% c("Braak V", "Braak VI")),
+                 which(metadata$CERAD.score %in% c("Moderate", "Frequent"))),
+  which(metadata$Interval.from.last.CASI.in.months <= 36)
+)
+length(idx)
+hist(metadata$Last.CASI.Score[idx])
 
 ## Thal
 tmp <- factor(metadata_ss$Thal, levels = c("Thal 0", "Thal 1", "Thal 2", "Thal 3", "Thal 4", "Thal 5"))
