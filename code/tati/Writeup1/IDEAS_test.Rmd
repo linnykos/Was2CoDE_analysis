@@ -1,0 +1,83 @@
+---
+title: "IDEAS_test"
+author: "Tati Zhang"
+date: "2024-02-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+library(ideas)
+library(foreach)
+library(doRNG)
+RNGkind("L'Ecuyer-CMRG")
+library(doParallel)
+registerDoParallel(cores=6)
+
+simu_data_rds = "sim_data_ncase_10_nctrl_10_ncell_120_fold_mean_1.2_var_1.5.rds"
+sim_data = readRDS("~/Documents/subject-de/git/subject-de/code/tati/Writeup1/sim_data_ncase_10_nctrl_10_ncell_120_fold_mean_1.2_var_1.5.rds")
+```
+
+```{r}
+names(sim_data)
+sim_data$count_matrix[1:5,1:5]
+head(sim_data$meta_cell)
+head(sim_data$meta_ind)
+```
+
+```{r}
+dim(sim_data$count_matrix)
+unique(sim_data$meta_cell$individual)
+
+table(sim_data$meta_cell$individual)
+table(sim_data$meta_ind$individual, sim_data$meta_ind$phenotype)
+table(sim_data$meta_cell$individual, sim_data$meta_cell$phenotype)
+```
+# ?ideas::ideas_dist
+
+```{r}
+count_matrix = sim_data$count_matrix[1:100,]
+meta_cell    = sim_data$meta_cell
+meta_ind     = sim_data$meta_ind
+
+var2test      = "phenotype"
+var2adjust    = "RIN" # [[KL: Thes are covariates you want to adjust for. It's not always obvious what to include here]]
+var2test_type = "binary" # [[KL: In general, keep this as "binary"]]
+var_per_cell  = "cell_rd" # [[KL: This is the read depth, don't worry about this. I will tell you what to put here]]
+```
+
+```{r}
+dist1 = ideas_dist(count_matrix, meta_cell, meta_ind, 
+                   var_per_cell, var2test, var2test_type, 
+                   d_metric = "Was", fit_method = "nb")
+
+```
+```{r}
+class(dist1)
+dim(dist1)
+dist1[1,1:5,1:5]
+dist1[1:5,1,1]
+```
+
+# ?ideas::permanova
+
+```{r}
+
+pval_ideas = permanova(dist1, meta_ind, var2test, var2adjust, 
+                       var2test_type, n_perm=999, r.seed=903)
+```
+
+```{r}
+class(pval_ideas)
+length(pval_ideas)
+head(pval_ideas)
+```
+
+```{r}
+hist(pval_ideas)
+```
