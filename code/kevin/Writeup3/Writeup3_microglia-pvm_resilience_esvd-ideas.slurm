@@ -6,7 +6,6 @@
 
 #SBATCH --job-name=ideas
 #SBATCH --mem-per-cpu=50gb
-#SBATCH --ntasks=1 
 #SBATCH --cpus-per-task=6
 
 #SBATCH --error=/home/users/%u/kzlinlab/projects/subject-de/out/kevin/Writeup3/slurm/slurm_%j.err
