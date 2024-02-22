@@ -66,9 +66,13 @@ prater_sheet <- openxlsx::read.xlsx(
 prater_genes <- sort(unique(prater_sheet[which(prater_sheet[,"padj"] <= 0.05),"Gene"]))
 prater_genes <- intersect(prater_genes, Seurat::VariableFeatures(seurat_obj))
 
-mat <- tcrossprod(eSVD_obj$fit_Second$x_mat, eSVD_obj$fit_Second$y_mat) + tcrossprod(eSVD_obj$covariates[,"resilient_Resilient"], eSVD_obj$fit_Second$z_mat[,"resilient_Resilient"])
-mat <- t(mat[,prater_genes])
+mat <- tcrossprod(eSVD_obj$fit_Second$x_mat, eSVD_obj$fit_Second$y_mat[prater_genes,]) + tcrossprod(eSVD_obj$covariates[,"resilient_Resilient"], eSVD_obj$fit_Second$z_mat[prater_genes,"resilient_Resilient"])
+mat <- t(mat)
 stopifnot(all(colnames(mat) == cell_covariates$cell_id))
+
+# length(which(mat >= log(100)))/prod(dim(mat))
+mat <- pmin(mat, log(100))
+mat <- exp(mat)
 
 print("Starting ideas::ideas_dist")
 set.seed(10)
