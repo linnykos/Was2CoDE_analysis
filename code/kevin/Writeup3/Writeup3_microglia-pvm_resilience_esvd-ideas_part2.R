@@ -24,18 +24,19 @@ time_start <- Sys.time()
 pval_res <- ideas::permanova(dist_tensor,
                              meta_ind = indiv_covariates,
                              var2test = "resiliency",
-                             var2adjust = colnames(),
+                             var2adjust = colnames(neuropath),
                              var2test_type = "binary",
                              n_perm = 4999,
                              r.seed = 904)
 time_end <- Sys.time()
+names(pval_res) <- dimnames(dist_tensor)[[1]]
 
 date_of_run <- Sys.time()
 session_info <- devtools::session_info()
 
 save(date_of_run, session_info, 
      time_start, time_end,
-     cell_covariates, dist_tensor, indiv_covariates,
-     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup3/Writeup3_sea-ad_microglia_ideas.RData")
+     pval_res,
+     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup3/Writeup3_sea-ad_microglia_ideas_pvalues.RData")
 
 print("Done! :)")
