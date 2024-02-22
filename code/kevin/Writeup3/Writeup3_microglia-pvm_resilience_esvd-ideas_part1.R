@@ -65,7 +65,7 @@ prater_genes <- intersect(prater_genes, Seurat::VariableFeatures(seurat_obj))
 
 mat <- tcrossprod(eSVD_obj$fit_Second$x_mat, eSVD_obj$fit_Second$y_mat[prater_genes,]) + tcrossprod(eSVD_obj$covariates[,"resilient_Resilient"], eSVD_obj$fit_Second$z_mat[prater_genes,"resilient_Resilient"])
 mat <- t(mat)
-stopifnot(all(colnames(mat) == cell_covariates$cell_id))
+stopifnot(all(colnames(mat) == SeuratObject::Cells(seurat_obj)))
 
 # length(which(mat >= log(100)))/prod(dim(mat))
 mat <- pmin(mat+2, log(100))
