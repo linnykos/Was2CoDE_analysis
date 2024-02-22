@@ -41,7 +41,8 @@ seurat_obj$resiliency <- resiliency_vec
 # notes:
 ## the only things in meta_cell that are needed is: "cell_id", "individual", and var_per_cell (which is the read depth)
 ## meta_ind must have a column called "individual" and var2test
-## colnames in mat must be equal to meta_cell$cell_id 
+## colnames in count_input must be equal to meta_cell$cell_id 
+## the values in count_input must be non-negative integers
 ## see: https://github.com/Sun-lab/ideas/blob/main/R/ideas_dist.R
 
 tab_mat <- table(seurat_obj$donor_id, seurat_obj$resiliency)

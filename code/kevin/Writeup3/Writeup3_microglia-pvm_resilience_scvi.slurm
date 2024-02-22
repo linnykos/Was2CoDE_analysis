@@ -12,4 +12,6 @@
 
 conda init
 conda activate scVI
+python --version
+conda list
 python Writeup3_microglia-pvm_resilience_scvi.py > ../../../../../out/kevin/Writeup3/slurm/$SLURM_JOB_NAME-$SLURM_JOB_ID.txt
