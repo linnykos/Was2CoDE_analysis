@@ -11,4 +11,4 @@
 #SBATCH --error=/home/users/%u/kzlinlab/projects/subject-de/out/kevin/Writeup3/slurm/slurm_%j.err
 #SBATCH --output=/home/users/%u/kzlinlab/projects/subject-de/out/kevin/Writeup3/slurm/slurm_%j.out
 
-R CMD BATCH --no-save --no-restore Writeup3_microglia-pvm_resilience_esvd-ideas.R ../../../../../out/kevin/Writeup3/slurm/$SLURM_JOB_NAME-$SLURM_JOB_ID.Rout
+R CMD BATCH --no-save --no-restore Writeup3_microglia-pvm_resilience_esvd-ideas_part1.R ../../../../../out/kevin/Writeup3/slurm/$SLURM_JOB_NAME-$SLURM_JOB_ID.Rout

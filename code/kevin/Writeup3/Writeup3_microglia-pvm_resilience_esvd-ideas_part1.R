@@ -66,11 +66,8 @@ prater_sheet <- openxlsx::read.xlsx(
 prater_genes <- sort(unique(prater_sheet[which(prater_sheet[,"padj"] <= 0.05),"Gene"]))
 prater_genes <- intersect(prater_genes, Seurat::VariableFeatures(seurat_obj))
 
-mat <- SeuratObject::LayerData(seurat_obj, 
-                               assay = "RNA", 
-                               features = prater_genes,
-                               layer = "counts")
-mat <- as.matrix(mat)
+mat <- tcrossprod(eSVD_obj$fit_Second$x_mat, eSVD_obj$fit_Second$y_mat) + tcrossprod(eSVD_obj$covariates[,"resilient_Resilient"], eSVD_obj$fit_Second$z_mat[,"resilient_Resilient"])
+mat <- t(mat[,prater_genes])
 stopifnot(all(colnames(mat) == cell_covariates$cell_id))
 
 print("Starting ideas::ideas_dist")
@@ -83,7 +80,7 @@ dist_tensor <- ideas::ideas_dist(count_input = mat,
                                  var2test = "resiliency",
                                  var2test_type = "binary",
                                  d_metric = "Was",
-                                 fit_method = "nb")
+                                 fit_method = "kde")
 time_end <- Sys.time()
 
 date_of_run <- Sys.time()
