@@ -44,9 +44,6 @@ seurat_obj$resiliency <- resiliency_vec
 ## colnames in mat must be equal to meta_cell$cell_id 
 ## see: https://github.com/Sun-lab/ideas/blob/main/R/ideas_dist.R
 
-cell_covariates <- data.frame(cell_id = rownames(seurat_obj@meta.data),
-                              individual = seurat_obj$donor_id,
-                              rd = seurat_obj$nCount_RNA)
 tab_mat <- table(seurat_obj$donor_id, seurat_obj$resiliency)
 bool_vec <- rep(FALSE, nrow(tab_mat))
 bool_vec[which(tab_mat[,"1"] > 0)] <- TRUE
@@ -71,8 +68,13 @@ mat <- t(mat)
 stopifnot(all(colnames(mat) == cell_covariates$cell_id))
 
 # length(which(mat >= log(100)))/prod(dim(mat))
-mat <- pmin(mat, log(100))
-mat <- exp(mat)
+mat <- pmin(mat+2, log(100))
+mat <- round(exp(mat))
+# quantile(mat, probs = sort(c(0.01,0.99,seq(0,1,length.out=21))))
+
+cell_covariates <- data.frame(cell_id = rownames(seurat_obj@meta.data),
+                              individual = seurat_obj$donor_id,
+                              rd = colSums(mat))
 
 print("Starting ideas::ideas_dist")
 set.seed(10)

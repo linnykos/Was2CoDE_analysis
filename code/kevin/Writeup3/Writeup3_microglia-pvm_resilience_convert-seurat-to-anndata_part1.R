@@ -11,6 +11,12 @@ rownames(neuropath) <- neuropath$Donor.ID
 path_idx <- grep("^percent.*area_Grey", colnames(neuropath))
 colnames(neuropath)[path_idx]
 neuropath <- neuropath[,path_idx]
+colname_vec <- colnames(neuropath)
+colname_vec <- sapply(colname_vec, function(val){
+  tmp <- strsplit(val, split = "\\.")[[1]][1:2]
+  paste0(tmp, collapse = ".")
+})
+colnames(neuropath) <- colname_vec
 
 included_idx <- which(metadata$Donor.ID %in% harmonized_scores$donor_name)
 metadata <- metadata[included_idx,]
@@ -85,6 +91,11 @@ for(variable in all_vars){
   if(is.factor(vec)) vec <- droplevels(vec)
   seurat_obj@meta.data[,variable] <- vec
 }
+colname_vec <- colnames(neuropath)
+donor_vec <- seurat_obj$donor_id
+for(variable in colname_vec){
+  seurat_obj@meta.data[,variable] <- neuropath[donor_vec,variable]
+}
 
 seurat_diet <- Seurat::DietSeurat(
   seurat_obj,
@@ -95,19 +106,17 @@ seurat_diet <- Seurat::DietSeurat(
   misc = FALSE
 )
 
-# https://mojaveazure.github.io/seurat-disk/articles/convert-anndata.html
-# https://github.com/mojaveazure/seurat-disk/issues/166
-SeuratDisk::SaveH5Seurat(seurat_diet, filename = "~/kzlinlab/projects/subject-de/out/kevin/Writeup3/Writeup3_sea-ad_microglia.h5Seurat")
-SeuratDisk::Convert("~/kzlinlab/projects/subject-de/out/kevin/Writeup3/Writeup3_sea-ad_microglia.h5Seurat", 
-                    dest = "h5ad",
-                    overwrite = TRUE)
+options(Seurat.object.assay.version = "v3")
+seurat_diet[["RNA"]] <- as(object = seurat_diet[["RNA"]], Class = "Assay")
 
-# https://satijalab.org/loomr/loomr_tutorial
-# library(loomR)
-# pfile <- Seurat::Convert(from = seurat_obj, 
-#                          to = "loom", 
-#                          filename = "~/kzlinlab/projects/subject-de/out/kevin/Writeup3/Writeup3_sea-ad_microglia.loom", 
-#                          display.progress = TRUE)
+#######
 
+date_of_run <- Sys.time()
+session_info <- devtools::session_info()
+note <- paste("Input from ~/kzlinlab/projects/subject-de/out/kevin/Writeup2/Writeup2_sea-ad_microglia_preprocess.RData.",
+              "Added neuropath data, did some reformatting, and changed to Seuratv3 since I'm going to",
+              "use a older version of Seurat to convert this into an anndata object")
 
-
+save(date_of_run, session_info, 
+     seurat_diet,
+     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup2/Writeup2_sea-ad_microglia_preprocess_Seuratv3.RData")
