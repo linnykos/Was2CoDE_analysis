@@ -20,6 +20,8 @@ library(SeuratDisk, lib.loc = "/home/users/kzlin/R/x86_64-pc-linux-gnu-library/S
 set.seed(10)
 load("~/kzlinlab/projects/subject-de/out/kevin/Writeup2/Writeup2_sea-ad_microglia_preprocess_Seuratv3.RData")
 
+# summary(seurat_diet@meta.data)
+
 # https://mojaveazure.github.io/seurat-disk/articles/convert-anndata.html
 # https://github.com/mojaveazure/seurat-disk/issues/166
 SeuratDisk::SaveH5Seurat(seurat_diet, 

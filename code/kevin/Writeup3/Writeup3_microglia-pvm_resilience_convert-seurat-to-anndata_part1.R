@@ -14,7 +14,7 @@ neuropath <- neuropath[,path_idx]
 colname_vec <- colnames(neuropath)
 colname_vec <- sapply(colname_vec, function(val){
   tmp <- strsplit(val, split = "\\.")[[1]][1:2]
-  paste0(tmp, collapse = ".")
+  paste0(tmp, collapse = "_")
 })
 colnames(neuropath) <- colname_vec
 
@@ -69,15 +69,15 @@ age_vec[which(seurat_obj$development_stage == "80yearoldandoverhumanstage")] <- 
 age_vec <- as.numeric(age_vec)
 seurat_obj$AgeAtDeath <- age_vec
 
-seurat_obj$Lewy.body.disease.pathology <- seurat_obj@meta.data[,"Lewy body disease pathology"]
-seurat_obj$APOE4.status <- seurat_obj@meta.data[,"APOE4 status"]
+seurat_obj$Lewy_body_disease_pathology <- seurat_obj@meta.data[,"Lewy body disease pathology"]
+seurat_obj$APOE4_status <- seurat_obj@meta.data[,"APOE4 status"]
 seurat_obj@meta.data[,"Lewy body disease pathology"] <- NULL
 seurat_obj@meta.data[,"APOE4 status"] <- NULL
 
 #############################
 
 # do some cleanup for scVI later
-categorical_vars <- c("donor_id", "sex", "self_reported_ethnicity", "YearsOfEducation", "APOE4.status", "Lewy.body.disease.pathology", "resilient")
+categorical_vars <- c("donor_id", "sex", "self_reported_ethnicity", "YearsOfEducation", "APOE4_status", "Lewy_body_disease_pathology", "resilient")
 numerical_vars <- c("FractionMitochrondrialUMIs", "AgeAtDeath")
 all_vars <- c(categorical_vars, numerical_vars)
 metadata_vars <- colnames(seurat_obj@meta.data)
@@ -106,9 +106,12 @@ seurat_diet <- Seurat::DietSeurat(
   misc = FALSE
 )
 
+
 options(Seurat.object.assay.version = "v3")
 seurat_diet[["RNA"]] <- as(object = seurat_diet[["RNA"]], Class = "Assay")
+seurat_diet[["RNA"]]@data <- seurat_diet[["RNA"]]@counts
 
+# summary(seurat_diet@meta.data)
 #######
 
 date_of_run <- Sys.time()
