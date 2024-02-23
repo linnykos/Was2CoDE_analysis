@@ -5,6 +5,7 @@ import scvi
 import seaborn as sns
 import torch
 import anndata
+import pandas as pd
 
 scvi.settings.seed = 0
 print("Last run with scvi-tools version:", scvi.__version__)
@@ -33,6 +34,11 @@ SCVI_LATENT_KEY = "X_scVI"
 latent = model.get_latent_representation()
 adata.obsm[SCVI_LATENT_KEY] = latent
 latent.shape
+
+print("Saving peakVI as CSV")
+cell_names = adata.obs_names
+df = pd.DataFrame(latent, index = cell_names)
+df.to_csv("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup3/Writeup3_microglia-pvm_resilience_scvi.csv")
 
 SCVI_NORMALIZED_KEY = "scvi_normalized"
 adata.layers[SCVI_NORMALIZED_KEY] = model.get_normalized_expression(library_size=10e4)
