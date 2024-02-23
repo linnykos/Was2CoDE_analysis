@@ -1,16 +1,21 @@
 rm(list=ls())
-library(EnhancedVolcano)
-library(openxlsx)
-set.seed(10)
+library(Seurat)
 
 load("~/kzlinlab/projects/subject-de/out/kevin/Writeup3/Writeup3_sea-ad_microglia_esvd.RData")
+load("~/kzlinlab/projects/subject-de/out/kevin/Writeup3/Writeup3_sea-ad_microglia_ideas_pvalues.RData")
 
-quantile(eSVD_obj$pvalue_list$fdr_vec)
-quantile(eSVD_obj$pvalue_list$log10pvalue)
+set.seed(10)
 
-lfc_vec <- log2(eSVD_obj$case_mean) - log2(eSVD_obj$control)
-pvalue_vec <- 10^(-eSVD_obj$pvalue_list$log10pvalue)
-pval_adj_vec <- eSVD_obj$pvalue_list$fdr_vec
+mat <- tcrossprod(eSVD_obj$fit_Second$x_mat, eSVD_obj$fit_Second$y_mat) + tcrossprod(eSVD_obj$covariates[,"resilient_Resilient"], eSVD_obj$fit_Second$z_mat[,"resilient_Resilient"])
+
+resiliency_vec <- which(eSVD_obj$covariates[,"resilient_Resilient"] == 1)
+nonresilient_mean <- Matrix::colMeans(mat[-resiliency_vec,])
+resilient_mean <- Matrix::colMeans(mat[resiliency_vec,])
+lfc_vec <- resilient_mean - nonresilient_mean
+
+pvalue_vec <- pval_res[names(lfc_vec)]
+
+pval_adj_vec <- stats::p.adjust(pvalue_vec, method = "BH")
 idx <- which(pval_adj_vec <= 0.05)
 pCutoff <- max(pvalue_vec[idx])
 FCcutoff <- quantile(abs(lfc_vec), probs = 0.9)
@@ -34,17 +39,14 @@ plot1 <- EnhancedVolcano::EnhancedVolcano(
   ylim = ylim
 )
 
-ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup3/Writeup3_esvd_volcano.png",
+ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup3/Writeup3_ideas_volcano.png",
                 plot1, device = "png", width = 7, height = 7, units = "in")
+
 
 #########################
 
-lfc_vec <- log2(eSVD_obj$case_mean) - log2(eSVD_obj$control)
-xlim <- c(-1,1) * quantile(abs(lfc_vec), probs = 0.99)
-
-pvalue_vec <- 10^(-eSVD_obj$pvalue_list$log10pvalue)
 logpval_vec <- -log10(pvalue_vec)
-fdr_vec <- eSVD_obj$pvalue_list$fdr_vec
+fdr_vec <- pval_adj_vec
 fdr_genes <- names(fdr_vec)[which(fdr_vec <= 0.05)]
 fdr_bool <- rep(FALSE, length(fdr_vec))
 names(fdr_bool) <- names(fdr_vec)
@@ -103,9 +105,9 @@ custom_volcano_highlight_func <- function(
     plot1 <- plot1 + ggplot2::geom_hline(yintercept=min(logpval_vec[which(fdr_vec <= 0.05)]), linetype="dashed", 
                                          color = "red", linewidth=2)
   }
-  plot1 <- plot1 + ggplot2::ggtitle(paste0("eSVD-DE volcano plot, ", main_addition,
+  plot1 <- plot1 + ggplot2::ggtitle(paste0("IDEAS volcano plot, ", main_addition,
                                            "\nFisher -log10pvalue: ", round(-log10(fisher), 2))) +
-    ggplot2::xlab("Log fold change") + ggplot2::ylab("eSVD-DE p-value (-Log10)")
+    ggplot2::xlab("Log fold change") + ggplot2::ylab("IDEAS p-value (-Log10)")
   plot1 <- plot1 + Seurat::NoLegend()
   
   plot1
@@ -121,13 +123,13 @@ prater_sheet <- openxlsx::read.xlsx(
 prater_genes <- sort(unique(prater_sheet[which(prater_sheet[,"padj"] <= 0.05),"Gene"]))
 
 plot1 <- custom_volcano_highlight_func(
-    custom_genes = prater_genes,
-    fdr_bool = fdr_bool,
-    lfc_vec = lfc_vec, 
-    logpval_vec = logpval_vec,
-    main_addition = "Prater genes"
+  custom_genes = prater_genes,
+  fdr_bool = fdr_bool,
+  lfc_vec = lfc_vec, 
+  logpval_vec = logpval_vec,
+  main_addition = "Prater genes"
 )
-ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup3/Writeup3_esvd_volcano_annotated-prater.png",
+ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup3/Writeup3_ideas_volcano_annotated-prater.png",
                 plot1, device = "png", width = 5, height = 5, units = "in")
 
 #########################
@@ -145,7 +147,7 @@ plot1 <- custom_volcano_highlight_func(
   logpval_vec = logpval_vec,
   main_addition = "Sun genes"
 )
-ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup3/Writeup3_esvd_volcano_annotated-sun.png",
+ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup3/Writeup3_ideas_volcano_annotated-sun.png",
                 plot1, device = "png", width = 5, height = 5, units = "in")
 
 #########################
@@ -166,7 +168,7 @@ plot1 <- custom_volcano_highlight_func(
   logpval_vec = logpval_vec,
   main_addition = "Mostafavi genes"
 )
-ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup3/Writeup3_esvd_volcano_annotated-mostafavi.png",
+ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup3/Writeup3_ideas_volcano_annotated-mostafavi.png",
                 plot1, device = "png", width = 5, height = 5, units = "in")
 
 ###############
@@ -184,12 +186,68 @@ plot1 <- custom_volcano_highlight_func(
   logpval_vec = logpval_vec,
   main_addition = "Brase genes"
 )
-ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup3/Writeup3_esvd_volcano_annotated-brase.png",
+ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup3/Writeup3_ideas_volcano_annotated-brase.png",
                 plot1, device = "png", width = 5, height = 5, units = "in")
 
+############################
 
-###############
+# plot the cross-method p-value
 
-df[intersect(intersect(sun_genes, prater_genes), fdr_genes),]
-df["APOE",]
-          
+load("~/kzlinlab/projects/subject-de/out/kevin/Writeup3/Writeup3_sea-ad_microglia_ideas_pvalues.RData")
+gene_vec <- names(pval_res)
+ideas_pvalue <- pval_res
+ideas_log10 <- -log10(ideas_pvalue)
+ideas_fdr <- stats::p.adjust(ideas_pvalue, method = "BH")
+ideas_cutoff <- min(ideas_log10[which(ideas_fdr <= 0.05)])
+
+load("~/kzlinlab/projects/subject-de/out/kevin/Writeup3/Writeup3_sea-ad_microglia_esvd.RData")
+esvd_pvalue <- 10^(-eSVD_obj$pvalue_list$log10pvalue)
+esvd_pvalue <- esvd_pvalue[gene_vec]
+esvd_log10 <- -log10(esvd_pvalue)
+esvd_fdr <- eSVD_obj$pvalue_list$fdr_vec
+esvd_cutoff <- min(esvd_log10[which(esvd_fdr <= 0.05)])
+
+sun_sheet <- openxlsx::read.xlsx(
+  xlsxFile = "~/kzlinlab/projects/subject-de/data/1-s2.0-S0092867423009716-mmc1.xlsx",
+  sheet = "Page 10.DEGs_AD"
+) 
+sun_genes <- sort(unique(sun_sheet[which(sun_sheet[,"fdr"] <= 0.05),"row.names"]))
+sun_genes <- intersect(gene_vec, sun_genes)
+
+label_vec <- rep("None", length(gene_vec))
+label_vec[which(gene_vec %in% sun_genes)] <- "Validation"
+label_vec[intersect(which(ideas_log10 > ideas_cutoff),
+                    which(gene_vec %in% sun_genes))] <- "Both"
+label_vec[intersect(which(esvd_log10 > esvd_cutoff),
+                    which(gene_vec %in% sun_genes))] <- "Both"
+
+# create a custom volcano plot 
+df <- data.frame(ideas_log10 = ideas_log10,
+                 esvd_log10 = esvd_log10,
+                 name = gene_vec,
+                 labeling = factor(label_vec))
+# put all the labeling == TRUE on bottom
+df <- df[c(which(df[,"labeling"] == "None"), 
+           which(df[,"labeling"] == "Validation"),
+           which(df[,"labeling"] == "Both")),]
+
+plot1 <- ggplot2::ggplot(df, ggplot2::aes(x = ideas_log10, 
+                                          y = esvd_log10))
+plot1 <- plot1 + ggplot2::geom_point(ggplot2::aes(color = labeling))
+plot1 <- plot1 + ggplot2::scale_colour_manual(values=c(Both = "red",
+                                                       None = "black", 
+                                                       Validation = "cadetblue2"))
+plot1 <- plot1 + ggrepel::geom_text_repel(data = subset(df, labeling == "Both"),
+                                          ggplot2::aes(label = name, color = labeling, wt = 0.5))
+plot1 <- plot1 + ggplot2::geom_hline(yintercept=esvd_cutoff, linetype="dashed", 
+                                     color = "red", linewidth=2)
+plot1 <- plot1 + ggplot2::geom_vline(xintercept=ideas_cutoff, linetype="dashed", 
+                                     color = "red", linewidth=2)
+plot1 <- plot1 + ggplot2::ggtitle(paste0("Correlation: ", round(stats::cor(ideas_log10, esvd_log10), 2))) +
+  ggplot2::xlab("IDEAS p-value (-Log10)") + ggplot2::ylab("eSVD-DE p-value (-Log10)")
+plot1 <- plot1 + Seurat::NoLegend()
+
+ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup3/Writeup3_esvd-ideas_volcano.png",
+                plot1, device = "png", width = 7, height = 10, units = "in")
+
+

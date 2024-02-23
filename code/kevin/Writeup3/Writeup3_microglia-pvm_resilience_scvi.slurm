@@ -10,8 +10,11 @@
 #SBATCH --error=/home/users/%u/kzlinlab/projects/subject-de/out/kevin/Writeup3/slurm/slurm_%j.err
 #SBATCH --output=/home/users/%u/kzlinlab/projects/subject-de/out/kevin/Writeup3/slurm/slurm_%j.out
 
-conda init
+source ~/miniconda3/etc/profile.d/conda.sh
 conda activate scVI
+
+conda env list
 python --version
 conda list
+
 python Writeup3_microglia-pvm_resilience_scvi.py > ../../../../../out/kevin/Writeup3/slurm/$SLURM_JOB_NAME-$SLURM_JOB_ID.txt
