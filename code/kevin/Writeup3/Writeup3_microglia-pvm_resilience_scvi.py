@@ -33,7 +33,7 @@ adata.raw = adata  # freeze the state in `.raw`
 
 sc.pp.highly_variable_genes(
     adata,
-    n_top_genes=2000,
+    n_top_genes=5000,
     subset=True,
     layer="counts",
     flavor="seurat_v3"

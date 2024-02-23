@@ -41,7 +41,11 @@ df = pd.DataFrame(latent, index = cell_names)
 df.to_csv("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup3/Writeup3_microglia-pvm_resilience_scvi.csv")
 
 SCVI_NORMALIZED_KEY = "scvi_normalized"
+gene_names = adata.var_names
 adata.layers[SCVI_NORMALIZED_KEY] = model.get_normalized_expression(library_size=10e4)
+normalized_mat = adata.layers[SCVI_NORMALIZED_KEY]
+df = pd.DataFrame(normalized_mat, index = cell_names, columns = gene_names)
+df.to_csv("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup3/Writeup3_microglia-pvm_resilience_scvi_normalized-mat.csv")
 
 # run PCA then generate UMAP plots
 sc.tl.pca(adata)
