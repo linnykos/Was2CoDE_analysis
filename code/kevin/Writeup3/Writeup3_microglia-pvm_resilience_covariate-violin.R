@@ -238,7 +238,11 @@ median_expression_list <- lapply(mat_list, function(mat){
   tmp
 })
 names(median_expression_list) <- names(mat_list)
+zz <- median_expression_list[["scvi"]]
+zz[is.infinite(zz)] <- -5
+median_expression_list[["scvi"]] <- zz
 
+p <- nrow(median_expression_list[[1]])
 esvd_vec <- sapply(1:p, function(j){
   tmp <- stats::t.test(
     x = median_expression_list[["esvd"]][j,donors_covariate == "female"],
@@ -247,26 +251,20 @@ esvd_vec <- sapply(1:p, function(j){
   -log10(tmp$p.value)
 })
 scvi_vec <- sapply(1:p, function(j){
-  vec1 <- mat_list[["scvi"]][f_idx,j]
-  vec2 <- mat_list[["scvi"]][m_idx,j]
-  vec1[is.infinite(vec1)] <- -5
-  vec2[is.infinite(vec2)] <- -5
-  
   tmp <- stats::t.test(
-    x = vec1,
-    y = vec2,
+    x = median_expression_list[["scvi"]][j,donors_covariate == "female"],
+    y = median_expression_list[["scvi"]][j,donors_covariate == "male"]
   )
   -log10(tmp$p.value)
 })
 sct_vec <- sapply(1:p, function(j){
   tmp <- stats::t.test(
-    x = mat_list[["sct"]][f_idx,j],
-    y = mat_list[["sct"]][m_idx,j],
+    x = median_expression_list[["sct"]][j,donors_covariate == "female"],
+    y = median_expression_list[["sct"]][j,donors_covariate == "male"]
   )
   -log10(tmp$p.value)
 })
 sct_vec[is.na(sct_vec)] <- 0
-
 
 round(quantile(sct_vec),2); 
 round(quantile(scvi_vec),2); 
@@ -274,8 +272,8 @@ round(quantile(esvd_vec),2)
 
 idx <- intersect(
   intersect(
-    which(sct_vec > 4),
-    which(scvi_vec > 50)
+    which(sct_vec > 1),
+    which(scvi_vec > 1)
   ),
   which(esvd_vec < 0.2)
 )
@@ -285,7 +283,7 @@ gene_vec[idx]
 ###########
 
 sex_vec <- as.character(seurat_obj$sex)
-gene <- "TLE4" 
+gene <- "TTTY14" 
 
 p_list <- plot_multiple_violins(
   covariate_vec = sex_vec,
@@ -303,5 +301,28 @@ ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de
 ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup3/Writeup3_violin-by-sex_",
                                   gene, "_SCTransform.png"),
                 p_list[["sct"]], device = "png", width = 10, height = 3, units = "in")
+
+######
+
+sex_vec <- as.character(seurat_obj$sex)
+gene <- "UTY" 
+
+p_list <- plot_multiple_violins(
+  covariate_vec = sex_vec,
+  donor_vec = donor_vec,
+  gene = gene,
+  mat_list = mat_list
+)
+
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup3/Writeup3_violin-by-sex_",
+                                  gene, "_eSVD.png"),
+                p_list[["esvd"]], device = "png", width = 10, height = 3, units = "in")
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup3/Writeup3_violin-by-sex_",
+                                  gene, "_scVI.png"),
+                p_list[["scvi"]], device = "png", width = 10, height = 3, units = "in")
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup3/Writeup3_violin-by-sex_",
+                                  gene, "_SCTransform.png"),
+                p_list[["sct"]], device = "png", width = 10, height = 3, units = "in")
+
 
 
