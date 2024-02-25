@@ -31,38 +31,27 @@ seurat_obj <- subset(seurat_obj, keep == TRUE)
 seurat_obj2 <- seurat_obj
 
 # subset the cells
-donor_ids <- c("H2033046", "H2133005", "H2033015", "H2133046",
-               "H2133036", "H2133042", "H2133044", "H2033041")
+donor_ids <- c("H2033033", "H2133005", "H2133020", "H2133046",
+               "H2133007", "H2033018", "H2033045", "H2133036")
 keep_vec <- rep(FALSE, length(SeuratObject::Cells(seurat_obj)))
 keep_vec[which(seurat_obj$donor_id %in% donor_ids)] <- TRUE
 seurat_obj$keep <- keep_vec
 seurat_obj <- subset(seurat_obj, keep == TRUE)
 cell_vec <- SeuratObject::Cells(seurat_obj)
-donor_vec <- droplevels(seurat_obj$donor_id)
+seurat_obj$donor_id <- droplevels(seurat_obj$donor_id)
+donor_vec <- seurat_obj$donor_id
 
 mat_list <- list(
   esvd = esvd_mat[cell_vec, gene_vec],
   sct = sct_mat[cell_vec, gene_vec],
-  scvi = log(scvi_mat[cell_vec, gene_vec])
+  scvi = as.matrix(log(scvi_mat[cell_vec, gene_vec]))
 )
 
 male_vec <- c("H2033046", "H2133005", "H2033015", "H2133046")
 violin_plot_func <- function(vec,
                              covariate_vec,
-                             donor_vec,
-                             flag = 0){
+                             donor_vec){
   vec <- vec - min(vec)
-  
-  if(flag == 1){
-    # for eSVD
-    idx <- which(donor_vec %in% male_vec)
-    vec[idx] <- vec[idx] + .8
-  } 
-  if(flag == 2){
-    # for sct
-    idx <- which(donor_vec %in% male_vec)
-    vec[idx] <- vec[idx]/2
-  }
   
   tab_mat <- table(donor_vec, covariate_vec)
   donors <- rownames(tab_mat)
@@ -105,14 +94,9 @@ plot_multiple_violins <- function(
   })
   
   p_list <- lapply(1:length(vec_list), function(ii){
-    flag <- 0
-    if(names(vec_list)[[ii]] == "esvd") flag <- 1
-    if(names(vec_list)[[ii]] == "sct") flag <- 2
-    
     violin_plot_func(vec = vec_list[[ii]],
                      covariate_vec = covariate_vec,
-                     donor_vec = donor_vec,
-                     flag = flag)
+                     donor_vec = donor_vec)
   })
   names(p_list) <- names(mat_list)
   
