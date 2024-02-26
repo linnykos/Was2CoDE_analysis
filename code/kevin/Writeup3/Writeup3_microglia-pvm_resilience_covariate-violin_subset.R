@@ -47,7 +47,6 @@ mat_list <- list(
   scvi = as.matrix(log(scvi_mat[cell_vec, gene_vec]))
 )
 
-male_vec <- c("H2033046", "H2133005", "H2033015", "H2133046")
 violin_plot_func <- function(vec,
                              covariate_vec,
                              donor_vec){
@@ -107,6 +106,28 @@ plot_multiple_violins <- function(
 
 sex_vec <- as.character(seurat_obj$sex)
 gene <- "APOE"
+
+p_list <- plot_multiple_violins(
+  covariate_vec = sex_vec,
+  donor_vec = donor_vec,
+  gene = gene,
+  mat_list = mat_list
+)
+
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup3/Writeup3_violin-by-sex_",
+                                  gene, "_eSVD_short.png"),
+                p_list[["esvd"]], device = "png", width = 4, height = 2, units = "in")
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup3/Writeup3_violin-by-sex_",
+                                  gene, "_SCTransform_short.png"),
+                p_list[["sct"]], device = "png", width = 4, height = 2, units = "in")
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup3/Writeup3_violin-by-sex_",
+                                  gene, "_scVI_short.png"),
+                p_list[["scvi"]], device = "png", width = 4, height = 2, units = "in")
+
+#################
+
+sex_vec <- as.character(seurat_obj$sex)
+gene <- "TTTY14"
 
 p_list <- plot_multiple_violins(
   covariate_vec = sex_vec,
