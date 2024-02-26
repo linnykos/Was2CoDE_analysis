@@ -36,10 +36,10 @@ matching_func <- function(df,
        bg_matches = bg_matches)
 }
 
-compute_wilcoxon <- function(bg_matches,
-                             gene,
-                             avg_mat,
-                             signal_matches){
+compute_test <- function(bg_matches,
+                         gene,
+                         avg_mat,
+                         signal_matches){
   # compute mean expression for each donor
   expression_vec <- avg_mat[,gene]
   names(expression_vec) <- rownames(avg_mat)
@@ -59,64 +59,23 @@ compute_wilcoxon <- function(bg_matches,
     
     expression_vec[donor1] - expression_vec[donor2]
   })
-  bg_vec <- abs(bg_vec)
   bg_vec <- bg_vec[!duplicated(bg_vec)]
+  bg_vec2 <- abs(bg_vec)
+  bg_vec2 <- bg_vec[!duplicated(bg_vec2)]
   
-  pval1 <- stats::t.test(
-    x = signal_vec,
-    y = bg_vec,
-    alternative = "less"
-  )$p.value
-  pval2 <- stats::t.test(
-    x = -signal_vec,
-    y = bg_vec,
-    alternative = "less"
-  )$p.value
+  signal_mean <- mean(signal_vec)
+  signal_var <- var(signal_vec)
+  bg_mean <- mean(bg_vec2)
+  bg_var <- var(c(bg_vec, -bg_vec))
   
-  pval <- 2*min(pval1, pval2)
-  if(pval1 < pval2){
-    side <- "pos"
-  } else {
-    side <- "neg"
-  }
+  n <- length(signal_mean)
+  m <- length(bg_vec2)
   
-  c(pval = pval,
-    side = side)
+  test_stat <- (signal_mean - bg_mean)/(sqrt(signal_var/n + bg_var/m))
   
-  # wilcox_twosided_neg <- stats::wilcox.test(
-  #   x = signal_vec,
-  #   y = bg_vec[bg_vec<0],
-  #   alternative = "two.sided"
-  # )$p.value
-  # wilcox_twosided_all <- stats::wilcox.test(
-  #   x = signal_vec,
-  #   y = bg_vec,
-  #   alternative = "two.sided"
-  # )$p.value
-  # 
-  # wilcox_less <- stats::wilcox.test(
-  #   x = signal_vec,
-  #   y = bg_vec,
-  #   alternative = "less"
-  # )$p.value
-  # wilcox_greater <- stats::wilcox.test(
-  #   x = signal_vec,
-  #   y = bg_vec,
-  #   alternative = "greater"
-  # )$p.value
-  # 
-  # c(twosided = wilcox_twosided,
-  #   less = wilcox_less,
-  #   greater = wilcox_greater)
-  
-  # ttest_res <- stats::t.test(
-  #   x = signal_vec,
-  #   y = bg_vec,
-  #   alternative = "two.sided"
-  # )
-  # val <- diff(ttest_res$estimate); names(val) <- NULL
-  # 
-  # c(pvalue = ttest_res$p.value,
-  #   stat = val)
-  
+  c(signal_mean = signal_mean,
+    signal_var = signal_var,
+    bg_mean = bg_mean,
+    bg_vec2 = bg_vec2,
+    test_stat = test_stat)
 }

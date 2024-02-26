@@ -95,16 +95,13 @@ avg_mat <- sapply(donor_list, function(idx_vec){
 avg_mat <- t(avg_mat)
 
 res_mat <- sapply(gene_names, function(gene){
-  compute_wilcoxon(bg_matches = matching_res$bg_matches,
+  compute_test(bg_matches = matching_res$bg_matches,
                    gene = gene,
                    avg_mat = avg_mat,
                    signal_matches = matching_res$signal_matches)
 })
 
-res_df <- data.frame(
-  pval = as.numeric(res_mat["pval",]),
-  side = res_mat["side",]
-)
+res_df <- data.frame(t(res_mat))
 rownames(res_df) <- colnames(res_mat)
 
 # sun_sheet <- openxlsx::read.xlsx(
