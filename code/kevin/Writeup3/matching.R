@@ -76,6 +76,6 @@ compute_test <- function(bg_matches,
   c(signal_mean = signal_mean,
     signal_var = signal_var,
     bg_mean = bg_mean,
-    bg_vec2 = bg_vec2,
+    bg_var = bg_var,
     test_stat = test_stat)
 }

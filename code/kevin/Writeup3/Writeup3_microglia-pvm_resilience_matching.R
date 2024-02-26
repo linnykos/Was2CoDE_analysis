@@ -103,6 +103,7 @@ res_mat <- sapply(gene_names, function(gene){
 
 res_df <- data.frame(t(res_mat))
 rownames(res_df) <- colnames(res_mat)
+res_df <- res_df[order(abs(res_df$test_stat), decreasing = T),]
 
 # sun_sheet <- openxlsx::read.xlsx(
 #   xlsxFile = "~/kzlinlab/projects/subject-de/data/1-s2.0-S0092867423009716-mmc1.xlsx",
