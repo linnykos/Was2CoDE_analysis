@@ -61,7 +61,7 @@ compute_test <- function(bg_matches,
   })
   bg_vec <- bg_vec[!duplicated(bg_vec)]
   bg_vec2 <- abs(bg_vec)
-  bg_vec2 <- bg_vec[!duplicated(bg_vec2)]
+  bg_vec2 <- bg_vec2[!duplicated(bg_vec2)]
   
   signal_mean <- mean(signal_vec)
   signal_var <- var(signal_vec)
