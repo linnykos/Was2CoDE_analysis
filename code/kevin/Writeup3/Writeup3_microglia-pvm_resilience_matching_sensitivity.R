@@ -2,6 +2,9 @@ rm(list=ls())
 load("~/kzlinlab/projects/subject-de/out/kevin/Writeup3/Writeup3_sea-ad_microglia_matching.RData")
 source("matching.R")
 
+specific_genes <- c("ZDHHC21", "ADGRD1", "BPGM", "CYCS")
+
+
 ntrials <- 1000
 neuropath <- df[,which(colnames(df) != "cognition")]
 lambda <- eigen(stats::cov(neuropath))$values[1]

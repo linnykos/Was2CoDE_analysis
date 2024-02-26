@@ -1,6 +1,7 @@
 rm(list=ls())
 library(openxlsx)
 library(optmatch)
+source("matching.R")
 
 metadata <- openxlsx::read.xlsx("~/kzlinlab/data/sea-ad/sea-ad_cohort_donor_metadata_082222.xlsx")
 rownames(metadata) <- metadata$Donor.ID
@@ -88,16 +89,19 @@ matching_res <- matching_func(
 # gene <- "SLC2A3"
 gene_names <- colnames(esvd_mat)
 
+avg_mat <- sapply(donor_list, function(idx_vec){
+  Matrix::colMeans(esvd_mat[idx_vec,])
+})
+avg_mat <- t(avg_mat)
+
 res_mat <- sapply(gene_names, function(gene){
   compute_wilcoxon(bg_matches = matching_res$bg_matches,
-                   donor_list = donor_list,
                    gene = gene,
-                   mat = esvd_mat,
+                   avg_mat = avg_mat,
                    signal_matches = matching_res$signal_matches)
 })
 
 res_mat <- res_mat[,order(res_mat["twosided",])]
-res_mat2 <- res_mat[,1:100]
 
 sun_sheet <- openxlsx::read.xlsx(
   xlsxFile = "~/kzlinlab/projects/subject-de/data/1-s2.0-S0092867423009716-mmc1.xlsx",
@@ -106,16 +110,22 @@ sun_sheet <- openxlsx::read.xlsx(
 sun_genes <- sort(unique(sun_sheet[which(sun_sheet[,"fdr"] <= 0.05),"row.names"]))
 sun_genes <- intersect(gene_names, sun_genes)
 
+hk_df <- read.csv("~/kzlinlab/projects/subject-de/data/Housekeeping_GenesHuman.csv", sep = ";")
+hk_genes <- hk_df[,"Gene.name"]
+hk_genes <- intersect(gene_names, hk_genes)
+
+
 res_mat2[,which(colnames(res_mat2) %in% sun_genes)]
+pvalue_vec <- res_mat["twosided",]
+candidate_genes <- colnames(res_mat)[order(abs(pvalue_vec - 0.001), decreasing = F)[1:100]]
+candidate_genes[candidate_genes %in% sun_genes]
+candidate_genes[candidate_genes %in% hk_genes]
 
 date_of_run <- Sys.time()
 session_info <- devtools::session_info()
 
-specific_genes <- c("BTNL9", "PNPLA3", "NPAS4", "SLC9A9")
-mat <- esvd_mat[,specific_genes]
-
 save(res_mat, matching_res,
-     df, donor_list, mat, specific_genes,
+     df, avg_mat, 
      date_of_run, session_info, 
      file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup3/Writeup3_sea-ad_microglia_matching.RData")
 

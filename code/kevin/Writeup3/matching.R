@@ -37,15 +37,12 @@ matching_func <- function(df,
 }
 
 compute_wilcoxon <- function(bg_matches,
-                             donor_list,
                              gene,
-                             mat,
+                             avg_mat,
                              signal_matches){
   # compute mean expression for each donor
-  expression_vec <- sapply(donor_list, function(idx){
-    mean(mat[idx,gene])
-  })
-  names(expression_vec) <- names(donor_list)
+  expression_vec <- avg_mat[,gene]
+  names(expression_vec) <- rownames(avg_mat)
   
   # compute the signal pairings
   signal_vec <- sapply(1:ncol(signal_matches), function(j){
