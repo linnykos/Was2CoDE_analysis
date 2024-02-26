@@ -29,11 +29,18 @@ col_vec <- sapply(col_vec, function(x){
   strsplit(x, split = "\\.")[[1]][2]
 })
 colnames(neuropath) <- col_vec
-neuropath <- scale(neuropath)
+
+neuropath_safe <- scale(neuropath)
+harmonized_scores_safe <- harmonized_scores
+metadata_safe <- metadata
 
 load("~/kzlinlab/projects/subject-de/out/kevin/Writeup2/Writeup2_sea-ad_microglia_preprocess.RData")
 load("~/kzlinlab/projects/subject-de/out/kevin/Writeup3/Writeup3_sea-ad_microglia_esvd.RData")
 esvd_mat <- tcrossprod(eSVD_obj$fit_Second$x_mat, eSVD_obj$fit_Second$y_mat) + tcrossprod(eSVD_obj$covariates[,"resilient_Resilient"], eSVD_obj$fit_Second$z_mat[,"resilient_Resilient"])
+
+neuropath <- neuropath_safe
+harmonized_scores <- harmonized_scores_safe
+metadata <- metadata_safe
 
 keep_vec <- rep(FALSE, length(SeuratObject::Cells(seurat_obj)))
 keep_vec[which(SeuratObject::Cells(seurat_obj) %in% rownames(esvd_mat))] <- TRUE
@@ -64,6 +71,7 @@ if(any(donor_numcell == 0)){
   metadata <- metadata[keep_donor,]
   harmonized_scores <- harmonized_scores[keep_donor,]
   neuropath <- neuropath[keep_donor,]
+  neuropath <- scale(neuropath)
   donor_list <- donor_list[keep_donor]
 }
 
@@ -104,23 +112,6 @@ res_mat <- sapply(gene_names, function(gene){
 res_df <- data.frame(t(res_mat))
 rownames(res_df) <- colnames(res_mat)
 res_df <- res_df[order(abs(res_df$test_stat), decreasing = T),]
-
-# sun_sheet <- openxlsx::read.xlsx(
-#   xlsxFile = "~/kzlinlab/projects/subject-de/data/1-s2.0-S0092867423009716-mmc1.xlsx",
-#   sheet = "Page 10.DEGs_AD"
-# ) 
-# sun_genes <- sort(unique(sun_sheet[which(sun_sheet[,"fdr"] <= 0.05),"row.names"]))
-# sun_genes <- intersect(gene_names, sun_genes)
-# 
-# hk_df <- read.csv("~/kzlinlab/projects/subject-de/data/Housekeeping_GenesHuman.csv", sep = ";")
-# hk_genes <- hk_df[,"Gene.name"]
-# hk_genes <- intersect(gene_names, hk_genes)
-
-# res_mat2[,which(colnames(res_mat2) %in% sun_genes)]
-# pvalue_vec <- res_mat["twosided",]
-# candidate_genes <- colnames(res_mat)[order(abs(pvalue_vec - 0.001), decreasing = F)[1:100]]
-# candidate_genes[candidate_genes %in% sun_genes]
-# candidate_genes[candidate_genes %in% hk_genes]
 
 date_of_run <- Sys.time()
 session_info <- devtools::session_info()
