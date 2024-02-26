@@ -59,27 +59,64 @@ compute_wilcoxon <- function(bg_matches,
     
     expression_vec[donor1] - expression_vec[donor2]
   })
-  bg_vec <- c(bg_vec, -bg_vec)
+  bg_vec <- abs(bg_vec)
   bg_vec <- bg_vec[!duplicated(bg_vec)]
   
-  wilcox_twosided <- stats::wilcox.test(
-    x = signal_vec,
-    y = bg_vec,
-    alternative = "two.sided"
-  )$p.value
-  wilcox_less <- stats::wilcox.test(
+  pval1 <- stats::t.test(
     x = signal_vec,
     y = bg_vec,
     alternative = "less"
   )$p.value
-  wilcox_greater <- stats::wilcox.test(
-    x = signal_vec,
+  pval2 <- stats::t.test(
+    x = -signal_vec,
     y = bg_vec,
-    alternative = "greater"
+    alternative = "less"
   )$p.value
   
-  c(twosided = wilcox_twosided,
-    less = wilcox_less,
-    greater = wilcox_greater)
+  pval <- 2*min(pval1, pval2)
+  if(pval1 < pval2){
+    side <- "pos"
+  } else {
+    side <- "neg"
+  }
+  
+  c(pval = pval,
+    side = side)
+  
+  # wilcox_twosided_neg <- stats::wilcox.test(
+  #   x = signal_vec,
+  #   y = bg_vec[bg_vec<0],
+  #   alternative = "two.sided"
+  # )$p.value
+  # wilcox_twosided_all <- stats::wilcox.test(
+  #   x = signal_vec,
+  #   y = bg_vec,
+  #   alternative = "two.sided"
+  # )$p.value
+  # 
+  # wilcox_less <- stats::wilcox.test(
+  #   x = signal_vec,
+  #   y = bg_vec,
+  #   alternative = "less"
+  # )$p.value
+  # wilcox_greater <- stats::wilcox.test(
+  #   x = signal_vec,
+  #   y = bg_vec,
+  #   alternative = "greater"
+  # )$p.value
+  # 
+  # c(twosided = wilcox_twosided,
+  #   less = wilcox_less,
+  #   greater = wilcox_greater)
+  
+  # ttest_res <- stats::t.test(
+  #   x = signal_vec,
+  #   y = bg_vec,
+  #   alternative = "two.sided"
+  # )
+  # val <- diff(ttest_res$estimate); names(val) <- NULL
+  # 
+  # c(pvalue = ttest_res$p.value,
+  #   stat = val)
   
 }

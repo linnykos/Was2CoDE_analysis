@@ -4,24 +4,20 @@ source("matching.R")
 
 specific_genes <- c("ZDHHC21", "ADGRD1", "BPGM", "CYCS")
 
-
 ntrials <- 1000
 neuropath <- df[,which(colnames(df) != "cognition")]
-lambda <- eigen(stats::cov(neuropath))$values[1]
+lambda <- sum(eigen(stats::cov(neuropath))$values)
 n <- nrow(neuropath)
 gamma_seq <- seq(0, 1000, length.out = 5)
 
-res_mat2 <- res_mat[,specific_genes]
-sign_vec <- sapply(specific_genes, function(gene){
-  if(res_mat2["less",gene] < 0.01) "less" else "greater"
-})
+res_df <- res_df[specific_genes,]
+sign_vec <- res_df[,"side"]
 
 for(gamma in gamma_seq){
   pvalue_mat <- matrix(NA, ncol = length(specific_genes), nrow = ntrials)
   colnames(pvalue_mat) <- specific_genes
   
   for(trial in 1:ntrials){
-    print(trial)
     if(trial %% floor(ntrials/10) == 0) cat('*')
     
     set.seed(trial)
@@ -37,18 +33,20 @@ for(gamma in gamma_seq){
     
     res_mat <- sapply(specific_genes, function(gene){
       compute_wilcoxon(bg_matches = matching_res$bg_matches,
-                       donor_list = donor_list,
                        gene = gene,
-                       mat = mat,
+                       avg_mat = avg_mat,
                        signal_matches = matching_res$signal_matches)
     })
     
-    tmp <- sapply(1:ncol(res_mat), function(j){
-      sign_true <- sign_vec[j]
-      sign_opposite <- setdiff(c("less", "greater"), sign_true)
-      
-      if(res_mat[sign_true,j] > res_mat[sign_opposite,j]) return(1)
-      res_mat["twosided",j]
+    res_df <- data.frame(
+      pval = as.numeric(res_mat["pval",]),
+      side = res_mat["side",]
+    )
+    rownames(res_df) <- colnames(res_mat)
+    
+    tmp <- sapply(1:nrow(res_df), function(j){
+      if(res_df[j,"side"] != sign_vec[j]) return(1)
+      res_df[j,"pval"]
     })
     names(tmp) <- specific_genes
     
