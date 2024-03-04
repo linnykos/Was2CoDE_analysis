@@ -12,7 +12,9 @@ count_matrix = SeuratObject::LayerData(ss_data_norm,
                                        layer = "counts",
                                        assay = "RNA")
 meta_cell    = ss_data_norm@meta.data
-meta_ind     <- unique(data.frame("Individual" = ss_data_norm$Pt_ID, 
+meta_cell$individual <- meta_cell$Pt_ID
+meta_cell$cell_id <- row.names(meta_cell) 
+meta_ind     <- unique(data.frame("individual" = ss_data_norm$Pt_ID, 
                  "Study_Designation" = ss_data_norm$Study_Designation, 
                  "CognitiveStatus" = ss_data_norm$CognitiveStatus, 
                  "Sex" = ss_data_norm$Sex,
@@ -78,7 +80,7 @@ var_per_cell  =  "nCount_SCT" # [[KL: This is the read depth, don't worry about 
 ############
 
 count_matrix_subset <- count_matrix[1:10,]
-
+count_matrix_subset = as.matrix(count_matrix_subset)
 dist1 = ideas_dist(count_matrix_subset, meta_cell, meta_ind, 
                    var_per_cell, var2test, var2test_type, 
                    d_metric = "Was", fit_method = "nb")
