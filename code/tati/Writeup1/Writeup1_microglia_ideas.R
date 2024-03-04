@@ -1,7 +1,7 @@
 rm(list=ls())
 
 library(Seurat)
-
+library(ideas)
 load("~/kzlinlab/projects/subject-de/out/kevin/preprocess/processed.RData") 
 # the loaded dataset is called "ss_data_norm"
 set.seed(10)
@@ -12,7 +12,26 @@ count_matrix = SeuratObject::LayerData(ss_data_norm,
                                        layer = "counts",
                                        assay = "RNA")
 meta_cell    = ss_data_norm@meta.data
-meta_ind     = # the main one to fill in. It should include the following: (one row per Pt_ID)
+meta_ind     <- unique(data.frame("Individual" = ss_data_norm$Pt_ID, 
+                 "Study_Designation" = ss_data_norm$Study_Designation, 
+                 "CognitiveStatus" = ss_data_norm$CognitiveStatus, 
+                 "Sex" = ss_data_norm$Sex,
+                 "genotype_APOE" = ss_data_norm$genotype_APOE,
+                 "PMI" = ss_data_norm$PMI,
+                 "BrainPh" = ss_data_norm$BrainPh,
+                 "Race" = ss_data_norm$Race ,
+                 "FreshBrainWeight" = ss_data_norm$FreshBrainWeight,
+                 "NIA_AA" = ss_data_norm$NIA_AA,
+                 "ThalPhase" = ss_data_norm$ThalPhase,
+                 "BraakStage" = ss_data_norm$BraakStage,
+                 "CERAD" = ss_data_norm$CERAD,
+                 "LATEScore" = ss_data_norm$LATEScore,
+                 "SeqBatch" = ss_data_norm$SeqBatch,
+                 "coded_Age" = ss_data_norm$coded_Age,
+                 row.names=NULL
+                 ))
+
+  # the main one to fill in. It should include the following: (one row per Pt_ID)
 #   Study_Designation
 # CognitiveStatus
 # Sex
@@ -37,24 +56,24 @@ var2test_type = "binary" # [[KL: In general, keep this as "binary"]]
 var_per_cell  =  "nCount_SCT" # [[KL: This is the read depth, don't worry about this. I will tell you what to put here]]
 
 ###########
-
-unique(ss_data_norm$Pt_ID)
-length(unique(ss_data_norm$Pt_ID))
-
-dim(count_matrix)
-count_matrix[1:5,1:5]
-
-str_to_factor_vec <- c("Study_Designation", "Sex", "genotype_APOE", "Race", "SeqBatch", "NIA_AA")
-for(variable in str_to_factor_vec){
-  ss_data_norm@meta.data[,variable] <- factor(ss_data_norm@meta.data[,variable])
-}
-meta_cell    = ss_data_norm@meta.data
-head(meta_cell)
-summary(meta_cell)
-
-table(ss_data_norm$Pt_ID,ss_data_norm$CognitiveStatus)
-table(ss_data_norm$Pt_ID,ss_data_norm$Sex)
-table(ss_data_norm$CognitiveStatus,ss_data_norm$Sex)
+# 
+# unique(ss_data_norm$Pt_ID)
+# length(unique(ss_data_norm$Pt_ID))
+# 
+# dim(count_matrix)
+# count_matrix[1:5,1:5]
+# 
+# str_to_factor_vec <- c("Study_Designation", "Sex", "genotype_APOE", "Race", "SeqBatch", "NIA_AA")
+# for(variable in str_to_factor_vec){
+#   ss_data_norm@meta.data[,variable] <- factor(ss_data_norm@meta.data[,variable])
+# }
+# meta_cell    = ss_data_norm@meta.data
+# head(meta_cell)
+# summary(meta_cell)
+# 
+# table(ss_data_norm$Pt_ID,ss_data_norm$CognitiveStatus)
+# table(ss_data_norm$Pt_ID,ss_data_norm$Sex)
+# table(ss_data_norm$CognitiveStatus,ss_data_norm$Sex)
 
 ############
 
