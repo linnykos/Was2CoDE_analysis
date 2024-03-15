@@ -37,18 +37,30 @@ str(meta_ind)
 dmy_SD<- dummyVars("~Study_Designation", data = meta_ind)
 dmy_SD <- data.frame(predict(dmy_SD, newdata = meta_ind))
 head(dmy_SD)
+dmy_SD<- dmy_SD[,-which.max(colSums(dmy_SD)),drop=FALSE]
 str(meta_ind)
 dmy_Sex <- dummyVars("~Sex", data = meta_ind)
 dmy_Sex <- data.frame(predict(dmy_Sex, newdata = meta_ind))
+dmy_Sex<- dmy_Sex[,-which.max(colSums(dmy_Sex)),drop=FALSE]
 head(dmy_Sex)
 dmy_Race <- dummyVars("~Race", data = meta_ind)
 dmy_Race <- data.frame(predict(dmy_Race, newdata = meta_ind))
+for(j in 1:ncol(dmy_Race)){
+  dmy_Race[which(is.na(dmy_Race[,j])),j] <- 0
+}
+dmy_Race<- dmy_Race[,-which.max(colSums(dmy_Race)),drop=FALSE]
 head(dmy_Race)
 dmy_gen <- dummyVars("~ genotype_APOE", data = meta_ind)
 dmy_gen <- data.frame(predict(dmy_gen, newdata = meta_ind))
+dmy_gen<- dmy_gen[,-which.max(colSums(dmy_gen)),drop=FALSE]
 head(dmy_gen)
+meta_ind$SeqBatch <- factor(meta_ind$SeqBatch)
 dmy_SB<- dummyVars("~SeqBatch", data = meta_ind)
 dmy_SB <- data.frame(predict(dmy_SB, newdata = meta_ind))
+for(j in 1:ncol(dmy_SB)){
+  dmy_SB[which(is.na(dmy_SB[,j])),j] <- 0
+}
+dmy_SB<- dmy_SB[,-which.max(colSums(dmy_SB)),drop=FALSE]
 head(dmy_SB)
 
 meta_ind     <- unique(data.frame("individual" = ss_data_norm$Pt_ID,
@@ -69,6 +81,7 @@ meta_ind     <- unique(data.frame("individual" = ss_data_norm$Pt_ID,
                                   "coded_Age" = ss_data_norm$coded_Age,
                                   row.names=NULL
                                   ))
+dim(meta_ind)
 
 # meta_ind     <- unique(data.frame("individual" = ss_data_norm$Pt_ID, 
 #                                   "CognitiveStatus" = ss_data_norm$CognitiveStatus,
@@ -82,6 +95,12 @@ zz <- as.character(meta_ind[,"coded_Age"])
 zz[zz == "90+"] <- "90"
 meta_ind[,"coded_Age"] <- as.numeric(zz)
 summary(meta_ind)
+
+table(is.na(meta_ind))
+for(j in 1:ncol(meta_ind)){
+  if(!is.numeric(meta_ind[,j])) next()
+  meta_ind[which(is.na(meta_ind[,j])),j] <- stats::median(meta_ind[,j], na.rm = T)
+}
 
 ###########
 # a quick side-demo on how factors-to-numerics can cause a lot of bugs
@@ -116,7 +135,8 @@ as.numeric(as.character(tmp))
 
 
 var2test      = "CognitiveStatus"
-var2adjust    =  c("Sex", "Race", "SeqBatch", "coded_Age") # [[KL: Thes are covariates you want to adjust for. It's not always obvious what to include here]]
+var2adjust    =  setdiff(colnames(meta_ind), c("individual", "CognitiveStatus"))
+# c("Sex", "Race", "SeqBatch", "coded_Age") # [[KL: Thes are covariates you want to adjust for. It's not always obvious what to include here]]
 # var2adjust = "coded_Age"
 var2test_type = "binary" # [[KL: In general, keep this as "binary"]]
 var_per_cell  =  "nCount_SCT" # [[KL: This is the read depth, don't worry about this. I will tell you what to put here]]
@@ -152,6 +172,11 @@ dist1 = ideas_dist(count_matrix_subset, meta_cell, meta_ind,
 pval_ideas = permanova(dist1, meta_ind, var2test, var2adjust, 
                        var2test_type, n_perm=999, r.seed=903)
 head(pval_ideas)
+
+##################
+
+zz = meta_ind[,var2adjust]
+
 
 
 date_of_run <- Sys.time()
