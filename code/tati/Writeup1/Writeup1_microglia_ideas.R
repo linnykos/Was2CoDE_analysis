@@ -3,6 +3,7 @@ rm(list=ls())
 library(Seurat)
 library(ideas)
 library(caret)
+library(ggplot2)
 load("~/kzlinlab/projects/subject-de/out/kevin/preprocess/processed.RData") 
 # the loaded dataset is called "ss_data_norm"
 set.seed(10)
@@ -113,7 +114,7 @@ tmp <- factor(c("sadf", "egg", "egg", "sadf", "egg", "potato", "statistics", "sa
 as.numeric(tmp) # gives you numbers according to the levels
 as.numeric(as.character(tmp))
 
-###########
+  ###########
 
   # the main one to fill in. It should include the following: (one row per Pt_ID)
 #   Study_Designation
@@ -163,11 +164,20 @@ var_per_cell  =  "nCount_SCT" # [[KL: This is the read depth, don't worry about 
 
 ############
 
-count_matrix_subset <- count_matrix[1:10,]
-count_matrix_subset = as.matrix(count_matrix_subset)
-dist1 = ideas_dist(count_matrix_subset, meta_cell, meta_ind, 
+# count_matrix_subset <- count_matrix[1:10,]
+# count_matrix_subset = as.matrix(count_matrix_subset)
+# dist1 = ideas_dist(count_matrix_subset, meta_cell, meta_ind, 
+#                    var_per_cell, var2test, var2test_type, 
+#                    d_metric = "Was", fit_method = "kde")
+
+count_matrix <- as.matrix(count_matrix)
+
+dist1 = ideas_dist(count_matrix, meta_cell, meta_ind, 
                    var_per_cell, var2test, var2test_type, 
                    d_metric = "Was", fit_method = "kde")
+
+save(dist1,
+     file = "~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideas_tmp.RData")
 
 pval_ideas = permanova(dist1, meta_ind, var2test, var2adjust, 
                        var2test_type, n_perm=999, r.seed=903)
@@ -176,8 +186,6 @@ head(pval_ideas)
 ##################
 
 zz = meta_ind[,var2adjust]
-
-
 
 date_of_run <- Sys.time()
 session_info <- devtools::session_info()
