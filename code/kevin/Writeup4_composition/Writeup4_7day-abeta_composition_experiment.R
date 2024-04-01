@@ -9,11 +9,17 @@ set.seed(10)
 # https://github.com/statdivlab/radEmu_supplementary/blob/main/fig456/0-process.R
 # formatting the data
 Y <- table(ss_data_norm$Sample_ID, ss_data_norm$SCT_snn_res.0.5)
-Y <- data.frame(Y)
+colnames(Y) <- paste0("cluster_", 1:ncol(Y))
+rowname_vec <- rownames(Y)
+Y <- as.data.frame(apply(as.matrix.noquote(Y),2,as.numeric))
+Y <- cbind(rowname_vec, Y)
+colnames(Y)[1] <- "SampleID"
 
 write.csv(Y, 
-          row.names = TRUE,
+          row.names = FALSE,
           file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup4/Writeup4_7day-abeta_composition.csv")
+
+# Y2 <- read.csv("~/kzlinlab/projects/subject-de/out/kevin/Writeup4/Writeup4_7day-abeta_composition.csv")
 
 group_list <- list(
   het_7d_abeta = "het_7d_abeta_br1_tr2",
