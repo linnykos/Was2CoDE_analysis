@@ -10,7 +10,7 @@ ideas_dist <-
            empirical_n = 1024) {
     # -----------------------------------------------------------------
     # TZ:
-    # Line12-35: initializes the var2test_type, d_metric, 
+    # initializes the var2test_type, d_metric, 
     # and fit_method parameters, validates the structure and content of 
     # meta_cell and meta_ind, which are 2 data frames,
     # checking for necessary columns like cell_id, individual, and var_per_cell
@@ -36,30 +36,8 @@ ideas_dist <-
       meta_ind = as.data.frame(meta_ind)
     }
 
-    if (fit_method == "zinb"){
-      per_cell_adjust = per_cell_adjust[1]
-    }
-    
-    if (fit_method == "dca_direct"){
-      # -----------------------------------------------------------------
-      # check the input data of count_input, when fit_method == dca_direct
-      # -----------------------------------------------------------------
-      if (length(count_input) != 3){
-        stop("when fit_method is dca_direct, the count_input should be a 
-             list of 3 matrices")
-      }
-      # -----------------------------------------------------------------
-      # check cell_id order of meta_cell, when fit_method == dca_direct
-      # -----------------------------------------------------------------
-      if(any(meta_cell$cell_id != colnames(count_input[[1]]))){
-        stop("cell_id in meta_cell do not match colnames of mean_norm 
-             matrix\n")
-      }
-      
-    }else{
       # -----------------------------------------------------------------
       # TZ:
-      # line 56-148:
       # validates the structure and content of meta_cell and meta_ind, 
       # checking for necessary columns including cell_id, individual,
       # and the variable per cell (var_per_cell). 
@@ -122,7 +100,7 @@ ideas_dist <-
         stop("cell_id in meta_cell do not match colnames of count_matrix\n")
       }
       
-    }
+    
 
     # -----------------------------------------------------------------
     # check other aspects of meta_cell
@@ -165,148 +143,9 @@ ideas_dist <-
       stop(paste(str1, "so they must be positive."))
     }
     
-    # -----------------------------------------------------------------
-    # estimate distance across individuals using zinb
-    # -----------------------------------------------------------------
     
-    extract_zinb_par <- function(zb_fit, cov_value){
-      mean_a = exp(t(zb_fit$logmean) %*% c(1, cov_value))
-      disp_a = zb_fit$dispersion
-      drop_a = exp(t(zb_fit$logitdropout) %*% c(1, cov_value))
-      drop_a = drop_a/(1 + drop_a)
-      c(mean_a, disp_a, drop_a)
-    }
-    
-    i_g = 0
-    
-    if(fit_method == "zinb"){
-      message("estimating distribution for each gene and each individaul by zinb\n")
-      cov_value = apply(log10(meta_cell[,var_per_cell,drop=FALSE]), 2, median)
-      #cov_value = apply(log10(meta_cell[, ..var_per_cell]), 2, median)
-      zinb_fit=foreach (i_g = 1:n_gene) %dorng% {
-        zinb_fit1 = list()
-        # collapose counts per individual and estimate ZINB
-        for (j in 1:nrow(meta_ind)) {
-          cur_ind = meta_ind$individual[j]
-          w2use   = which(meta_cell$individual == cur_ind)
-          dat_ind = c(count_matrix[i_g, w2use])
-          #z       = log10(meta_cell[w2use, ..var_per_cell])
-          z       = log10(meta_cell[w2use, var_per_cell, drop=FALSE])
-          zinb_fit1[[j]] = fit_zinb(x=dat_ind, z=z, per_cell_adjust)
-        }
-        names(zinb_fit1) = as.character(meta_ind$individual)
-        zinb_fit1
-      }
-      
-      length(zinb_fit)
-      length(zinb_fit[[1]])
-      zinb_fit[[1]][[1]]
-      
-      dist_array_list=foreach (i = 1:n_gene) %dorng% {
-        gene_i_fit  = zinb_fit[[i]]
-        
-        dist_array1 = array(NA, dim=rep(nrow(meta_ind), 2))
-        rownames(dist_array1) = meta_ind$individual
-        colnames(dist_array1) = meta_ind$individual
-        diag(dist_array1) = 0
-        
-        for (j_a in 1:(nrow(meta_ind)-1)) {
-          if(is.na(gene_i_fit[[j_a]]$logmean[1])){next }
-          par_a = extract_zinb_par(gene_i_fit[[j_a]], cov_value)
-          # occasionally, the mean value fit can be very large
-          if(par_a[1] > 1000){next }
-          
-          for (j_b in (j_a+1):nrow(meta_ind)) {
-            if(is.na(gene_i_fit[[j_b]]$logmean[1])){next }
-            par_b = extract_zinb_par(gene_i_fit[[j_b]], cov_value)
-            # occasionally, the mean value fit can be very large
-            if(par_b[1] > 1000){next }
-            
-            dist_array1[j_a, j_b] = tryCatch(
-              divergence(par_a, par_b, d_metric = d_metric, 
-                         fit_method = fit_method), 
-              error = function(e) { NA }
-            )
-            
-            dist_array1[j_b, j_a] = dist_array1[j_a, j_b]
-          }
-        }
-        
-        dist_array1
-      }
-    }
-    
-    
-    # -----------------------------------------------------------------
-    # estimate distance across individuals using nb
-    # -----------------------------------------------------------------  
-    
-    extract_nb_par <- function(nb_fit, cov_value){
-      mean_a = exp(t(nb_fit$logmean) %*% c(1, cov_value))
-      disp_a = nb_fit$dispersion
-      c(mean_a, disp_a)
-    }
-    
-    
-    if(fit_method == "nb"){
-      message("estimating distribution for each gene and each individual by nb\n")
-      cov_value = apply(log10(meta_cell[,var_per_cell,drop=FALSE]), 2, median)
-      #cov_value = apply(log10(meta_cell[, ..var_per_cell]), 2, median)
-      nb_fit=foreach (i_g = 1:n_gene) %dorng% {
-        nb_fit1 = list()
-        # collapose counts per individual and estimate NB
-        for (j in 1:nrow(meta_ind)) {
-          cur_ind = meta_ind$individual[j]
-          w2use   = which(meta_cell$individual == cur_ind)
-          dat_ind = c(count_matrix[i_g, w2use])
-          #z       = log10(meta_cell[w2use, ..var_per_cell])
-          z       = log10(meta_cell[w2use, var_per_cell, drop=FALSE])
-          nb_fit1[[j]] = fit_nb(x=dat_ind, z=z)
-        }
-        names(nb_fit1) = as.character(meta_ind$individual)
-        nb_fit1
-      }
-      
-      length(nb_fit)
-      length(nb_fit[[1]])
-      nb_fit[[1]][[1]]
-      
-      dist_array_list=foreach (i = 1:n_gene) %dorng% {
-        gene_i_fit  = nb_fit[[i]]
-        
-        dist_array1 = array(NA, dim=rep(nrow(meta_ind), 2))
-        rownames(dist_array1) = meta_ind$individual
-        colnames(dist_array1) = meta_ind$individual
-        diag(dist_array1) = 0
-        
-        for (j_a in 1:(nrow(meta_ind)-1)) {
-          if(is.na(gene_i_fit[[j_a]]$logmean[1])){next }
-          par_a = extract_nb_par(gene_i_fit[[j_a]], cov_value)
-          # occasionally, the mean value fit can be very large
-          if(par_a[1] > 1000){next }
-          
-          for (j_b in (j_a+1):nrow(meta_ind)) {
-            if(is.na(gene_i_fit[[j_b]]$logmean[1])){next }
-            par_b = extract_nb_par(gene_i_fit[[j_b]], cov_value)
-            # occasionally, the mean value fit can be very large
-            if(par_b[1] > 1000){next }
-            
-            dist_array1[j_a, j_b] = tryCatch(
-              divergence(par_a, par_b, d_metric = d_metric, 
-                         fit_method = fit_method), 
-              error = function(e) { NA }
-            )
-            
-            dist_array1[j_b, j_a] = dist_array1[j_a, j_b]
-          }
-        }
-        
-        dist_array1
-      }
-    }
     # -----------------------------------------------------------------
     # TZ:
-    # line 293-341:
     # estimates the distribution(distance) for each gene and individual 
     # using Kernel Density Estimation (KDE)
     # -----------------------------------------------------------------
@@ -368,155 +207,10 @@ ideas_dist <-
         dist_array1
       }
     }
-    
-    # -----------------------------------------------------------------
-    # estimate distance across individuals using combined dca outputs
-    # -----------------------------------------------------------------
-    if(fit_method == "dca_direct"){
-      message("estimating distribution for each gene and each individual by dca_direct\n")
-      dca_mean = count_input[[1]]
-      dca_disp = count_input[[2]]
-      dca_pi   = count_input[[3]]
-      
-      gene_ids = rownames(dca_mean)
-      n_gene   = nrow(dca_mean)
-      
-      # %dopar% to %dorng%, may not be necessary
-      dca_mass = foreach (i_g = 1:n_gene) %dorng% { 
-        dca_mass1 = list()
-        
-        for (j in 1:nrow(meta_ind)) {
-          cur_ind = meta_ind$individual[j]
-          w2use   = which(meta_cell$individual == cur_ind)
-          mean_ind = c(dca_mean[i_g, w2use])
-          disp_ind = c(dca_disp[i_g, w2use])
-          pi_ind = c(dca_pi[i_g, w2use])
-          # number of cells for the current individual
-          ncell_ind = length(w2use) 
-          range_list = rep(0,  ncell_ind)
-          # get the max for the range of distributions within the current ind
-          for (k in 1: ncell_ind){
-            range_list[k] = 
-              qnbinom(p = max(0, (quantile - pi_ind[k])/(1 - pi_ind[k])),
-                      mu = mean_ind[k], size = disp_ind[k])
-          }
-          range_max = max(range_list)
-          mass_matrix = matrix(ncol = (range_max + 1), nrow = ncell_ind)
-          for (k in 1:ncell_ind){
-            mass_matrix[k, ] = emdbook::dzinbinom(
-              0:range_max,
-              mu = mean_ind[k],
-              size = disp_ind[k],
-              zprob = pi_ind[k],
-              log = FALSE
-            )
-          }
-          
-          dca_mass1[[j]] = apply(mass_matrix, 2, mean)
-        }
-        names(dca_mass1) = as.character(meta_ind$individual)
-        dca_mass1
-      }
-      
-      length(dca_mass)
-      length(dca_mass[[1]])
-      dca_mass[[1]][[1]]
-      
-      dist_array_list=foreach (i = 1:n_gene) %dorng% {
-        gene_i_mass  = dca_mass[[i]]
-        
-        dist_array1 = array(NA, dim=rep(nrow(meta_ind), 2))
-        rownames(dist_array1) = meta_ind$individual
-        colnames(dist_array1) = meta_ind$individual
-        diag(dist_array1) = 0
-        
-        for (j_a in 1:(nrow(meta_ind)-1)) {
-          # unscaled
-          mass_a = gene_i_mass[[j_a]]
-          for (j_b in (j_a+1):nrow(meta_ind)) {
-            mass_b = gene_i_mass[[j_b]]
-            
-            dist_array1[j_a, j_b] = tryCatch(
-              divergence(mass_a, mass_b, d_metric = d_metric, 
-                         fit_method = fit_method), 
-              error = function(e) { NA }
-            )
-            
-            dist_array1[j_b, j_a] = dist_array1[j_a, j_b]
-          }
-        }
-        
-        dist_array1
-      }
-    }
-    
-    # -----------------------------------------------------------------
-    # estimate distance across individuals using combined saver outputs
-    # -----------------------------------------------------------------
-    if(fit_method == "saver_direct"){
-      message("estimating distribution for each gene and each individual by saver_direct\n")
-      saver_mean = count_input
-
-      gene_ids = rownames(saver_mean)
-      n_gene   = nrow(saver_mean)
-      
-      # %dopar% to %dorng%, may not be necessary
-      saver_mass = foreach (i_g = 1:n_gene) %dorng% { 
-        saver_mass1 = list()
-        
-        for (j in 1:nrow(meta_ind)) {
-          cur_ind = meta_ind$individual[j]
-          w2use   = which(meta_cell$individual == cur_ind)
-          mean_ind = c(saver_mean[i_g, w2use])
-          # number of cells for the current individual
-          ncell_ind = length(w2use) 
-          range_max = qpois(p = max(0, quantile), lambda = max(mean_ind))
-          
-          mass_matrix = matrix(ncol = (range_max + 1), nrow = ncell_ind)
-          for (k in 1:ncell_ind){
-            mass_matrix[k, ] = dpois(0:range_max, lambda=mean_ind[k])
-          }
-          
-          saver_mass1[[j]] = apply(mass_matrix, 2, mean)
-        }
-        names(saver_mass1) = as.character(meta_ind$individual)
-        saver_mass1
-      }
-      
-      length(saver_mass)
-      length(saver_mass[[1]])
-      saver_mass[[1]][[1]]
-      
-      dist_array_list=foreach (i = 1:n_gene) %dorng% {
-        gene_i_mass  = saver_mass[[i]]
-        
-        dist_array1 = array(NA, dim=rep(nrow(meta_ind), 2))
-        rownames(dist_array1) = meta_ind$individual
-        colnames(dist_array1) = meta_ind$individual
-        diag(dist_array1) = 0
-        
-        for (j_a in 1:(nrow(meta_ind)-1)) {
-          # unscaled
-          mass_a = gene_i_mass[[j_a]]
-          for (j_b in (j_a+1):nrow(meta_ind)) {
-            mass_b = gene_i_mass[[j_b]]
-            
-            dist_array1[j_a, j_b] = tryCatch(
-              divergence(mass_a, mass_b, d_metric = d_metric, 
-                         fit_method = fit_method), 
-              error = function(e) { NA }
-            )
-            
-            dist_array1[j_b, j_a] = dist_array1[j_a, j_b]
-          }
-        }
-        
-        dist_array1
-      }
-    }
+   
     # -----------------------------------------------------------------
     # TZ:
-    # line 490-end:
+    # conclusion
     # compiles the pairwise distances between individuals for each gene 
     # into a 3-dimensional array (dist_array).  
     # -----------------------------------------------------------------
