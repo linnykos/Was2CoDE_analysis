@@ -1,24 +1,16 @@
 
-# per_cell_adjust = c("NB", "both"); quantile = 0.975; empirical_n = 1024
-
 ideas_dist <-
   function(count_input, meta_cell, meta_ind, var_per_cell, var2test, 
            var2test_type = c("binary", "continuous"), 
-           d_metric = c("Was", "JSD"), 
-           fit_method = c("nb", "zinb", "kde", "dca_direct", "saver_direct"), 
            per_cell_adjust = c("NB", "both"), quantile = 0.975,
-           empirical_n = 1024) {
+           empirical_n = 1024) { #Do I delete empirical_n?
     # -----------------------------------------------------------------
     # TZ:
-    # initializes the var2test_type, d_metric, 
-    # and fit_method parameters, validates the structure and content of 
+    # initializes the var2test_type, validates the structure and content of 
     # meta_cell and meta_ind, which are 2 data frames,
     # checking for necessary columns like cell_id, individual, and var_per_cell
     # ----------------------------------------------------------------- 
     var2test_type   = var2test_type[1]
-    d_metric        = d_metric[1]
-    fit_method      = fit_method[1]
-    
     
     if(!(is.data.frame(meta_cell))){
       stop("meta_cell should be a data.frame\n")
@@ -46,17 +38,13 @@ ideas_dist <-
       # aligning the gene expression data with the corresponding metadata 
       # for each cell and individual.
       # -----------------------------------------------------------------
-      
-      # -----------------------------------------------------------------
-      # check the input data of count_input,when fit_method != dca_direct
-      # -----------------------------------------------------------------
+
       count_matrix = count_input
       
       if(! is.matrix(count_matrix)){
         stop("count_matrix is not a matrix\n")
       }
       
-      if( fit_method %in% c("nb", "zinb", "kde")){
         check_count <- function(v){any(v != round(v) | v < 0)}
         not_count = apply(count_matrix, 1, check_count)
         
@@ -65,7 +53,7 @@ ideas_dist <-
           str1 = sprintf("%s, violation in row %d\n", str1, which(not_count)[1])
           stop(str1)
         }
-      }
+      
       
       n_cell = ncol(count_matrix)
       n_gene = nrow(count_matrix)
@@ -92,15 +80,10 @@ ideas_dist <-
       message(sprintf("the count_matrix includes %d genes in %d cells\n", 
                       n_gene, n_cell))
       
-      # -----------------------------------------------------------------
-      # check cell_id order of meta_cell, when fit_method != dca_direct
-      # -----------------------------------------------------------------
-      
+
       if(any(meta_cell$cell_id != colnames(count_matrix))){
         stop("cell_id in meta_cell do not match colnames of count_matrix\n")
       }
-      
-    
 
     # -----------------------------------------------------------------
     # check other aspects of meta_cell
@@ -143,22 +126,18 @@ ideas_dist <-
       stop(paste(str1, "so they must be positive."))
     }
     
-    
     # -----------------------------------------------------------------
     # TZ:
     # estimates the distribution(distance) for each gene and individual 
     # using Kernel Density Estimation (KDE)
     # -----------------------------------------------------------------
-    
-    # -----------------------------------------------------------------
-    # estimate distance across individuals using kde
-    # -----------------------------------------------------------------
-    if (fit_method == "kde") {
+      
       message("estimating distribution for each gene and each individual by kde\n")
       cov_value = apply(log10(meta_cell[,var_per_cell,drop=FALSE]), 2, median)
       #cov_value = apply(log10(meta_cell[, ..var_per_cell]), 2, median)
       dat_res=foreach (i_g = 1:n_gene) %dorng% {
         res_ig = list()
+        
         # For loop 1:
         # For each gene (i_g), the function iterates over each individual 
         # in meta_ind, extracting the corresponding expression data 
@@ -166,17 +145,19 @@ ideas_dist <-
         # then applies a log transformation, 
         # preprocessing to make the data more normally distributed.
         # outputing the residuals that we want
-        
-        for (j in 1:nrow(meta_ind)) {
-          ind_j = meta_ind$individual[j] #donor's ID
-          w2use = which(meta_cell$individual == ind_j) 
-          #grab all indexes associated with this donor
-          base_j = c(t(lm_j$coefficients) %*% c(1, cov_value))
-          res_ig[[j]] = lm_j$resid + base_j
-        } #set up a linear reression log10(dat_j+const)~log10(library size)
-        names(res_ig) = as.character(meta_ind$individual)
-        res_ig #output the residual(*) and intercept
+      
+      # For each gene (i_g), iterate over each individual in meta_ind
+      for (j in 1:nrow(meta_ind)) {
+        ind_j = meta_ind$individual[j]  # donor's ID
+        w2use = which(meta_cell$individual == ind_j)  # grab all indexes associated with this donor
+        # Directly use the count matrix rows corresponding to this gene and columns for the donor
+        dat_j = count_matrix[i_g, w2use]
+        # Apply log transformation 
+        res_ig[[j]] = log10(dat_j + 1)  #adjust constant based on data scale?
       }
+      names(res_ig) = as.character(meta_ind$individual)
+      res_ig  #output the residual(*) and intercept
+  }
       
       dist_array_list=foreach (i_g = 1:n_gene) %dorng% {
         
@@ -185,7 +166,17 @@ ideas_dist <-
         rownames(dist_array1) = meta_ind$individual
         colnames(dist_array1) = meta_ind$individual
         diag(dist_array1) = 0
-        
+ 
+        # define divergence() using wasserstein1d()
+        divergence <- function(a, b, p=2, wa = NULL, wb = NULL) {
+            return(list(
+              distance = wasserstein1d(a, b, p = p, wa = wa, wb = wb),
+              location = (mean(a)-mean(b))^2,
+              size = (sd(a) - sd(b))^2,
+              shape = distance-location-size
+          ))
+        }
+          
         for (j_a in 1:(nrow(meta_ind)-1)) {
           res_a = res_ig[[j_a]]
           # For loop 2:
@@ -196,8 +187,7 @@ ideas_dist <-
             res_b = res_ig[[j_b]]
             
             dist_array1[j_a, j_b] = tryCatch(
-              divergence(res_a, res_b, d_metric = d_metric,  
-                         fit_method = fit_method, empirical_n = empirical_n), #distance calculation 
+              divergence(res_a, res_b), #distance calculation 
               error = function(e) { NA }
             )
             
@@ -206,7 +196,7 @@ ideas_dist <-
         }
         dist_array1
       }
-    }
+    
    
     # -----------------------------------------------------------------
     # TZ:
