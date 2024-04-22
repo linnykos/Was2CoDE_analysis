@@ -6,34 +6,36 @@ library(caret)
 library(ggplot2)
 load("~/kzlinlab/projects/subject-de/out/kevin/preprocess/processed.RData") 
 # the loaded dataset is called "ss_data_norm"
+source("~/kzlinlab/projects/subject-de/git/subject-de_tati/code/tati/Writeup1/IDEAS_dist_modified.R")
+
 set.seed(10)
 
 # https://satijalab.org/seurat/articles/essential_commands.html
 count_matrix = SeuratObject::LayerData(ss_data_norm,
                                        features = Seurat::VariableFeatures(ss_data_norm),
-                                       layer = "counts",
-                                       assay = "RNA")
+                                       layer = "scale.data",
+                                       assay = "integrated")
 meta_cell    = ss_data_norm@meta.data
 meta_cell$individual <- meta_cell$Pt_ID
 meta_cell$cell_id <- row.names(meta_cell) 
 meta_ind     <- data.frame("individual" = ss_data_norm$Pt_ID,
-                 "Study_Designation" = ss_data_norm$Study_Designation,
-                 "CognitiveStatus" = ss_data_norm$CognitiveStatus,
-                 "Sex" = ss_data_norm$Sex,
-                 "genotype_APOE" = ss_data_norm$genotype_APOE,
-                 "PMI" = ss_data_norm$PMI,
-                 "BrainPh" = ss_data_norm$BrainPh,
-                 "Race" = ss_data_norm$Race ,
-                 "FreshBrainWeight" = ss_data_norm$FreshBrainWeight,
-                 "NIA_AA" = ss_data_norm$NIA_AA,
-                 "ThalPhase" = ss_data_norm$ThalPhase,
-                 "BraakStage" = ss_data_norm$BraakStage,
-                 "CERAD" = ss_data_norm$CERAD,
-                 "LATEScore" = ss_data_norm$LATEScore,
-                 "SeqBatch" = ss_data_norm$SeqBatch,
-                 "coded_Age" = ss_data_norm$coded_Age,
-                 row.names=NULL
-                 )
+                           "Study_Designation" = ss_data_norm$Study_Designation,
+                           "CognitiveStatus" = ss_data_norm$CognitiveStatus,
+                           "Sex" = ss_data_norm$Sex,
+                           "genotype_APOE" = ss_data_norm$genotype_APOE,
+                           "PMI" = ss_data_norm$PMI,
+                           "BrainPh" = ss_data_norm$BrainPh,
+                           "Race" = ss_data_norm$Race ,
+                           "FreshBrainWeight" = ss_data_norm$FreshBrainWeight,
+                           "NIA_AA" = ss_data_norm$NIA_AA,
+                           "ThalPhase" = ss_data_norm$ThalPhase,
+                           "BraakStage" = ss_data_norm$BraakStage,
+                           "CERAD" = ss_data_norm$CERAD,
+                           "LATEScore" = ss_data_norm$LATEScore,
+                           "SeqBatch" = ss_data_norm$SeqBatch,
+                           "coded_Age" = ss_data_norm$coded_Age,
+                           row.names=NULL
+)
 str(meta_ind)
 dmy_SD<- dummyVars("~Study_Designation", data = meta_ind)
 dmy_SD <- data.frame(predict(dmy_SD, newdata = meta_ind))
@@ -81,7 +83,7 @@ meta_ind     <- unique(data.frame("individual" = ss_data_norm$Pt_ID,
                                   "SeqBatch" = ss_data_norm$SeqBatch,
                                   "coded_Age" = ss_data_norm$coded_Age,
                                   row.names=NULL
-                                  ))
+))
 dim(meta_ind)
 
 # meta_ind     <- unique(data.frame("individual" = ss_data_norm$Pt_ID, 
@@ -105,7 +107,7 @@ for(j in 1:ncol(meta_ind)){
 
 ###########
 # a quick side-demo on how factors-to-numerics can cause a lot of bugs
-# 
+
 # tmp <- factor(c("5","5","5","2","10","5","10"))
 # as.numeric(tmp) # gives you numbers according to the levels
 # as.numeric(as.character(tmp))
@@ -113,10 +115,10 @@ for(j in 1:ncol(meta_ind)){
 # tmp <- factor(c("sadf", "egg", "egg", "sadf", "egg", "potato", "statistics", "sadf"))
 # as.numeric(tmp) # gives you numbers according to the levels
 # as.numeric(as.character(tmp))
-# 
-#   ###########
 
-  # the main one to fill in. It should include the following: (one row per Pt_ID)
+###########
+
+# the main one to fill in. It should include the following: (one row per Pt_ID)
 #   Study_Designation
 # CognitiveStatus
 # Sex
@@ -164,22 +166,22 @@ var_per_cell  =  "nCount_SCT" # [[KL: This is the read depth, don't worry about 
 
 ############
 
-# count_matrix_subset <- count_matrix[1:10,]
-# count_matrix_subset = as.matrix(count_matrix_subset)
-# dist1 = ideas_dist(count_matrix_subset, meta_cell, meta_ind, 
-#                    var_per_cell, var2test, var2test_type, 
-#                    d_metric = "Was", fit_method = "kde")
+count_matrix_subset <- count_matrix[1:5,]
+count_matrix_subset = as.matrix(count_matrix_subset)
 
-count_matrix <- as.matrix(count_matrix)
+save(count_matrix_subset, meta_cell, meta_ind,
+     var_per_cell, var2test, var2test_type,
+     file = "~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideas_subset.RData")
 
-dist1 = ideas_dist(count_matrix, meta_cell, meta_ind, 
+# load("~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideas_subset.RData")
+dist_list = ideas_dist_custom(count_matrix_subset, meta_cell, meta_ind, 
                    var_per_cell, var2test, var2test_type, 
                    d_metric = "Was", fit_method = "kde")
 
-save(dist1,
+save(dist_list,
      file = "~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideas_tmp.RData")
 
-pval_ideas = permanova(dist1, meta_ind, var2test, var2adjust, 
+pval_ideas = permanova(dist_list[[1]], meta_ind, var2test, var2adjust, 
                        var2test_type, n_perm=999, r.seed=903)
 head(pval_ideas)
 
@@ -193,7 +195,7 @@ note <- paste("Basic IDEAS analysis of the microglia data.")
 
 save(meta_cell,
      meta_ind,
-     dist1,
+     dist_list,
      pval_ideas,
      date_of_run, session_info, note,
      file = "~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideas.RData")

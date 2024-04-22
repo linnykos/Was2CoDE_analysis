@@ -1,9 +1,9 @@
 
-ideas_dist <-
-  function(count_input, meta_cell, meta_ind, var_per_cell, var2test, 
+ideas_dist_custom <-
+  function(count_input, # the input should be "genes" by "cells"
+           meta_cell, meta_ind, var_per_cell, var2test, 
            var2test_type = c("binary", "continuous"), 
-           per_cell_adjust = c("NB", "both"), quantile = 0.975,
-           empirical_n = 1024) { #Do I delete empirical_n?
+           per_cell_adjust = c("NB", "both")) { 
     # -----------------------------------------------------------------
     # TZ:
     # initializes the var2test_type, validates the structure and content of 
@@ -133,8 +133,6 @@ ideas_dist <-
     # -----------------------------------------------------------------
       
       message("estimating distribution for each gene and each individual by kde\n")
-      cov_value = apply(log10(meta_cell[,var_per_cell,drop=FALSE]), 2, median)
-      #cov_value = apply(log10(meta_cell[, ..var_per_cell]), 2, median)
       dat_res=foreach (i_g = 1:n_gene) %dorng% {
         res_ig = list()
         
@@ -153,7 +151,7 @@ ideas_dist <-
         # Directly use the count matrix rows corresponding to this gene and columns for the donor
         dat_j = count_matrix[i_g, w2use]
         # Apply log transformation 
-        res_ig[[j]] = log10(dat_j + 1)  #adjust constant based on data scale?
+        res_ig[[j]] = dat_j  #adjust constant based on data scale?
       }
       names(res_ig) = as.character(meta_ind$individual)
       res_ig  #output the residual(*) and intercept
@@ -162,18 +160,20 @@ ideas_dist <-
       dist_array_list=foreach (i_g = 1:n_gene) %dorng% {
         
         res_ig = dat_res[[i_g]]
-        dist_array1 = array(NA, dim=rep(nrow(meta_ind), 2))
+        dist_array1 = array(NA, dim=c(rep(nrow(meta_ind), 2), 6))
         rownames(dist_array1) = meta_ind$individual
         colnames(dist_array1) = meta_ind$individual
         diag(dist_array1) = 0
  
         # define divergence() using wasserstein1d()
         divergence <- function(a, b, p=2, wa = NULL, wb = NULL) {
-            return(list(
-              distance = wasserstein1d(a, b, p = p, wa = wa, wb = wb),
+            return(c(
+              distance = transport::wasserstein1d(a, b, p = p, wa = wa, wb = wb),
               location = (mean(a)-mean(b))^2,
+              location_sign = mean(a) - mean(b),
               size = (sd(a) - sd(b))^2,
-              shape = distance-location-size
+              size_sign = sd(a) - sd(b),
+              shape = (distance^2 - location - size)/(2*sd(a)*sd(b))
           ))
         }
           
@@ -186,7 +186,7 @@ ideas_dist <-
           for (j_b in (j_a+1):nrow(meta_ind)) {
             res_b = res_ig[[j_b]]
             
-            dist_array1[j_a, j_b] = tryCatch(
+            dist_array1[j_a, j_b,] = tryCatch(
               divergence(res_a, res_b), #distance calculation 
               error = function(e) { NA }
             )
@@ -212,23 +212,30 @@ ideas_dist <-
     nNA = sapply(dist_array_list, function(x){sum(is.na(c(x)))})
     table(nNA)
     
-    dist_array = array(
-      dim = c(
-        n_gene,
-        nrow(meta_ind),
-        nrow(meta_ind)
-      ),
-      dimnames = list(gene_ids, meta_ind$individual, meta_ind$individual)
-    )
-    
-    dim(dist_array)
-    
-    for (i in 1:n_gene){
-      dist_array[i,,] = dist_array_list[[i]]
+    result_array_list = lapply(1:6, function(kk){
+      array(
+        dim = c(
+          n_gene,
+          nrow(meta_ind),
+          nrow(meta_ind)
+        ),
+        dimnames = list(gene_ids, meta_ind$individual, meta_ind$individual)
+      )
+    })
+    names(result_array_list) <- c("distance",
+                                  "location",
+                                  "location_sign",
+                                  "size",
+                                  "size_sign",
+                                  "shape")
+    for(kk in 1:6){
+      for (i in 1:n_gene){
+        result_array_list[[kk]][i,,] = dist_array_list[[i]]
+      }
     }
     
-    dim(dist_array)
-    dist_array[1,1:2,1:2]
+    dim(result_array_list[[1]])
+    result_array_list[[1]][1,1:2,1:2]
     
-    dist_array
+    result_array_list
   }
