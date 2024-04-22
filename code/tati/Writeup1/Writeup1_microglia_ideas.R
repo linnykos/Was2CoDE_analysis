@@ -105,16 +105,16 @@ for(j in 1:ncol(meta_ind)){
 
 ###########
 # a quick side-demo on how factors-to-numerics can cause a lot of bugs
-
-tmp <- factor(c("5","5","5","2","10","5","10"))
-as.numeric(tmp) # gives you numbers according to the levels
-as.numeric(as.character(tmp))
-
-tmp <- factor(c("sadf", "egg", "egg", "sadf", "egg", "potato", "statistics", "sadf"))
-as.numeric(tmp) # gives you numbers according to the levels
-as.numeric(as.character(tmp))
-
-  ###########
+# 
+# tmp <- factor(c("5","5","5","2","10","5","10"))
+# as.numeric(tmp) # gives you numbers according to the levels
+# as.numeric(as.character(tmp))
+# 
+# tmp <- factor(c("sadf", "egg", "egg", "sadf", "egg", "potato", "statistics", "sadf"))
+# as.numeric(tmp) # gives you numbers according to the levels
+# as.numeric(as.character(tmp))
+# 
+#   ###########
 
   # the main one to fill in. It should include the following: (one row per Pt_ID)
 #   Study_Designation
