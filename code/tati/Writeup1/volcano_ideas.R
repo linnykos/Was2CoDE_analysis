@@ -40,9 +40,12 @@ plot1 <- EnhancedVolcano::EnhancedVolcano(volcano_data,
                          title = 'Volcano Plot',
                          subtitle = 'Comparison of Dementia vs. No Dementia',
                          xlab = 'Log2 Fold Change',
-                         ylab = '-Log10 pval_ideas')
+                         ylab = '-Log10 pval_ideas',
+                         #selectLab = volcano_data$gene[volcano_data$pval_ideas < pCutoff & abs(volcano_data$avg_log2FC) > FCcutoff],
+                         #selectLab = volcano_data$gene[which((volcano_data$pval_ideas < pCutoff) | (abs(volcano_data$avg_log2FC) > FCcutoff)])
+                         )
 
-ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de-volcano_microglia_ideas.png"),
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de-volcano_microglia_ideas_Lab.png"),
                 plot1, device = "png", width = 7, height = 7, units = "in")
 
 ###########
