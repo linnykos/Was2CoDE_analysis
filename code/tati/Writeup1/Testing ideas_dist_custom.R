@@ -1,15 +1,14 @@
 library(testthat)
 library(transport)
-#load testing data (count_matrix_subset)
-load("~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideas_subset.RData")
-#head(count_matrix_subset)
+#load testing data
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideas_subset_testing.RData")
 
 # Unit test for ideas_dist_custom
 test_that("ideas_dist_custom outputs correctly", {
   set.seed(10)
   # Mock data and parameters for testing
   output <- ideas_dist_custom(
-    count_input = count_matrix_subset,
+    count_input = count_matrix,
     meta_cell = meta_cell,
     meta_ind = meta_ind,
     var_per_cell = var_per_cell,
@@ -41,7 +40,7 @@ test_that("ideas_dist_custom outputs correctly", {
     ## Get a sample of known distances/locations/... between the first two individuals is as expected to validate
     ## Extract data for 10 randomly selected genes for the first two individuals
   set.seed(10)
-  selected_genes <- sample(nrow(count_matrix_subset), 10)
+  selected_genes <- sample(nrow(count_matrix), 10)
   # Extract function results for the selected genes
   distances_from_function <- output[[1]][selected_genes, , ]
   location_from_function <- output[[2]][selected_genes, , ]
@@ -59,8 +58,8 @@ test_that("ideas_dist_custom outputs correctly", {
   ## Loop through each selected gene
   for (i in seq_along(selected_genes)) {
     gene_index <- selected_genes[i]
-    data_ind1 <- sort(count_matrix_subset[gene_index, which(colnames(count_matrix_subset) == meta_ind$individual[1]), drop = FALSE])
-    data_ind2 <- sort(count_matrix_subset[gene_index, which(colnames(count_matrix_subset) == meta_ind$individual[2]), drop = FALSE]) # Ensure the data are sorted (necessary for the 1D Wasserstein calculation)
+    data_ind1 <- sort(count_matrix[gene_index, which(colnames(count_matrix) == meta_ind$individual[1]), drop = FALSE])
+    data_ind2 <- sort(count_matrix[gene_index, which(colnames(count_matrix) == meta_ind$individual[2]), drop = FALSE]) # Ensure the data are sorted (necessary for the 1D Wasserstein calculation)
     # Manual calculations
     manual_distances[i] <- sqrt(transport::wasserstein1d(data_ind1, data_ind2, p = 2)) # Compute Wasserstein-2 distance
     manual_location[i] <- (mean(data_ind1) - mean(data_ind2))^2
