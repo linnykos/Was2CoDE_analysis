@@ -36,35 +36,32 @@ meta_ind     <- data.frame("individual" = ss_data_norm$Pt_ID,
                            "coded_Age" = ss_data_norm$coded_Age,
                            row.names=NULL
 )
-str(meta_ind)
 dmy_SD<- dummyVars("~Study_Designation", data = meta_ind)
 dmy_SD <- data.frame(predict(dmy_SD, newdata = meta_ind))
-head(dmy_SD)
 dmy_SD<- dmy_SD[,-which.max(colSums(dmy_SD)),drop=FALSE]
-str(meta_ind)
 dmy_Sex <- dummyVars("~Sex", data = meta_ind)
 dmy_Sex <- data.frame(predict(dmy_Sex, newdata = meta_ind))
 dmy_Sex<- dmy_Sex[,-which.max(colSums(dmy_Sex)),drop=FALSE]
-head(dmy_Sex)
 dmy_Race <- dummyVars("~Race", data = meta_ind)
 dmy_Race <- data.frame(predict(dmy_Race, newdata = meta_ind))
+
 for(j in 1:ncol(dmy_Race)){
   dmy_Race[which(is.na(dmy_Race[,j])),j] <- 0
 }
 dmy_Race<- dmy_Race[,-which.max(colSums(dmy_Race)),drop=FALSE]
-head(dmy_Race)
+
 dmy_gen <- dummyVars("~ genotype_APOE", data = meta_ind)
 dmy_gen <- data.frame(predict(dmy_gen, newdata = meta_ind))
 dmy_gen<- dmy_gen[,-which.max(colSums(dmy_gen)),drop=FALSE]
-head(dmy_gen)
+
 meta_ind$SeqBatch <- factor(meta_ind$SeqBatch)
 dmy_SB<- dummyVars("~SeqBatch", data = meta_ind)
 dmy_SB <- data.frame(predict(dmy_SB, newdata = meta_ind))
+
 for(j in 1:ncol(dmy_SB)){
   dmy_SB[which(is.na(dmy_SB[,j])),j] <- 0
 }
 dmy_SB<- dmy_SB[,-which.max(colSums(dmy_SB)),drop=FALSE]
-head(dmy_SB)
 
 meta_ind     <- unique(data.frame("individual" = ss_data_norm$Pt_ID,
                                   "Study_Designation" = dmy_SD,
@@ -84,58 +81,18 @@ meta_ind     <- unique(data.frame("individual" = ss_data_norm$Pt_ID,
                                   "coded_Age" = ss_data_norm$coded_Age,
                                   row.names=NULL
 ))
-dim(meta_ind)
-
-# meta_ind     <- unique(data.frame("individual" = ss_data_norm$Pt_ID, 
-#                                   "CognitiveStatus" = ss_data_norm$CognitiveStatus,
-#                                   "coded_Age" = ss_data_norm$coded_Age,
-#                                   row.names=NULL
-# ))
 
 class(meta_ind[,"coded_Age"])
 levels(meta_ind[,"coded_Age"])
 zz <- as.character(meta_ind[,"coded_Age"])
 zz[zz == "90+"] <- "90"
 meta_ind[,"coded_Age"] <- as.numeric(zz)
-summary(meta_ind)
 
 table(is.na(meta_ind))
 for(j in 1:ncol(meta_ind)){
   if(!is.numeric(meta_ind[,j])) next()
   meta_ind[which(is.na(meta_ind[,j])),j] <- stats::median(meta_ind[,j], na.rm = T)
 }
-
-###########
-# a quick side-demo on how factors-to-numerics can cause a lot of bugs
-
-# tmp <- factor(c("5","5","5","2","10","5","10"))
-# as.numeric(tmp) # gives you numbers according to the levels
-# as.numeric(as.character(tmp))
-# 
-# tmp <- factor(c("sadf", "egg", "egg", "sadf", "egg", "potato", "statistics", "sadf"))
-# as.numeric(tmp) # gives you numbers according to the levels
-# as.numeric(as.character(tmp))
-
-###########
-
-# the main one to fill in. It should include the following: (one row per Pt_ID)
-#   Study_Designation
-# CognitiveStatus
-# Sex
-# genotype_APOE
-# PMI
-# BrainPh
-# Race
-# FreshBrainWeight
-# NIA_AA
-# ThalPhase
-# BraakStage
-# CERAD
-# LATEScore
-# SeqBatch
-# coded_Age
-
-
 
 var2test      = "CognitiveStatus"
 var2adjust    =  setdiff(colnames(meta_ind), c("individual", "CognitiveStatus"))

@@ -119,13 +119,6 @@ ideas_dist_custom <-
       stop("the individual ids in meta_ind are not unique\n")
     }
     
-    
-    #if(any(meta_cell[,..var_per_cell] <= 0.0)){
-    if(any(meta_cell[,var_per_cell, drop = FALSE] <= 0.0)){
-      str1 = "the variables listed in 'var_per_cell' will be log transformed,"
-      stop(paste(str1, "so they must be positive."))
-    }
-    
     # -----------------------------------------------------------------
     # TZ:
     # estimates the distribution(distance) for each gene and individual 
