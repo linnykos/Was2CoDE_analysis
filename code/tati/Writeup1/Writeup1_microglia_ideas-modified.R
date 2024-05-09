@@ -1,7 +1,7 @@
 rm(list=ls())
 
 library(Seurat)
-library(ideas)
+library(IdeasCustom)
 library(caret)
 library(ggplot2)
 load("~/kzlinlab/projects/subject-de/out/kevin/preprocess/processed.RData") 
@@ -123,20 +123,20 @@ var_per_cell  =  "nCount_SCT" # [[KL: This is the read depth, don't worry about 
 
 ############
 
-count_matrix_subset <- count_matrix[1:5,]
-count_matrix_subset = as.matrix(count_matrix_subset)
+# count_matrix_subset <- count_matrix[1:5,]
+# count_matrix_subset = as.matrix(count_matrix_subset)
 
-save(count_matrix_subset, meta_cell, meta_ind,
+save(count_matrix, meta_cell, meta_ind,
      var_per_cell, var2test, var2test_type,
-     file = "~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideas_subset.RData")
+     file = "~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideascustom.RData")
 
-# load("~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideas_subset.RData")
+# load("~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideascustom.RData")
 dist_list = ideas_dist_custom(count_matrix_subset, meta_cell, meta_ind, 
                    var_per_cell, var2test, var2test_type, 
                    d_metric = "Was", fit_method = "kde")
 
 save(dist_list,
-     file = "~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideas_tmp.RData")
+     file = "~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideascustom_tmp.RData")
 
 pval_ideas = permanova(dist_list[[1]], meta_ind, var2test, var2adjust, 
                        var2test_type, n_perm=999, r.seed=903)
