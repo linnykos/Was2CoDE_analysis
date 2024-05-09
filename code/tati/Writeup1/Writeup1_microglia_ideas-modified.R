@@ -1,9 +1,11 @@
 rm(list=ls())
 
 library(Seurat)
+library(ideas)
 library(IdeasCustom)
 library(caret)
 library(ggplot2)
+library(data.table)
 load("~/kzlinlab/projects/subject-de/out/kevin/preprocess/processed.RData") 
 # the loaded dataset is called "ss_data_norm"
 source("~/kzlinlab/projects/subject-de/git/subject-de_tati/code/tati/Writeup1/IDEAS_dist_modified.R")
@@ -131,9 +133,8 @@ save(count_matrix, meta_cell, meta_ind,
      file = "~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideascustom.RData")
 
 # load("~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideascustom.RData")
-dist_list = ideas_dist_custom(count_matrix_subset, meta_cell, meta_ind, 
-                   var_per_cell, var2test, var2test_type, 
-                   d_metric = "Was", fit_method = "kde")
+dist_list = ideas_dist_custom(count_matrix, meta_cell, meta_ind, 
+                   var_per_cell, var2test, var2test_type)
 
 save(dist_list,
      file = "~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideascustom_tmp.RData")
