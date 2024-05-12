@@ -27,6 +27,17 @@ table(seurat_all$Subclass)
 
 rm(ls = seurat_list); gc(TRUE)
 
+print("Downsampling")
+set.seed(10)
+n <- length(Seurat::Cells(seurat_all))
+keep_idx <- rep(FALSE, n)
+keep_idx[sample(1:n, size = round(n/10))] <- TRUE
+seurat_all$keep <- keep_idx
+seurat_all <- subset(seurat_all, keep == TRUE)
+
+seurat_all
+head(seurat_all@meta.data)
+
 print("Finding variable genes")
 seurat_all <- Seurat::FindVariableFeatures(seurat_all, 
                                            selection.method = "vst", 
