@@ -131,7 +131,7 @@ var_per_cell  =  "nCount_SCT" # [[KL: This is the read depth, don't worry about 
 # count_matrix_subset = as.matrix(count_matrix_subset)
 
 save(count_matrix, meta_cell, meta_ind,
-     var_per_cell, var2test, var2test_type,
+     var_per_cell, var2test, var2test_type,var2adjust,
      file = "~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideascustom.RData")
 
 # load("~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideascustom.RData")
@@ -145,9 +145,9 @@ dist_list = IdeasCustom::ideas_dist_custom(count_input = count_matrix,
 save(dist_list,
      file = "~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideascustom_tmp.RData")
 
-pval_ideas <- vector("list", length = length(dist_list1))
-for (i in 1:length(dist_list1)) {
-  pval_ideas[[i]] = ideas::permanova(dist_list1[[i]], meta_ind, var2test, var2adjust, 
+pval_ideas <- vector("list", length = length(dist_list))
+for (i in 1:length(dist_list)) {
+  pval_ideas[[i]] = ideas::permanova(dist_list[[i]], meta_ind, var2test, var2adjust, 
                          var2test_type, n_perm=999, r.seed=903)
 }
 
