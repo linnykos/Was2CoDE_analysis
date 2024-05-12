@@ -135,15 +135,19 @@ save(count_matrix, meta_cell, meta_ind,
      file = "~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideascustom.RData")
 
 # load("~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideascustom.RData")
-dist_list = ideas_dist_custom(count_matrix, meta_cell, meta_ind, 
-                   var_per_cell, var2test, var2test_type)
-
+dist_list = IdeasCustom::ideas_dist_custom(count_input = count_matrix, 
+                                           meta_cell = meta_cell, 
+                                           meta_ind = meta_ind, 
+                                           var_per_cell = var_per_cell, 
+                                           var2test = var2test, 
+                                           var2test_type = var2test_type,
+                                           verbose = 3)
 save(dist_list,
      file = "~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideascustom_tmp.RData")
 
 pval_ideas <- vector("list", length = length(dist_list1))
 for (i in 1:length(dist_list1)) {
-  pval_ideas[[i]] = permanova(dist_list1[[i]], meta_ind, var2test, var2adjust, 
+  pval_ideas[[i]] = ideas::permanova(dist_list1[[i]], meta_ind, var2test, var2adjust, 
                          var2test_type, n_perm=999, r.seed=903)
 }
 
