@@ -4,9 +4,12 @@ load("~/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_seurat-glial.RD
 
 umap_list <- sapply(1:10, function(i){
   print(paste("Working on trial:", i))
+  seurat_all[["umap"]] <- NULL
+  
   set.seed(i)
   seurat_all <- Seurat::RunUMAP(seurat_all, 
-                                dims = 1:30)
+                                dims = 1:30,
+                                seed.use = i)
   return(seurat_all[["umap"]])
 })
 
