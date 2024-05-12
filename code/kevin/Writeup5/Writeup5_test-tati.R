@@ -120,4 +120,5 @@ dist_list = IdeasCustom::ideas_dist_custom(count_input = count_matrix,
                                            meta_ind = meta_ind, 
                                            var_per_cell = var_per_cell, 
                                            var2test = var2test, 
-                                           var2test_type = var2test_type)
+                                           var2test_type = var2test_type,
+                                           verbose = 3)
