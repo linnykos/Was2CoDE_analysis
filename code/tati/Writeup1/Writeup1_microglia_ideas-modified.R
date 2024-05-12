@@ -7,10 +7,10 @@ library(caret)
 library(ggplot2)
 library(data.table)
 library(doRNG)
+print(sessionInfo())
 
 load("~/kzlinlab/projects/subject-de/out/kevin/preprocess/processed.RData") 
 # the loaded dataset is called "ss_data_norm"
-source("~/kzlinlab/projects/subject-de/git/subject-de_tati/code/tati/Writeup1/IDEAS_dist_modified.R")
 
 set.seed(10)
 
@@ -141,9 +141,9 @@ dist_list = ideas_dist_custom(count_matrix, meta_cell, meta_ind,
 save(dist_list,
      file = "~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideascustom_tmp.RData")
 
-pval_ideas <- vector("list", length = length(dist_list))
-for (i in 1:length(dist_list)) {
-  pval_ideas[[i]] = permanova(dist_list[[i]], meta_ind, var2test, var2adjust, 
+pval_ideas <- vector("list", length = length(dist_list1))
+for (i in 1:length(dist_list1)) {
+  pval_ideas[[i]] = permanova(dist_list1[[i]], meta_ind, var2test, var2adjust, 
                          var2test_type, n_perm=999, r.seed=903)
 }
 
