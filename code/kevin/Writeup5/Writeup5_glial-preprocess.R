@@ -27,16 +27,20 @@ table(seurat_all$Subclass)
 
 rm(list = seurat_list); gc(TRUE)
 
+print("Finding variable genes")
 seurat_all <- Seurat::FindVariableFeatures(seurat_all, 
                                            selection.method = "vst", 
                                            nfeatures = 2000)
 seurat_all <- Seurat::ScaleData(seurat_all, 
                                 features = Seurat::VariableFeatures(seurat_all))
 
+print("Doing PCA")
 set.seed(10)
 seurat_all <- Seurat::RunPCA(seurat_all, 
                              features = Seurat::VariableFeatures(seurat_all),
                              verbose = FALSE)
+
+print("Doing UMAP")
 set.seed(10)
 seurat_all <- Seurat::RunUMAP(seurat_all, dims = 1:30)
 
