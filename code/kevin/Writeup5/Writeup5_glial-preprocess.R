@@ -25,7 +25,7 @@ seurat_all <- merge(seurat_all, y = seurat_list[[4]])
 seurat_all
 table(seurat_all$Subclass)
 
-rm(list = seurat_list); gc(TRUE)
+rm(ls = seurat_list); gc(TRUE)
 
 print("Finding variable genes")
 seurat_all <- Seurat::FindVariableFeatures(seurat_all, 
