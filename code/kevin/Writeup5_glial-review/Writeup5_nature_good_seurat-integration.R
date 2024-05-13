@@ -7,27 +7,30 @@ date_of_run <- Sys.time()
 session_info <- devtools::session_info()
 ss_data_norm <- Seurat::UpdateSeuratObject(ss_data_norm)
 
-metadf <- ss_data_norm@meta.data
-table(metadf[,"Pt_ID"], metadf[,"SeqBatch"])
-table(metadf[,"Study_Designation"], metadf[,"SeqBatch"])
-table(metadf[,"Pt_ID"], metadf[,"Study_Designation"])
-
 Seurat::DefaultAssay(ss_data_norm) <- "RNA"
 ss_data_norm[["integrated"]] <- NULL
 
 seurat_obj <- ss_data_norm
-rm(ls = "ss_data_norm"); gc(TRUE)
+ls_vec <- ls(); ls_vec <- setdiff(ls_vec, seurat_obj)
+rm(ls = ls_vec); gc(TRUE)
 
-# we will kick out some donors in this experiment
-donor_vec <- unique(metadf$Pt_ID)
-donor_df <- t(sapply(donor_vec, function(donor){
-  idx <- which(metadf$Pt_ID == donor)
-  as.character(metadf[idx[1], c("Pt_ID", "SeqBatch", "Study_Designation", "Sex")])
-}))
-donor_df <- as.data.frame(donor_df)
-colnames(donor_df) <- c("Pt_ID", "SeqBatch", "Study_Designation", "Sex")
-table(donor_df$SeqBatch, donor_df$Study_Designation)
+seurat_obj$Pt_ID <- paste0("D:", as.character(seurat_obj$Pt_ID))
+keep_vec <- rep(FALSE, length(Seurat::Cells(seurat_obj)))
+keep_vec[which(seurat_obj$Pt_ID %in% c("D:1", "D:2", "D:3", "D:9", 
+                                       "D:21", "D:22", "D:4", "D:5", 
+                                       "D:6", "D:11"))] <- TRUE
+seurat_obj$keep <- keep_vec
+seurat_obj <- subset(seurat_obj, keep == TRUE)
 
+# # we will kick out some donors in this experiment
+# donor_vec <- unique(metadf$Pt_ID)
+# donor_df <- t(sapply(donor_vec, function(donor){
+#   idx <- which(metadf$Pt_ID == donor)
+#   as.character(metadf[idx[1], c("Pt_ID", "SeqBatch", "Study_Designation", "Sex")])
+# }))
+# donor_df <- as.data.frame(donor_df)
+# colnames(donor_df) <- c("Pt_ID", "SeqBatch", "Study_Designation", "Sex")
+# table(donor_df$SeqBatch, donor_df$Study_Designation)
 
 # Commented out procedure (Since I've decided we should stick to as-close-as-possible to the original workflow)
 # https://satijalab.org/seurat/articles/integration_introduction.html
@@ -64,19 +67,20 @@ normalize <- function (data) {
 }
 ss_data_norm <- lapply(1:length(seurat_obj), function(i){
   set.seed(10)
-  print(paste0("Working on subject number ", i, " out of ", length(seurat_obj)))
+  print(paste0("Working on fold number ", i, " out of ", length(seurat_obj)))
   return(normalize(seurat_obj[[i]]))
 })
 
 rm(ls = "seurat_obj"); gc(TRUE)
 
 save(ss_data_norm, date_of_run, session_info,
-     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_glial_integration-good_seurat_tmp.RData")
+     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_good_seurat-integration_tmp.RData")
 
 # Find the integration features similar across all samples for the top
 # nFeatures of genes.
 print("Finding Ifeatures")
-Ifeatures <- Seurat::SelectIntegrationFeatures(ss_data_norm, nfeatures = nfeatures)
+Ifeatures <- Seurat::SelectIntegrationFeatures(ss_data_norm, 
+                                               nfeatures = nfeatures)
 
 # Ensure we're using the normalized data to integrate.
 print("Prepping integration")
@@ -84,7 +88,7 @@ ss_data_norm <- Seurat::PrepSCTIntegration(ss_data_norm,
                                            anchor.features = Ifeatures)
 
 save(ss_data_norm, date_of_run, session_info,
-     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_glial_integration-good_seurat_tmp.RData")
+     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_good_seurat-integration_tmp.RData")
 
 print("Finding integration anchors using no reference samples.")
 ss_data_norm <- Seurat::FindIntegrationAnchors(ss_data_norm,
@@ -95,7 +99,7 @@ ss_data_norm <- Seurat::FindIntegrationAnchors(ss_data_norm,
                                                dims = 1:30)
 
 save(ss_data_norm, date_of_run, session_info,
-     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_glial_integration-good_seurat_tmp.RData")
+     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_good_seurat-integration_tmp.RData")
 
 print("Performing the integration")
 ss_data_norm <- Seurat::IntegrateData(ss_data_norm,
@@ -103,11 +107,12 @@ ss_data_norm <- Seurat::IntegrateData(ss_data_norm,
                                       dims = 1:30)
 
 save(ss_data_norm, date_of_run, session_info,
-     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_glial_integration-good_seurat_tmp.RData")
+     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_good_seurat-integration_tmp.RData")
 
+print("Performing PCA and UMAP")
 set.seed(10)
 Seurat::DefaultAssay(ss_data_norm) <- "integrated"
-ss_data_norm <- Seurat::FindVariableFeatures(ss_data_norm, nfeatures = nfeatures)
+# ss_data_norm <- Seurat::FindVariableFeatures(ss_data_norm, nfeatures = nfeatures)
 ss_data_norm <- Seurat::RunPCA(ss_data_norm, 
                                features = Seurat::VariableFeatures(ss_data_norm), 
                                npcs = 50)
@@ -115,7 +120,7 @@ set.seed(10)
 ss_data_norm <- Seurat::RunUMAP(object = ss_data_norm, dims = 1:30)
 
 save(ss_data_norm, date_of_run, session_info,
-     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_glial_integration-good_seurat.RData")
+     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_good_seurat-integration.RData")
 
 
 
