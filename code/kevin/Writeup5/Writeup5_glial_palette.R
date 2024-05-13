@@ -13,8 +13,8 @@ col_palette <- c(
   "Oligo_2" = rgb(0, 253, 112, maxColorValue = 255),
   "Oligo_3" = rgb(90, 112, 33, maxColorValue = 255),
   "Oligo_4" = rgb(47, 113, 102, maxColorValue = 255),
-  "OPC_1" = rgb(150, 150, 150, maxColorValue = 255),
-  "OPC_2" = rgb(75, 75, 75, maxColorValue = 255)
+  "OPC_1" = rgb(75, 75, 75, maxColorValue = 255),
+  "OPC_2" = rgb(150, 150, 150, maxColorValue = 255)
 )
 
 # plot(1:length(col_palette), pch = 16, col = col_palette, cex = 5)

@@ -30,7 +30,8 @@ for(i in 1:10){
                            label = TRUE,
                            repel = TRUE,
                            label.size = 2.5,
-                           group.by = "Supertype2")
+                           group.by = "Supertype2",
+                           cols = col_palette)
   plot1 <- plot1 + Seurat::NoLegend()
   plot1 <- plot1 + ggplot2::ggtitle(paste0("UMAP, Seed: ", i))
   plot1 <- plot1 + ggplot2::theme(legend.text = ggplot2::element_text(size = 5))
