@@ -16,6 +16,7 @@ seurat_obj <- ss_data_norm
 ls_vec <- ls(); ls_vec <- setdiff(ls_vec, "seurat_obj")
 rm(ls = ls_vec); gc(TRUE)
 
+seurat_obj$Pt_ID <- paste0("D:", as.character(seurat_obj$Pt_ID))
 keep_vec <- rep(FALSE, length(Seurat::Cells(seurat_obj)))
 keep_vec[which(seurat_obj$Pt_ID %in% c("D:14", "D:20", "D:21", "D:18", 
                                        "D:19", "D:15", "D:7", "D:10", 
@@ -47,6 +48,15 @@ set.seed(10)
 seurat_obj <- Seurat::RunUMAP(object = seurat_obj, 
                               reduction = "fastmnn",
                               dims = 1:30)
+
+fastmnn_res <- seurat_obj[["fastmnn"]]
+umap_res <- seurat_obj[["umap"]]
+
+save(fastmnn_res, umap_res,
+     date_of_run, session_info,
+     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_bad_fastmnn.RData")
+
+#######
 
 var_vec <- c("Pt_ID", "Study_Designation", "SeqBatch")
 
