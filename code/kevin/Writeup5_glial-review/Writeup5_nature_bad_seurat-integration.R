@@ -11,7 +11,7 @@ Seurat::DefaultAssay(ss_data_norm) <- "RNA"
 ss_data_norm[["integrated"]] <- NULL
 
 seurat_obj <- ss_data_norm
-ls_vec <- ls(); ls_vec <- setdiff(ls_vec, seurat_obj)
+ls_vec <- ls(); ls_vec <- setdiff(ls_vec, "seurat_obj")
 rm(ls = ls_vec); gc(TRUE)
 
 seurat_obj$Pt_ID <- paste0("D:", as.character(seurat_obj$Pt_ID))
