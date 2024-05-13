@@ -16,9 +16,9 @@ rm(ls = ls_vec); gc(TRUE)
 
 seurat_obj$Pt_ID <- paste0("D:", as.character(seurat_obj$Pt_ID))
 keep_vec <- rep(FALSE, length(Seurat::Cells(seurat_obj)))
-keep_vec[which(seurat_obj$Pt_ID %in% c("D:1", "D:2", "D:3", "D:9", 
-                                       "D:21", "D:22", "D:4", "D:5", 
-                                       "D:6", "D:11"))] <- TRUE
+keep_vec[which(seurat_obj$Pt_ID %in% c("D:14", "D:20", "D:21", "D:18", 
+                                       "D:22", "D:13", "D:7", "D:1", 
+                                       "D:10", "D:11"))] <- TRUE
 seurat_obj$keep <- keep_vec
 seurat_obj <- subset(seurat_obj, keep == TRUE)
 
@@ -74,7 +74,7 @@ ss_data_norm <- lapply(1:length(seurat_obj), function(i){
 rm(ls = "seurat_obj"); gc(TRUE)
 
 save(ss_data_norm, date_of_run, session_info,
-     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_good_seurat-integration_tmp.RData")
+     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_good_seurat-integration_sctransform.RData")
 
 # Find the integration features similar across all samples for the top
 # nFeatures of genes.

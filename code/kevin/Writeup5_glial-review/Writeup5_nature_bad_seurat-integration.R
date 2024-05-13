@@ -10,19 +10,9 @@ ss_data_norm <- Seurat::UpdateSeuratObject(ss_data_norm)
 Seurat::DefaultAssay(ss_data_norm) <- "RNA"
 ss_data_norm[["integrated"]] <- NULL
 
-seurat_obj <- ss_data_norm
-ls_vec <- ls(); ls_vec <- setdiff(ls_vec, "seurat_obj")
-rm(ls = ls_vec); gc(TRUE)
-
-seurat_obj$Pt_ID <- paste0("D:", as.character(seurat_obj$Pt_ID))
-keep_vec <- rep(FALSE, length(Seurat::Cells(seurat_obj)))
-keep_vec[which(seurat_obj$Pt_ID %in% c("D:1", "D:2", "D:3", "D:9", 
-                                       "D:13", "D:15", "D:4", "D:6", 
-                                       "D:12", "D:17"))] <- TRUE
-seurat_obj$keep <- keep_vec
-seurat_obj <- subset(seurat_obj, keep == TRUE)
-
 # # we will kick out some donors in this experiment
+# metadf <- ss_data_norm@meta.data
+# metadf$Pt_ID <- as.character(metadf$Pt_ID)
 # donor_vec <- unique(metadf$Pt_ID)
 # donor_df <- t(sapply(donor_vec, function(donor){
 #   idx <- which(metadf$Pt_ID == donor)
@@ -30,7 +20,30 @@ seurat_obj <- subset(seurat_obj, keep == TRUE)
 # }))
 # donor_df <- as.data.frame(donor_df)
 # colnames(donor_df) <- c("Pt_ID", "SeqBatch", "Study_Designation", "Sex")
-# table(donor_df$SeqBatch, donor_df$Study_Designation)
+# donor_df
+
+seurat_obj <- ss_data_norm
+ls_vec <- ls(); ls_vec <- setdiff(ls_vec, "seurat_obj")
+rm(ls = ls_vec); gc(TRUE)
+
+seurat_obj$Pt_ID <- paste0("D:", as.character(seurat_obj$Pt_ID))
+
+# metadf2 <- seurat_obj@meta.data
+# donor_vec <- unique(metadf2$Pt_ID)
+# donor_df2 <- t(sapply(donor_vec, function(donor){
+#   idx <- which(metadf2$Pt_ID == donor)
+#   as.character(metadf2[idx[1], c("Pt_ID", "SeqBatch", "Study_Designation", "Sex")])
+# }))
+# donor_df2 <- as.data.frame(donor_df2)
+# colnames(donor_df2) <- c("Pt_ID", "SeqBatch", "Study_Designation", "Sex")
+# donor_df2
+
+keep_vec <- rep(FALSE, length(Seurat::Cells(seurat_obj)))
+keep_vec[which(seurat_obj$Pt_ID %in% c("D:14", "D:20", "D:21", "D:18", 
+                                       "D:19", "D:15", "D:7", "D:10", 
+                                       "D:4", "D:12"))] <- TRUE
+seurat_obj$keep <- keep_vec
+seurat_obj <- subset(seurat_obj, keep == TRUE)
 
 # Commented out procedure (Since I've decided we should stick to as-close-as-possible to the original workflow)
 # https://satijalab.org/seurat/articles/integration_introduction.html
@@ -74,7 +87,7 @@ ss_data_norm <- lapply(1:length(seurat_obj), function(i){
 rm(ls = "seurat_obj"); gc(TRUE)
 
 save(ss_data_norm, date_of_run, session_info,
-     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_bad_seurat-integration_tmp.RData")
+     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_bad_seurat-integration_sctransform.RData")
 
 # Find the integration features similar across all samples for the top
 # nFeatures of genes.
