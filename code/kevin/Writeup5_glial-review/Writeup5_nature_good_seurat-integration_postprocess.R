@@ -16,6 +16,6 @@ for(variable in var_vec){
   
   ggplot2::ggsave(plot1, 
                   file = paste0("~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup5/Writeup5_nature_good_seurat-integration_umap-", variable, ".png"),
-                  height = 8, width = 5,
+                  height = 5, width = 8,
                   units = "in")
 }

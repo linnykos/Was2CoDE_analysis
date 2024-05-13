@@ -23,14 +23,17 @@ seurat_obj$keep <- keep_vec
 seurat_obj <- subset(seurat_obj, keep == TRUE)
 
 # # we will kick out some donors in this experiment
-# donor_vec <- unique(metadf$Pt_ID)
-# donor_df <- t(sapply(donor_vec, function(donor){
-#   idx <- which(metadf$Pt_ID == donor)
-#   as.character(metadf[idx[1], c("Pt_ID", "SeqBatch", "Study_Designation", "Sex")])
-# }))
-# donor_df <- as.data.frame(donor_df)
-# colnames(donor_df) <- c("Pt_ID", "SeqBatch", "Study_Designation", "Sex")
-# table(donor_df$SeqBatch, donor_df$Study_Designation)
+metadf <- ss_data_norm@meta.data
+metadf$Pt_ID <- as.character(metadf$Pt_ID)
+donor_vec <- unique(metadf$Pt_ID)
+donor_df <- t(sapply(donor_vec, function(donor){
+  idx <- which(metadf$Pt_ID == donor)
+  as.character(metadf[idx[1], c("Pt_ID", "SeqBatch", "Study_Designation", "Sex")])
+}))
+donor_df <- as.data.frame(donor_df)
+colnames(donor_df) <- c("Pt_ID", "SeqBatch", "Study_Designation", "Sex")
+donor_df
+table(donor_df$SeqBatch, donor_df$Study_Designation)
 
 # Commented out procedure (Since I've decided we should stick to as-close-as-possible to the original workflow)
 # https://satijalab.org/seurat/articles/integration_introduction.html
