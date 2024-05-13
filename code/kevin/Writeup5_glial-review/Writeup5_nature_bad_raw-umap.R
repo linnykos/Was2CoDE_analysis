@@ -51,7 +51,7 @@ metadata_df <- seurat_obj@meta.data
 
 save(seurat_umap, metadata_df,
      date_of_run, session_info,
-     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_good_raw-umap.RData")
+     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_bad_raw-umap.RData")
 
 
 
