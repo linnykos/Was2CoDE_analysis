@@ -49,6 +49,15 @@ seurat_obj <- Seurat::RunUMAP(object = seurat_obj,
                               reduction = "fastmnn",
                               dims = 1:30)
 
+fastmnn_res <- seurat_obj[["fastmnn"]]
+umap_res <- seurat_obj[["umap"]]
+
+save(fastmnn_res, umap_res,
+     date_of_run, session_info,
+     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_good_fastmnn.RData")
+
+############
+
 var_vec <- c("Pt_ID", "Study_Designation", "SeqBatch")
 
 for(variable in var_vec){

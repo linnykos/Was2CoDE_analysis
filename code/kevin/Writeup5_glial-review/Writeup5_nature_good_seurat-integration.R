@@ -48,7 +48,7 @@ table(donor_df$SeqBatch, donor_df$Study_Designation)
 # # re-join layers after integration
 # ifnb[["RNA"]] <- JoinLayers(ifnb[["RNA"]])
 
-var_subset <- "SeqBatch" # originally, this was "Pt_ID"
+var_subset <- "Pt_ID" 
 print(paste("Subsetting dataset with", var_subset, sep = " "))
 seurat_obj <- Seurat::SplitObject(seurat_obj, split.by = var_subset)
 print(paste("Split Seurat object now has",
