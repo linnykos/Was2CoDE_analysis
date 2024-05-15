@@ -67,7 +67,7 @@ print(paste("Split Seurat object now has",
 unwanted <- c("percent.mito")
 print(paste("Running SCT on Seurat object and regressing out",
             unwanted, "variable.", sep = " "))
-nfeatures <- 2000 # changing from the original 5000
+nfeatures <- 5000 # changing from the original 5000
 normalize <- function (data) {
   data <- Seurat::SCTransform(data, 
                               variable.features.n = nfeatures,
@@ -125,7 +125,6 @@ save(ss_data_norm, date_of_run, session_info,
 print("Performing PCA and UMAP")
 set.seed(10)
 Seurat::DefaultAssay(ss_data_norm) <- "integrated"
-# ss_data_norm <- Seurat::FindVariableFeatures(ss_data_norm, nfeatures = nfeatures)
 ss_data_norm <- Seurat::RunPCA(ss_data_norm, 
                                features = Seurat::VariableFeatures(ss_data_norm), 
                                npcs = 50)
