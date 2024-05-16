@@ -1,6 +1,11 @@
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(tidyverse)
+library(hrbrthemes)
+library(viridis)
+
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideascustom.RData")
 
 gene_index <- 738  #gene index for "SMO"
 
@@ -19,7 +24,6 @@ shape_ratio <- matrix(NA, n, n)
 # Calculate the ratios for each pair of donors
 for (i in 1:n) {
   for (j in 1:n) {
-    # Calculate squared distance to avoid division by zero and for use in ratio calculations
     distance_squared <- gene_distance[i, j]^2
       location_diff <- gene_location[i,j]
       size_diff <- gene_size[i,j]
@@ -27,7 +31,7 @@ for (i in 1:n) {
       
       location_ratio[i, j] <- location_diff / distance_squared
       size_ratio[i, j] <- size_diff / distance_squared
-      shape_ratio[i, j] <- shape_diff / distance_squared
+      shape_ratio[i, j] <- shape_ratio[i, j] <- (distance_squared - location_diff - size_diff) / distance_squared
   }
 }
 rownames(location_ratio) <- meta_ind$individual
@@ -52,15 +56,15 @@ location_ratio_ndnd <- location_ratio[no_dementia_indices, no_dementia_indices]
 size_ratio_ndnd <- size_ratio[no_dementia_indices, no_dementia_indices]
 shape_ratio_ndnd <- shape_ratio[no_dementia_indices, no_dementia_indices]
 
-location_data_dnd <- as.data.frame(location_ratio_dnd) %>% mutate(Category = "Dementia & No Dementia",RatioType = "Location")
-location_data_dd <- as.data.frame(location_ratio_dd) %>% mutate(Category = "Dementia Only", RatioType = "Location")
-location_data_ndnd <- as.data.frame(location_ratio_ndnd) %>% mutate(Category = "No Dementia Only", RatioType = "Location")
-size_data_dnd <- as.data.frame(size_ratio_dnd) %>% mutate(Category = "Dementia & No Dementia", RatioType = "Size")
-size_data_dd <- as.data.frame(size_ratio_dd) %>% mutate(Category = "Dementia Only", RatioType = "Size")
-size_data_ndnd <- as.data.frame(size_ratio_ndnd) %>% mutate(Category = "No Dementia Only", RatioType = "Size")
-shape_data_dnd <- as.data.frame(shape_ratio_dnd) %>% mutate(Category = "Dementia & No Dementia", RatioType = "Shape")
-shape_data_dd <- as.data.frame(shape_ratio_dd) %>% mutate(Category = "Dementia Only", RatioType = "Shape")
-shape_data_ndnd <- as.data.frame(shape_ratio_ndnd) %>% mutate(Category = "No Dementia Only", RatioType = "Shape")
+location_data_dnd <- as.data.frame(location_ratio_dnd) %>% mutate(Category = "Case & Control",RatioType = "Location")
+location_data_dd <- as.data.frame(location_ratio_dd) %>% mutate(Category = "Case & Case", RatioType = "Location")
+location_data_ndnd <- as.data.frame(location_ratio_ndnd) %>% mutate(Category = "Control & Control", RatioType = "Location")
+size_data_dnd <- as.data.frame(size_ratio_dnd) %>% mutate(Category = "Case & Control", RatioType = "Size")
+size_data_dd <- as.data.frame(size_ratio_dd) %>% mutate(Category = "Case & Case", RatioType = "Size")
+size_data_ndnd <- as.data.frame(size_ratio_ndnd) %>% mutate(Category = "Control & Control", RatioType = "Size")
+shape_data_dnd <- as.data.frame(shape_ratio_dnd) %>% mutate(Category = "Case & Control", RatioType = "Shape")
+shape_data_dd <- as.data.frame(shape_ratio_dd) %>% mutate(Category = "Case & Case", RatioType = "Shape")
+shape_data_ndnd <- as.data.frame(shape_ratio_ndnd) %>% mutate(Category = "Control & Control", RatioType = "Shape")
 
 location_combined_data <- bind_rows(location_data_dnd, location_data_dd, location_data_ndnd)
 size_combined_data <- bind_rows(size_data_dnd,size_data_dd, size_data_ndnd)
@@ -73,23 +77,24 @@ size_long_data <- size_combined_data %>%
 shape_long_data <- shape_combined_data %>%
   pivot_longer(cols = -c(Category, RatioType), names_to = "Pair", values_to = "ShapeRatio")
 
+
 plot_location <- ggplot(location_long_data, aes(x = LocationRatio, fill = Category)) +
-  geom_density(alpha = 0.5) + 
-  scale_fill_manual(values = c("Dementia & No Dementia" = "blue", "Dementia Only" = "red", "No Dementia Only" = "green")) +
+  geom_density(alpha = 0.5) +
+  scale_fill_manual(values = c("Case & Control" = "blue", "Case & Case" = "red", "Control & Control" = "green")) +
   labs(title = "Distribution of Location/Distance^2 Ratios", x = "Location/Distance^2 Ratio", y = "Density") +
   theme_minimal()+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 plot_size <- ggplot(size_long_data, aes(x = SizeRatio, fill = Category)) +
   geom_density(alpha = 0.5) +
-  scale_fill_manual(values = c("Dementia & No Dementia" = "blue", "Dementia Only" = "red", "No Dementia Only" = "green")) +
+  scale_fill_manual(values = c("Case & Control" = "blue", "Case & Case" = "red", "Control & Control" = "green")) +
   labs(title = "Distribution of Size Ratios", x = "Size Ratio", y = "Density") +
   theme_minimal()+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 plot_shape <- ggplot(shape_long_data, aes(x = ShapeRatio, fill = Category)) +
   geom_density(alpha = 0.5) +
-  scale_fill_manual(values = c("Dementia & No Dementia" = "blue", "Dementia Only" = "red", "No Dementia Only" = "green")) +
+  scale_fill_manual(values = c("Case & Control" = "blue", "Case & Case" = "red", "Control & Control" = "green")) +
   labs(title = "Distribution of Shape Ratios", x = "Shape Ratio", y = "Density") +
   theme_minimal()+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
@@ -101,3 +106,54 @@ ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de
                 plot_size, device = "png", width = 7, height = 7, units = "in")
 ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de-histogram_plot_shape_IdeasCustom_1.png"),
                 plot_shape, device = "png", width = 7, height = 7, units = "in")
+
+
+boxplot_location <-
+  ggplot(location_long_data, aes(x=Category, y=LocationRatio, fill=Category)) +
+  geom_boxplot() +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_ipsum() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=11)
+  ) +
+  ggtitle("Boxplot of Location Ratios") +
+  xlab("Category") +
+  ylab("Location Ratio")
+
+
+boxplot_size<-
+  ggplot(size_long_data, aes(x=Category, y=SizeRatio, fill=Category)) +
+  geom_boxplot() +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_ipsum() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=11)
+  ) +
+  ggtitle("Boxplot of Size Ratios") +
+  xlab("Category") +
+  ylab("Size Ratio")
+
+boxplot_shape<-
+ggplot(shape_long_data, aes(x=Category, y=ShapeRatio, fill=Category)) +
+  geom_boxplot() +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_ipsum() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=11)
+  ) +
+  ggtitle("Boxplot of Shape Ratios") +
+  xlab("Category") +
+  ylab("Shape Ratio")
+
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de-histogram_boxplot_location_IdeasCustom_1.png"),
+                boxplot_location, device = "png", width = 5, height = 7, units = "in")
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de-histogram_boxplot_size_IdeasCustom_1.png"),
+                boxplot_size, device = "png", width = 5, height = 7, units = "in")
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de-histogram_boxplot_shape_IdeasCustom_1.png"),
+                boxplot_shape, device = "png", width = 5, height = 7, units = "in")
