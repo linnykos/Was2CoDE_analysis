@@ -64,11 +64,16 @@ shape_data_ndnd <- as.data.frame(shape_ratio_ndnd) %>% mutate(Category = "No Dem
 
 location_combined_data <- bind_rows(location_data_dnd, location_data_dd, location_data_ndnd)
 size_combined_data <- bind_rows(size_data_dnd,size_data_dd, size_data_ndnd)
-shape_combined_data <- bind_rows <- (shape_data_dnd, shape_data_dd,shape_data_ndnd)
+shape_combined_data <- bind_rows(shape_data_dnd, shape_data_dd,shape_data_ndnd)
 
 location_long_data <- combined_data %>%
   pivot_longer(cols = -Category, names_to = "Pair", values_to = "LocationRatio")
-
+location_long_data <- location_combined_data %>%
+  pivot_longer(cols = -c(Category, RatioType), names_to = "Pair", values_to = "LocationRatio")
+size_long_data <- size_combined_data %>%
+  pivot_longer(cols = -c(Category, RatioType), names_to = "Pair", values_to = "SizeRatio")
+shape_long_data <- shape_combined_data %>%
+  pivot_longer(cols = -c(Category, RatioType), names_to = "Pair", values_to = "ShapeRatio")
 
 plot_location <- ggplot(location_long_data, aes(x = LocationRatio, fill = Category)) +
   geom_density(alpha = 0.5) + 
@@ -76,5 +81,22 @@ plot_location <- ggplot(location_long_data, aes(x = LocationRatio, fill = Catego
   labs(title = "Distribution of Location/Distance^2 Ratios", x = "Location/Distance^2 Ratio", y = "Density") +
   theme_minimal()
 
-ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de-histogram_IdeasCustom_1.png"),
+plot_size <- ggplot(size_long_data, aes(x = SizeRatio, fill = Category)) +
+  geom_density(alpha = 0.5) +
+  scale_fill_manual(values = c("Dementia & No Dementia" = "blue", "Dementia Only" = "red", "No Dementia Only" = "green")) +
+  labs(title = "Distribution of Size Ratios", x = "Size Ratio", y = "Density") +
+  theme_minimal()
+
+plot_shape <- ggplot(shape_long_data, aes(x = ShapeRatio, fill = Category)) +
+  geom_density(alpha = 0.5) +
+  scale_fill_manual(values = c("Dementia & No Dementia" = "blue", "Dementia Only" = "red", "No Dementia Only" = "green")) +
+  labs(title = "Distribution of Shape Ratios", x = "Shape Ratio", y = "Density") +
+  theme_minimal()
+
+
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de-histogram_plot_location_IdeasCustom_1.png"),
                 plot_location, device = "png", width = 7, height = 7, units = "in")
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de-histogram_plot_size_IdeasCustom_1.png"),
+                plot_size, device = "png", width = 7, height = 7, units = "in")
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de-histogram_plot_shape_IdeasCustom_1.png"),
+                plot_shape, device = "png", width = 7, height = 7, units = "in")
