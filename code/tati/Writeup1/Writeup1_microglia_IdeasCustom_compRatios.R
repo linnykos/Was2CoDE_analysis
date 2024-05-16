@@ -42,15 +42,15 @@ no_dementia_indices <- which(meta_ind$CognitiveStatus == "No_dementia")
 
 location_ratio_dnd <- location_ratio[dementia_indices, no_dementia_indices]
 size_ratio_dnd <- size_ratio[dementia_indices, no_dementia_indices]
-shape_ratio_dnd <- size_ratio[dementia_indices, no_dementia_indices]
+shape_ratio_dnd <- shape_ratio[dementia_indices, no_dementia_indices]
 
 location_ratio_dd <- location_ratio[dementia_indices, dementia_indices]
 size_ratio_dd <- size_ratio[dementia_indices, dementia_indices]
-shape_ratio_dd <- size_ratio[dementia_indices, dementia_indices]
+shape_ratio_dd <- shape_ratio[dementia_indices, dementia_indices]
 
 location_ratio_ndnd <- location_ratio[no_dementia_indices, no_dementia_indices]
 size_ratio_ndnd <- size_ratio[no_dementia_indices, no_dementia_indices]
-shape_ratio_ndnd <- size_ratio[no_dementia_indices, no_dementia_indices]
+shape_ratio_ndnd <- shape_ratio[no_dementia_indices, no_dementia_indices]
 
 location_data_dnd <- as.data.frame(location_ratio_dnd) %>% mutate(Category = "Dementia & No Dementia",RatioType = "Location")
 location_data_dd <- as.data.frame(location_ratio_dd) %>% mutate(Category = "Dementia Only", RatioType = "Location")
@@ -66,8 +66,6 @@ location_combined_data <- bind_rows(location_data_dnd, location_data_dd, locatio
 size_combined_data <- bind_rows(size_data_dnd,size_data_dd, size_data_ndnd)
 shape_combined_data <- bind_rows(shape_data_dnd, shape_data_dd,shape_data_ndnd)
 
-location_long_data <- combined_data %>%
-  pivot_longer(cols = -Category, names_to = "Pair", values_to = "LocationRatio")
 location_long_data <- location_combined_data %>%
   pivot_longer(cols = -c(Category, RatioType), names_to = "Pair", values_to = "LocationRatio")
 size_long_data <- size_combined_data %>%
@@ -79,19 +77,22 @@ plot_location <- ggplot(location_long_data, aes(x = LocationRatio, fill = Catego
   geom_density(alpha = 0.5) + 
   scale_fill_manual(values = c("Dementia & No Dementia" = "blue", "Dementia Only" = "red", "No Dementia Only" = "green")) +
   labs(title = "Distribution of Location/Distance^2 Ratios", x = "Location/Distance^2 Ratio", y = "Density") +
-  theme_minimal()
+  theme_minimal()+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 plot_size <- ggplot(size_long_data, aes(x = SizeRatio, fill = Category)) +
   geom_density(alpha = 0.5) +
   scale_fill_manual(values = c("Dementia & No Dementia" = "blue", "Dementia Only" = "red", "No Dementia Only" = "green")) +
   labs(title = "Distribution of Size Ratios", x = "Size Ratio", y = "Density") +
-  theme_minimal()
+  theme_minimal()+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 plot_shape <- ggplot(shape_long_data, aes(x = ShapeRatio, fill = Category)) +
   geom_density(alpha = 0.5) +
   scale_fill_manual(values = c("Dementia & No Dementia" = "blue", "Dementia Only" = "red", "No Dementia Only" = "green")) +
   labs(title = "Distribution of Shape Ratios", x = "Shape Ratio", y = "Density") +
-  theme_minimal()
+  theme_minimal()+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 
 ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de-histogram_plot_location_IdeasCustom_1.png"),
