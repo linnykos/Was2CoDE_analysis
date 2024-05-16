@@ -52,11 +52,19 @@ location_ratio_ndnd <- location_ratio[no_dementia_indices, no_dementia_indices]
 size_ratio_ndnd <- size_ratio[no_dementia_indices, no_dementia_indices]
 shape_ratio_ndnd <- size_ratio[no_dementia_indices, no_dementia_indices]
 
-location_data_dnd <- as.data.frame(location_ratio_dnd) %>% mutate(Category = "Dementia & No Dementia")
-location_data_dd <- as.data.frame(location_ratio_dd) %>% mutate(Category = "Dementia Only")
-location_data_ndnd <- as.data.frame(location_ratio_ndnd) %>% mutate(Category = "No Dementia Only")
+location_data_dnd <- as.data.frame(location_ratio_dnd) %>% mutate(Category = "Dementia & No Dementia",RatioType = "Location")
+location_data_dd <- as.data.frame(location_ratio_dd) %>% mutate(Category = "Dementia Only", RatioType = "Location")
+location_data_ndnd <- as.data.frame(location_ratio_ndnd) %>% mutate(Category = "No Dementia Only", RatioType = "Location")
+size_data_dnd <- as.data.frame(size_ratio_dnd) %>% mutate(Category = "Dementia & No Dementia", RatioType = "Size")
+size_data_dd <- as.data.frame(size_ratio_dd) %>% mutate(Category = "Dementia Only", RatioType = "Size")
+size_data_ndnd <- as.data.frame(size_ratio_ndnd) %>% mutate(Category = "No Dementia Only", RatioType = "Size")
+shape_data_dnd <- as.data.frame(shape_ratio_dnd) %>% mutate(Category = "Dementia & No Dementia", RatioType = "Shape")
+shape_data_dd <- as.data.frame(shape_ratio_dd) %>% mutate(Category = "Dementia Only", RatioType = "Shape")
+shape_data_ndnd <- as.data.frame(shape_ratio_ndnd) %>% mutate(Category = "No Dementia Only", RatioType = "Shape")
 
-location_combined_data <- bind_rows(data_dnd, data_dd, data_ndnd)
+location_combined_data <- bind_rows(location_data_dnd, location_data_dd, location_data_ndnd)
+size_combined_data <- bind_rows(size_data_dnd,size_data_dd, size_data_ndnd)
+shape_combined_data <- bind_rows <- (shape_data_dnd, shape_data_dd,shape_data_ndnd)
 
 location_long_data <- combined_data %>%
   pivot_longer(cols = -Category, names_to = "Pair", values_to = "LocationRatio")
