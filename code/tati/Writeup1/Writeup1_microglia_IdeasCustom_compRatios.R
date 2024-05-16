@@ -1,3 +1,6 @@
+library(dplyr)
+library(tidyr)
+library(ggplot2)
 
 gene_index <- 738  #gene index for "SMO"
 
@@ -48,3 +51,22 @@ shape_ratio_dd <- size_ratio[dementia_indices, dementia_indices]
 location_ratio_ndnd <- location_ratio[no_dementia_indices, no_dementia_indices]
 size_ratio_ndnd <- size_ratio[no_dementia_indices, no_dementia_indices]
 shape_ratio_ndnd <- size_ratio[no_dementia_indices, no_dementia_indices]
+
+location_data_dnd <- as.data.frame(location_ratio_dnd) %>% mutate(Category = "Dementia & No Dementia")
+location_data_dd <- as.data.frame(location_ratio_dd) %>% mutate(Category = "Dementia Only")
+location_data_ndnd <- as.data.frame(location_ratio_ndnd) %>% mutate(Category = "No Dementia Only")
+
+location_combined_data <- bind_rows(data_dnd, data_dd, data_ndnd)
+
+location_long_data <- combined_data %>%
+  pivot_longer(cols = -Category, names_to = "Pair", values_to = "LocationRatio")
+
+
+plot_location <- ggplot(location_long_data, aes(x = LocationRatio, fill = Category)) +
+  geom_density(alpha = 0.5) + 
+  scale_fill_manual(values = c("Dementia & No Dementia" = "blue", "Dementia Only" = "red", "No Dementia Only" = "green")) +
+  labs(title = "Distribution of Location/Distance^2 Ratios", x = "Location/Distance^2 Ratio", y = "Density") +
+  theme_minimal()
+
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de-histogram_IdeasCustom_1.png"),
+                plot_location, device = "png", width = 7, height = 7, units = "in")
