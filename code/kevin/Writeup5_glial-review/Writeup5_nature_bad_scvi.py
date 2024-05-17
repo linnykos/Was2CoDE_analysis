@@ -20,7 +20,7 @@ print("Last run with scvi-tools version:", scvi.__version__)
 file_path = "/home/users/kzlin/kzlinlab/data/microglia-prater-2023/Prater_Green_PU1_MGsubset_10clusters_DeID.h5ad"
 adata = ad.read_h5ad(file_path)
 
-donor_ids_to_keep = ["D:14", "D:20", "D:21", "D:18", "D:22", "D:13", "D:4", "D:1", "D:12", "D:11"] 
+donor_ids_to_keep = ["D:14", "D:20", "D:21", "D:18", "D:19", "D:15", "D:7", "D:10", "D:4", "D:12"] 
 
 # Filter the `obs` DataFrame to include only these donors
 filtered_obs = adata.obs[adata.obs["Pt_ID"].isin(donor_ids_to_keep)]
@@ -54,7 +54,7 @@ model.train()
 SCVI_LATENT_KEY = "X_scVI"
 filtered_adata.obsm[SCVI_LATENT_KEY] = model.get_latent_representation()
 
-model.save(dir_path="/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_good_scvi-model", 
+model.save(dir_path="/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_bad_scvi-model", 
            overwrite=True)
 
-filtered_adata.write("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_good_anndata.h5ad")
+filtered_adata.write("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_bad_anndata.h5ad")
