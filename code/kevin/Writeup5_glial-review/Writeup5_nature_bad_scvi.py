@@ -9,6 +9,7 @@ import seaborn as sns
 import torch
 import numpy as np
 import scipy.sparse as sp
+import pandas as pd
 import gc
 
 # Set global settings
@@ -22,7 +23,13 @@ print("Last run with scvi-tools version:", scvi.__version__)
 file_path = "/home/users/kzlin/kzlinlab/data/microglia-prater-2023/Prater_Green_PU1_MGsubset_10clusters_DeID.h5ad"
 adata = ad.read_h5ad(file_path)
 
-donor_ids_to_keep = ["D:14", "D:20", "D:21", "D:18", "D:19", "D:15", "D:7", "D:10", "D:4", "D:12"] 
+pd.crosstab(adata.obs['Pt_ID'], adata.obs['SeqBatch'])
+pd.crosstab(adata.obs['Pt_ID'], adata.obs['CognitiveStatus'])
+pd.crosstab(adata.obs['Pt_ID'], adata.obs['Sex'])
+pd.crosstab(adata.obs['Pt_ID'], adata.obs['Race'])
+
+donor_ids_to_keep = ["D:10", "D:13", "D:16", "D:17", "D:22", # control (M, F, F, F, M). All on Batch 2
+                     "D:11", "D:2", "D:3", "D:5", "D:8"] # cases (M, F, F, F, F). All on Batch 1
 
 # Filter the `obs` DataFrame to include only these donors
 filtered_obs = adata.obs[adata.obs["Pt_ID"].isin(donor_ids_to_keep)]
@@ -34,6 +41,7 @@ filtered_adata.layers["counts"] = filtered_adata.X.copy()
 filtered_adata.obs["SeqBatch"] = filtered_adata.obs["SeqBatch"].astype('category')
 filtered_adata.obs["Pt_ID"] = filtered_adata.obs["Pt_ID"].astype('category')
 filtered_adata.obs["Sex"] = filtered_adata.obs["Sex"].astype('category')
+filtered_adata.obs["Race"] = filtered_adata.obs["Race"].astype('category')
 
 # Normalizing to median total counts
 sc.pp.normalize_total(filtered_adata)
@@ -52,7 +60,7 @@ filtered_adata
 scvi.model.SCVI.setup_anndata(
     filtered_adata,
     layer="counts",
-    categorical_covariate_keys=["Sex", "Pt_ID"],
+    categorical_covariate_keys=["Sex", "Pt_ID", "Race"],
     continuous_covariate_keys=["percent.mito"],
     batch_key="SeqBatch"
 )

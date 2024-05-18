@@ -18,7 +18,7 @@ torch.set_float32_matmul_precision("high")
 
 print("Last run with scvi-tools version:", scvi.__version__)
 
-filtered_adata = ad.read_h5ad("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_good_anndata.h5ad")
+filtered_adata = ad.read_h5ad("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_bad_anndata.h5ad")
 
 # https://docs.scvi-tools.org/en/stable/tutorials/notebooks/quick_start/api_overview.html
 # use scVI latent space for UMAP generation
@@ -35,7 +35,7 @@ sc.pl.umap(
 
 # Path to the directory where the plot will be saved
 save_dir = os.path.expanduser("~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup5")
-save_path = os.path.join(save_dir, "Writeup5_nature_good_scvi_Pt_ID.png")
+save_path = os.path.join(save_dir, "Writeup5_nature_bad_scvi_Pt_ID.png")
 
 # Create the directory if it does not exist
 os.makedirs(save_dir, exist_ok=True)
@@ -50,7 +50,7 @@ sc.pl.umap(
 # Save the figure manually
 plt.savefig(save_path, bbox_inches='tight')
 
-save_path = os.path.join(save_dir, "Writeup5_nature_good_scvi_SeqBatch.png")
+save_path = os.path.join(save_dir, "Writeup5_nature_bad_scvi_SeqBatch.png")
 # Create the UMAP plot without displaying it
 sc.pl.umap(
     filtered_adata,
@@ -61,7 +61,7 @@ sc.pl.umap(
 # Save the figure manually
 plt.savefig(save_path, bbox_inches='tight')
 
-save_path = os.path.join(save_dir, "Writeup5_nature_good_scvi_CognitiveStatus.png")
+save_path = os.path.join(save_dir, "Writeup5_nature_bad_scvi_CognitiveStatus.png")
 # Create the UMAP plot without displaying it
 sc.pl.umap(
     filtered_adata,
