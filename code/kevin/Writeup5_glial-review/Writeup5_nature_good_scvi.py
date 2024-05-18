@@ -7,6 +7,7 @@ import scanpy as sc
 import scvi
 import seaborn as sns
 import torch
+import pandas as pd
 import gc
 
 # Set global settings

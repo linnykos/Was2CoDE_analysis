@@ -7,8 +7,6 @@ import scanpy as sc
 import scvi
 import seaborn as sns
 import torch
-import numpy as np
-import scipy.sparse as sp
 import pandas as pd
 import gc
 
@@ -37,6 +35,8 @@ filtered_obs = adata.obs[adata.obs["Pt_ID"].isin(donor_ids_to_keep)]
 # Create a new AnnData object with the filtered cells
 filtered_adata = adata[filtered_obs.index].copy()
 filtered_adata.layers["counts"] = filtered_adata.X.copy()
+
+pd.crosstab(filtered_adata.obs['SeqBatch'], filtered_adata.obs['CognitiveStatus'])
 
 filtered_adata.obs["SeqBatch"] = filtered_adata.obs["SeqBatch"].astype('category')
 filtered_adata.obs["Pt_ID"] = filtered_adata.obs["Pt_ID"].astype('category')
