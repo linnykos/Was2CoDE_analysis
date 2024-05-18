@@ -60,7 +60,7 @@ filtered_adata
 scvi.model.SCVI.setup_anndata(
     filtered_adata,
     layer="counts",
-    categorical_covariate_keys=["Sex", "Pt_ID", "Race"],
+    categorical_covariate_keys=["Sex", "Race"],
     continuous_covariate_keys=["percent.mito"],
     batch_key="SeqBatch"
 )
@@ -68,7 +68,7 @@ scvi.model.SCVI.setup_anndata(
 model = scvi.model.SCVI(filtered_adata,
                         n_layers=2,
                         n_latent=30,
-                        gene_likelihood="nb")
+                        gene_likelihood="zinb")
 model.train()
 
 SCVI_LATENT_KEY = "X_scVI"
@@ -85,3 +85,5 @@ if filtered_adata.raw is not None:
         filtered_adata.raw.var.rename(columns={'_index': 'index_raw_var'}, inplace=True)
 
 filtered_adata.write("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_bad_anndata.h5ad")
+
+print("Done! :)")

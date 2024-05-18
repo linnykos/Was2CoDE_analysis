@@ -8,6 +8,7 @@ import scvi
 import seaborn as sns
 import torch
 import gc
+import pandas as pd
 import os
 
 # Set global settings
