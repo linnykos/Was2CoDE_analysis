@@ -7,6 +7,8 @@ import scanpy as sc
 import scvi
 import seaborn as sns
 import torch
+import numpy as np
+import scipy.sparse as sp
 import gc
 
 # Set global settings
@@ -27,14 +29,20 @@ filtered_obs = adata.obs[adata.obs["Pt_ID"].isin(donor_ids_to_keep)]
 
 # Create a new AnnData object with the filtered cells
 filtered_adata = adata[filtered_obs.index].copy()
+filtered_adata.layers["counts"] = filtered_adata.X.copy()
 
 filtered_adata.obs["SeqBatch"] = filtered_adata.obs["SeqBatch"].astype('category')
 filtered_adata.obs["Pt_ID"] = filtered_adata.obs["Pt_ID"].astype('category')
 filtered_adata.obs["Sex"] = filtered_adata.obs["Sex"].astype('category')
 
+# Normalizing to median total counts
+sc.pp.normalize_total(filtered_adata)
+# Logarithmize the data
+sc.pp.log1p(filtered_adata)
+
 sc.pp.highly_variable_genes(
     filtered_adata,
-    n_top_genes=2000,
+    n_top_genes=5000,
     batch_key="Pt_ID",
     subset=True
 )
@@ -43,12 +51,16 @@ filtered_adata
 
 scvi.model.SCVI.setup_anndata(
     filtered_adata,
+    layer="counts",
     categorical_covariate_keys=["Sex", "Pt_ID"],
     continuous_covariate_keys=["percent.mito"],
     batch_key="SeqBatch"
 )
 
-model = scvi.model.SCVI(filtered_adata)
+model = scvi.model.SCVI(filtered_adata,
+                        n_layers=2,
+                        n_latent=30,
+                        gene_likelihood="nb")
 model.train()
 
 SCVI_LATENT_KEY = "X_scVI"
@@ -56,5 +68,12 @@ filtered_adata.obsm[SCVI_LATENT_KEY] = model.get_latent_representation()
 
 model.save(dir_path="/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_bad_scvi-model", 
            overwrite=True)
+
+reserved_names = {'_index'}
+if filtered_adata.raw is not None:
+    raw_var_reserved = reserved_names.intersection(filtered_adata.raw.var.columns)
+    print("Reserved names in raw.var:", raw_var_reserved)
+    if '_index' in filtered_adata.raw.var.columns:
+        filtered_adata.raw.var.rename(columns={'_index': 'index_raw_var'}, inplace=True)
 
 filtered_adata.write("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_nature_bad_anndata.h5ad")
