@@ -60,14 +60,14 @@ filtered_adata
 scvi.model.SCVI.setup_anndata(
     filtered_adata,
     layer="counts",
-    categorical_covariate_keys=["Sex", "Race"],
+    categorical_covariate_keys=["Sex", "Race", "Pt_ID"],
     continuous_covariate_keys=["percent.mito"],
     batch_key="SeqBatch"
 )
 
 model = scvi.model.SCVI(filtered_adata,
                         n_layers=2,
-                        n_latent=30,
+                        n_latent=10,
                         gene_likelihood="zinb")
 model.train()
 
