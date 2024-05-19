@@ -67,7 +67,7 @@ scvi.model.SCVI.setup_anndata(
 
 model = scvi.model.SCVI(filtered_adata,
                         n_layers=2,
-                        n_latent=10,
+                        n_latent=30,
                         gene_likelihood="zinb")
 model.train()
 
