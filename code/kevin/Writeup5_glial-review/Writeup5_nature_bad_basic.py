@@ -22,6 +22,10 @@ print("Last run with scvi-tools version:", scvi.__version__)
 file_path = "/home/users/kzlin/kzlinlab/data/microglia-prater-2023/Prater_Green_PU1_MGsubset_10clusters_DeID.h5ad"
 adata = ad.read_h5ad(file_path)
 
+import sys
+sys.path.append('/home/users/kzlin/kzlinlab/projects/subject-de/git/subject-de_kevin/code/kevin/Writeup5_glial-review/')
+from nature_color_palette import *
+
 donor_ids_to_keep = ["D:10", "D:13", "D:16", "D:17", "D:22", # control (M, F, F, F, M). All on Batch 2
                      "D:11", "D:2", "D:3", "D:5", "D:8"] # cases (M, F, F, F, F). All on Batch 1
 
@@ -69,6 +73,8 @@ sc.pl.umap(
     filtered_adata,
     color=["Pt_ID"],
     frameon=False,
+    palette=donor_col_palette,
+    title="Bad, by Donor, before",
     show=False
 )
 # Save the figure manually
@@ -80,20 +86,9 @@ sc.pl.umap(
     filtered_adata,
     color=["SeqBatch"],
     frameon=False,
+    palette=batch_col_palette,
+    title="Bad, by Batch, before",
     show=False
 )
 # Save the figure manually
 plt.savefig(save_path, bbox_inches='tight')
-
-save_path = os.path.join(save_dir, "Writeup5_nature_bad_basic_CognitiveStatus.png")
-# Create the UMAP plot without displaying it
-sc.pl.umap(
-    filtered_adata,
-    color=["CognitiveStatus"],
-    frameon=False,
-    show=False
-)
-# Save the figure manually
-plt.savefig(save_path, bbox_inches='tight')
-
-print("Done! :)")
