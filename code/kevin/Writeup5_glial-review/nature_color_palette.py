@@ -21,6 +21,6 @@ donor_col_palette = {
 }
 
 batch_col_palette = {
-    "1": mcolors.to_hex((255/255, 135/255, 73/255)),
-    "2": mcolors.to_hex((205/255, 175/255, 255/255))
+    1: mcolors.to_hex((255/255, 109/255, 36/255)),
+    2: mcolors.to_hex((180/255, 137/255, 255/255))
 }
