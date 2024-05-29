@@ -154,7 +154,7 @@ ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de
 
 # Plot 3: Median of size/distance^2 for pairs of donors case-control vs
 # Median of location/distance^2 for pairs of donors case-control
-plot3 <- ggplot(statistics_df, aes(x = median_size_dist2_case_case_control_control, 
+plot3 <- ggplot(statistics_df, aes(x = median_loc_dist2_case_control, 
                                    y = median_size_dist2_case_control, 
                                    label = label)) +
   geom_point() +
