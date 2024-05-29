@@ -93,8 +93,78 @@ test_that("compute_statistics works correctly", {
 
 print("All tests passed.")
 
+#run data
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideascustom.RData")
 statistics <- compute_statistics(dist_list, meta_ind, pval_ideas)
 save(statistics,
      file = "~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideascustom_5statistics.RData")
 
 print("Done! :)")
+
+#Plots
+
+library(ggplot2)
+library(ggrepel)
+
+# Convert the statistics matrix to a data frame for ggplot2
+statistics_df <- as.data.frame(statistics)
+colnames(statistics_df) <- c("median_loc_dist2_case_control", 
+                             "median_loc_dist2_case_case_control_control", 
+                             "median_size_dist2_case_control", 
+                             "median_size_dist2_case_case_control_control", 
+                             "-log10_p_value")
+
+# Labels
+statistics_df$label <- ifelse(rank(-statistics_df$`-log10_p_value`) <= 10, rownames(statistics_df), "")
+
+# Plot 1: Median of location/distance^2 for pairs of donors case-control vs
+# Median of location/distance^2 for pairs of donors case-case or control-control
+plot1 <- ggplot(statistics_df, aes(x = median_loc_dist2_case_case_control_control, 
+                                   y = median_loc_dist2_case_control, 
+                                   label = label)) +
+  geom_point() +
+  geom_text_repel(max.overlaps = 200) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Plot 1: Med location/distance^2 (Case-Control vs Case-Case or Control-Control)",
+       x = "Med location/dist^2 (Case-Case or Control-Control)",
+       y = "Med location/dist^2 (Case-Control)") +
+  theme_minimal()+
+  theme(panel.grid = element_blank())
+
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de_location_distance.png"),
+                plot1, device = "png", width = 5, height = 7, units = "in")
+
+# Plot 2: Median of size/distance^2 for pairs of donors case-control vs
+# Median of size/distance^2 for pairs of donors case-case or control-control
+plot2 <- ggplot(statistics_df, aes(x = median_size_dist2_case_case_control_control, 
+                                   y = median_size_dist2_case_control, 
+                                   label = label)) +
+  geom_point() +
+  geom_text_repel(max.overlaps = 200) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Plot 2: Median of size/distance^2 (Case-Control vs Case-Case or Control-Control)",
+       x = "Median size/dist^2 (Case-Case or Control-Control)",
+       y = "Median size/dist^2 (Case-Control)") +
+  theme_minimal()+
+  theme(panel.grid = element_blank())
+
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de_size_distance.png"),
+                plot2, device = "png", width = 5, height = 7, units = "in")
+
+
+# Plot 3: Median of size/distance^2 for pairs of donors case-control vs
+# Median of location/distance^2 for pairs of donors case-control
+plot3 <- ggplot(statistics_df, aes(x = median_size_dist2_case_case_control_control, 
+                                   y = median_size_dist2_case_control, 
+                                   label = label)) +
+  geom_point() +
+  geom_text_repel(max.overlaps = 200) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Plot 3: size/distance^2 vs location/dist^2 Case-Control",
+       x = "Median size/dist^2 (Case-Control)",
+       y = "Median location/dist^2 (Case-Control)") +
+  theme_minimal()+
+  theme(panel.grid = element_blank())
+
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de_size_location.png"),
+                plot3, device = "png", width = 5, height = 7, units = "in")
