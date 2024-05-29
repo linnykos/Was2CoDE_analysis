@@ -23,7 +23,21 @@ table(seurat_all$Supertype2)
 for(i in 1:10){
   print(paste("Working on trial:", i))
   set.seed(i)
-  seurat_all[["umap"]] <- umap_list[[i]]
+  
+  # random rotate the UMAP
+  dimred_obj <- umap_list[[i]]
+  mat <- dimred_obj@cell.embeddings
+  for(kk in 1:ncol(mat)){
+    mat[,kk] <- sample(c(-1,1), size = 1)*mat[,kk]
+  }
+  theta <- runif(1, min = 0, max = 2*pi)
+  rotation_mat <- matrix(c(cos(theta), sin(theta), -sin(theta), cos(theta)), 2, 2)
+  mat2 <- mat %*% rotation_mat
+  rownames(mat2) <- rownames(mat)
+  colnames(mat2) <- colnames(mat)
+  dimred_obj@cell.embeddings <- mat2
+  
+  seurat_all[["umap"]] <- dimred_obj
   
   plot1 <- Seurat::DimPlot(seurat_all, 
                            reduction = "umap",
