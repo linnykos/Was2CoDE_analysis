@@ -102,7 +102,7 @@ save(statistics,
 print("Done! :)")
 
 #Plots
-
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup1/Writeup1_microglia_ideascustom_5statistics.RData")
 library(ggplot2)
 library(ggrepel)
 library(dplyr)
@@ -140,7 +140,7 @@ plot1 <- ggplot(statistics_df, aes(x = median_loc_dist2_case_case_control_contro
 
 #print(plot1)
 ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de_location_distance.png"),
-                plot1, device = "png", width = 5, height = 7, units = "in")
+                plot1, device = "png", width = 8, height = 7, units = "in")
 
 # Plot 2: Median of size/distance^2 for pairs of donors case-control vs
 # Median of size/distance^2 for pairs of donors case-case or control-control
@@ -160,7 +160,7 @@ plot2 <- ggplot(statistics_df, aes(x = median_size_dist2_case_case_control_contr
   scale_color_gradient(low = "#A9C8F3", high = "#0C2389")
 
 ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de_size_distance.png"),
-                plot2, device = "png", width = 5, height = 7, units = "in")
+                plot2, device = "png", width = 8, height = 7, units = "in")
 
 
 # Plot 3: Median of size/distance^2 for pairs of donors case-control vs
@@ -181,4 +181,4 @@ plot3 <- ggplot(statistics_df, aes(x = median_loc_dist2_case_control,
   scale_color_gradient(low = "#A9C8F3", high = "#0C2389")
 
 ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de_size_location.png"),
-                plot3, device = "png", width = 5, height = 7, units = "in")
+                plot3, device = "png", width = 7, height = 7, units = "in")
