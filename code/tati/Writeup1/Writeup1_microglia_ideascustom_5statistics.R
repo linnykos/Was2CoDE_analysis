@@ -119,6 +119,8 @@ statistics_df <- statistics_df %>%
   arrange(`log10pvalue`)
 # Labels
 statistics_df$label <- ifelse(rank(-statistics_df$"log10pvalue") <= 10, rownames(statistics_df), "")
+# To get the 10 genes with highest pvals
+# tail(statistics_df[,5:6],10)
 mid <- mean(statistics_df$`log10pvalue`, na.rm = TRUE)
 
 # Plot 1: Median of location/distance^2 for pairs of donors case-control vs
