@@ -109,76 +109,82 @@ library(dplyr)
 # Convert the statistics matrix to a data frame for ggplot2
 statistics_df <- as.data.frame(statistics)
 # Arrange the data frame by -log10_p_value in descending order
-statistics_df <- statistics_df %>%
-  arrange(desc("-log10_p_value"))
-
 colnames(statistics_df) <- c("median_loc_dist2_case_control", 
                              "median_loc_dist2_case_case_control_control", 
                              "median_size_dist2_case_control", 
                              "median_size_dist2_case_case_control_control", 
-                             "-log10_p_value")
-
+                             "log10pvalue")
+# Arrange the data frame by -log10_p_value in descending order
+statistics_df <- statistics_df %>%
+  arrange(`log10pvalue`)
 # Labels
-statistics_df$label <- ifelse(rank(-statistics_df$"-log10_p_value") <= 10, rownames(statistics_df), "")
+statistics_df$label <- ifelse(rank(-statistics_df$"log10pvalue") <= 10, rownames(statistics_df), "")
+mid <- mean(statistics_df$`log10pvalue`, na.rm = TRUE)
 
 # Plot 1: Median of location/distance^2 for pairs of donors case-control vs
 # Median of location/distance^2 for pairs of donors case-case or control-control
+# Plot 1: Med location/distance^2 (Case-Control vs Case-Case or Control-Control)
 plot1 <- ggplot(statistics_df, aes(x = median_loc_dist2_case_case_control_control, 
                                    y = median_loc_dist2_case_control, 
                                    label = label, 
-                                   color = `-log10_p_value`)) +
-  geom_point() +
-  geom_text_repel(max.overlaps = 200) +
+                                   color = `log10pvalue`)) +
+  geom_point(alpha = 0.8) +
+  geom_text_repel(max.overlaps = 200,, size = 4) +
   geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
   labs(title = "Plot 1: Med location/distance^2 (Case-Control vs Case-Case or Control-Control)",
        x = "Med location/dist^2 (Case-Case or Control-Control)",
        y = "Med location/dist^2 (Case-Control)",
        color = "-log10(p-value)") +
   theme_minimal() +
-  theme(panel.grid = element_blank()) +
-  scale_color_gradient(low = "#A9C8F3", high = "#0C2389")
-
-#print(plot1)
+  theme(panel.grid = element_blank(),
+        plot.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white"))
+plot1 <-plot1+scale_color_gradient2(midpoint = mid, low = "blue", mid = "beige", high = "red", space = "Lab") +
+  xlim(c(0, 0.5)) + ylim(c(0, 0.5))
+# print(plot1)
 ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de_location_distance.png"),
-                plot1, device = "png", width = 8, height = 7, units = "in")
+                plot = plot1, device = "png", width = 8, height = 7, units = "in")
 
-# Plot 2: Median of size/distance^2 for pairs of donors case-control vs
-# Median of size/distance^2 for pairs of donors case-case or control-control
+# Plot 2: Median of size/distance^2 (Case-Control vs Case-Case or Control-Control)
 plot2 <- ggplot(statistics_df, aes(x = median_size_dist2_case_case_control_control, 
-                                   y = median_size_dist2_case_control, 
-                                   label = label, 
-                                   color = `-log10_p_value`)) +
-  geom_point() +
+                                          y = median_size_dist2_case_control, 
+                                          label = label, 
+                                          color = `log10pvalue`)) +
+  geom_point(alpha = 0.8) +
   geom_text_repel(max.overlaps = 200) +
   geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
   labs(title = "Plot 2: Median of size/distance^2 (Case-Control vs Case-Case or Control-Control)",
        x = "Median size/dist^2 (Case-Case or Control-Control)",
        y = "Median size/dist^2 (Case-Control)",
        color = "-log10(p-value)") +
-  theme_minimal()+
-  theme(panel.grid = element_blank())+
-  scale_color_gradient(low = "#A9C8F3", high = "#0C2389")
+  theme_minimal() +
+  theme(panel.grid = element_blank(),
+        plot.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white"))
+
+plot2 <-plot2+scale_color_gradient2(midpoint = mid, low = "blue", mid = "beige", high = "red", space = "Lab")
 
 ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de_size_distance.png"),
-                plot2, device = "png", width = 8, height = 7, units = "in")
+                plot = plot2, device = "png", width = 8, height = 7, units = "in")
 
-
-# Plot 3: Median of size/distance^2 for pairs of donors case-control vs
-# Median of location/distance^2 for pairs of donors case-control
-plot3 <- ggplot(statistics_df, aes(x = median_loc_dist2_case_control, 
-                                   y = median_size_dist2_case_control, 
-                                   label = label,
-                                   color = `-log10_p_value`)) +
-  geom_point() +
+# Plot 3: Median of size/distance^2 vs location/dist^2 Case-Control
+plot3 <- ggplot(statistics_df,
+                aes(x = median_loc_dist2_case_control, 
+                    y = median_size_dist2_case_control, 
+                    label = label,
+                    color = `log10pvalue`)) +
+  geom_point(alpha = 0.8) +
   geom_text_repel(max.overlaps = 200) +
   geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
   labs(title = "Plot 3: size/distance^2 vs location/dist^2 Case-Control",
-       x = "Median size/dist^2 (Case-Control)",
-       y = "Median location/dist^2 (Case-Control)",
+       x = "Median location/dist^2 (Case-Control)",
+       y = "Median size/dist^2 (Case-Control)",
        color = "-log10(p-value)") +
-  theme_minimal()+
-  theme(panel.grid = element_blank())+
-  scale_color_gradient(low = "#A9C8F3", high = "#0C2389")
+  theme_minimal() +
+  theme(panel.grid = element_blank(),
+        plot.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white")) +
+  scale_color_gradient2(midpoint = mid, low = "blue", mid = "beige", high = "red", space = "Lab")
 
 ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup1/Writeup1_de_size_location.png"),
-                plot3, device = "png", width = 7, height = 7, units = "in")
+                plot = plot3, device = "png", width = 8, height = 7, units = "in")
