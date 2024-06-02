@@ -35,6 +35,9 @@ adata.obs["Pt_ID"] = adata.obs["Pt_ID"].astype('category')
 adata.obs["Sex"] = adata.obs["Sex"].astype('category')
 adata.obs["Race"] = adata.obs["Race"].astype('category')
 
+# adding raw counts for referring to it in the future
+adata.layers["counts"] = adata.X.copy()
+
 # Normalizing to median total counts
 sc.pp.normalize_total(adata)
 # Logarithmize the data
