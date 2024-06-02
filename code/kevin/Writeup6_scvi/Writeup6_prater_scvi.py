@@ -8,7 +8,9 @@ import scvi
 import seaborn as sns
 import torch
 import pandas as pd
+import numpy as np
 import gc
+from collections import Counter
 
 # Set global settings
 scvi.settings.seed = 0
@@ -20,6 +22,13 @@ print("Last run with scvi-tools version:", scvi.__version__)
 
 file_path = "/home/users/kzlin/kzlinlab/data/microglia-prater-2023/Prater_Green_PU1_MGsubset_10clusters_DeID.h5ad"
 adata = ad.read_h5ad(file_path)
+
+# Counter(adata.obs["Sex"])
+# Counter(adata.obs["coded_Age"])
+# Counter(adata.obs["CognitiveStatus"])
+# Counter(adata.obs["genotype_APOE"])
+# adata.obs["PMI"].quantile([0, 0.25, 0.5, 0.75, 1])
+# adata.obs["coded_Age"].quantile([0, 0.25, 0.5, 0.75, 1])
 
 adata.obs["SeqBatch"] = adata.obs["SeqBatch"].astype('category')
 adata.obs["Pt_ID"] = adata.obs["Pt_ID"].astype('category')
@@ -44,7 +53,7 @@ scvi.model.SCVI.setup_anndata(
     adata,
     layer="counts",
     categorical_covariate_keys=["Sex", "Race", "Pt_ID"],
-    continuous_covariate_keys=["percent.mito"],
+    continuous_covariate_keys=["percent.mito", "coded_Age"],
     batch_key="SeqBatch"
 )
 
