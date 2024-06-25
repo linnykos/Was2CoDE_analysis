@@ -61,7 +61,7 @@ model.train()
 SCVI_LATENT_KEY = "X_scVI"
 adata.obsm[SCVI_LATENT_KEY] = model.get_latent_representation()
 
-model.save(dir_path="/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup6/Writeup6_eprs_mg_subset_scvi-model", 
+model.save(dir_path="/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup6/Writeup6_eprs_mg_subset_scvi-wCovariates-model", 
            overwrite=True)
 
 reserved_names = {'_index'}
@@ -71,6 +71,6 @@ if adata.raw is not None:
     if '_index' in adata.raw.var.columns:
         adata.raw.var.rename(columns={'_index': 'index_raw_var'}, inplace=True)
 
-adata.write("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup6/Writeup6_eprs_mg_subset_scvi_anndata.h5ad")
+adata.write("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup6/Writeup6_eprs_mg_subset_scvi-wCovariates_anndata.h5ad")
 
 print("Done! :)")

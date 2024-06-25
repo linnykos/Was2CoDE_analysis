@@ -11,6 +11,7 @@ import torch
 import gc
 import os
 import sys
+import pandas as pd
 
 # Set global settings
 scvi.settings.seed = 0
@@ -89,3 +90,14 @@ sc.pl.umap(
 )
 # Save the figure manually
 plt.savefig(save_path, bbox_inches='tight')
+
+##############
+
+# denoise the gene expression
+# https://docs.scvi-tools.org/en/stable/tutorials/notebooks/quick_start/api_overview.html
+model = scvi.model.SCVI.load("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup6/Writeup6_prater_scvi-model", 
+                             adata)
+denoised = model.get_normalized_expression(adata, library_size=1e4)
+
+# Assuming df is your DataFrame
+denoised.to_feather("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup6/Writeup6_prater_scvi-denoised.feather")
