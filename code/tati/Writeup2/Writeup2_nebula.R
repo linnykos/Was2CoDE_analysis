@@ -137,6 +137,6 @@ note <- paste("Working from ~/kzlinlab/projects/subject-de/out/kevin/preprocess/
 save(nebula_res, 
      date_of_run, session_info, note,
      start_time, end_time,
-     file = "~/lab/projects/subject-de/out/tati/Writeup2/Writeup2_nebula.RData")
+     file = "~/kzlinlab/projects/subject-de/out/tati/Writeup2/Writeup2_nebula.RData")
 
 print("Done! :)")
