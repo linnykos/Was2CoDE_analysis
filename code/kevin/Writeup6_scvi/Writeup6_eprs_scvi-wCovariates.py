@@ -24,6 +24,8 @@ file_path = "/home/users/kzlin/kzlinlab/data/jayadev_pu1-only_eprs/QCd_norm_anch
 adata = ad.read_h5ad(file_path)
 
 adata.obs["Sample_ID"] = adata.obs["Sample_ID"].astype('category')
+adata.obs["sex"] = adata.obs["sex"].astype('category')
+adata.obs["Library_batch"] = adata.obs["Library_batch"].astype('category')
 
 # adding raw counts for referring to it in the future
 adata.layers["counts"] = adata.X.copy()
@@ -47,7 +49,7 @@ scvi.model.SCVI.setup_anndata(
     layer="counts",
     categorical_covariate_keys=["sex", "Sample_ID"],
     continuous_covariate_keys=["percent.mito", "age_at_death"],
-    batch_key=["Library_batch"]
+    batch_key="Library_batch"
 )
 
 model = scvi.model.SCVI(adata,

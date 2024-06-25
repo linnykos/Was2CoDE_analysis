@@ -46,7 +46,7 @@ scvi.model.SCVI.setup_anndata(
     adata,
     layer="counts",
     continuous_covariate_keys=["percent.mito"],
-    batch_key=["Sample_ID"]
+    batch_key="Sample_ID"
 )
 
 model = scvi.model.SCVI(adata,
