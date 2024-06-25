@@ -4,7 +4,7 @@
 #SBATCH --partition=all-20c96g
 #SBATCH --time=48:00:00
 
-#SBATCH --job-name=scvi_eprs
+#SBATCH --job-name=scvi_eprs2
 #SBATCH --mem-per-cpu=50gb
 
 #SBATCH --error=/home/users/%u/kzlinlab/projects/subject-de/out/kevin/Writeup6/slurm/slurm_%j.err
@@ -17,4 +17,4 @@ conda env list
 python --version
 conda list
 
-python Writeup6_eprs_scvi.py > ../../../../../out/kevin/Writeup6/slurm/$SLURM_JOB_NAME-$SLURM_JOB_ID.txt
+python Writeup6_eprs_scvi-wCovariates.py > ../../../../../out/kevin/Writeup6/slurm/$SLURM_JOB_NAME-$SLURM_JOB_ID.txt
