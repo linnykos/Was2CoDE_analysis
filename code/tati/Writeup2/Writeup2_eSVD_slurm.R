@@ -7,7 +7,7 @@
 #SBATCH --job-name=esvd
 #SBATCH --mem-per-cpu=50gb
 
-#SBATCH --error=/home/users/%u/kzlinlab/projects/subject-de/out/kevin/Writeup1/slurm/slurm_%j.err
-#SBATCH --output=/home/users/%u/kzlinlab/projects/subject-de/out/kevin/Writeup1/slurm/slurm_%j.out
+#SBATCH --error=/home/users/%u/kzlinlab/projects/subject-de/out/tati/Writeup2/slurm/slurm_%j.err
+#SBATCH --output=/home/users/%u/kzlinlab/projects/subject-de/out/tati/Writeup2/slurm/slurm_%j.out
 
 R CMD BATCH --no-save --no-restore Writeup2_eSVD.R ../../../../../out/tati/Writeup2/slurm/$SLURM_JOB_NAME-$SLURM_JOB_ID.Rout
