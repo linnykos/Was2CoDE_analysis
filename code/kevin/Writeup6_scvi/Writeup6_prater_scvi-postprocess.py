@@ -93,11 +93,33 @@ plt.savefig(save_path, bbox_inches='tight')
 
 ##############
 
+adata.obs["SeqBatch"] = adata.obs["SeqBatch"].astype('category')
+adata.obs["Pt_ID"] = adata.obs["Pt_ID"].astype('category')
+adata.obs["Sex"] = adata.obs["Sex"].astype('category')
+adata.obs["Race"] = adata.obs["Race"].astype('category')
+
 # denoise the gene expression
 # https://docs.scvi-tools.org/en/stable/tutorials/notebooks/quick_start/api_overview.html
 model = scvi.model.SCVI.load("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup6/Writeup6_prater_scvi-model", 
                              adata)
-denoised = model.get_normalized_expression(adata, library_size=1e4)
+
+# following https://discourse.scverse.org/t/using-categorical-covariate-keys-when-sampling-or-generating-normalised-expression/1493
+# manually set the mode and mean
+categorical_covariates = ["Sex", "Race", "Pt_ID"]
+for covariate in categorical_covariates:
+    mode_value = adata.obs[covariate].mode()[0]
+    adata.obs[covariate] = mode_value
+
+# Calculate mean for continuous covariates
+continuous_covariates = ["percent.mito", "coded_Age"]
+for covariate in continuous_covariates:
+    mean_value = adata.obs[covariate].mean()
+    adata.obs[covariate] = mean_value
+
+unique_batches = adata.obs["SeqBatch"].unique().tolist()
+denoised = model.get_normalized_expression(adata, 
+                                           return_mean=True, 
+                                           transform_batch=unique_batches)
 
 # Assuming df is your DataFrame
 denoised.to_feather("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup6/Writeup6_prater_scvi-denoised.feather")
