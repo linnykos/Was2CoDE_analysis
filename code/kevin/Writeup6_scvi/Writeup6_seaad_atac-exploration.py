@@ -27,15 +27,6 @@ print(adata.obs_names[0:10])
 print("Feature names")
 print(adata.var_names[0:10])
 
-count_matrix = adata.X
-if scipy.sparse.issparse(count_matrix):
-    count_matrix = count_matrix.todense()
-
-# Print the first 10-by-10 submatrix
-submatrix = count_matrix[:10, :10]
-print("Submatrix")
-print(submatrix)
-
 # Create a boolean mask for cells with '10xMulti' in 'method' and 'Microglia-PVM' in 'Subclass'
 mask = (adata.obs['method'] == '10xMulti') & (adata.obs['Subclass'] == 'Microglia-PVM')
 
