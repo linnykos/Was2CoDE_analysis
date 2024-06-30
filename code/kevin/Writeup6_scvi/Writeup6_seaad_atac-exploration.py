@@ -35,3 +35,15 @@ if scipy.sparse.issparse(count_matrix):
 submatrix = count_matrix[:10, :10]
 print("Submatrix")
 print(submatrix)
+
+# Create a boolean mask for cells with '10xMulti' in 'method' and 'Microglia-PVM' in 'Subclass'
+mask = (adata.obs['method'] == '10xMulti') & (adata.obs['Subclass'] == 'Microglia-PVM')
+
+# Subset the AnnData object
+adata_subset = adata[mask]
+
+print("Cell subset names")
+print(adata_subset.obs_names[0:10])
+
+# Save the subsetted AnnData object to an HDF5 file
+adata_subset.write_h5ad('/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup6/Writeup6_SEAAD_MTG_ATACseq_10xMulti_Microglia-PVM.h5ad')
