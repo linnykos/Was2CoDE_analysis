@@ -8,7 +8,7 @@ load("~/kzlinlab/data/microglia-prater-2023/Prater_Green_PU1_MGsubset_10clusters
 ss_data_norm <- Seurat::UpdateSeuratObject(ss_data_norm)
 
 # Reading the Feather file
-df <- arrow::read_feather('/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup6/Writeup6_prater_scvi-denoised.feather')
+df <- arrow::read_feather('/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup6/Writeup6_prater_scvi-noCovariates-denoised.feather')
 rowname_vec <- as.matrix(df[,ncol(df)])[,1]
 df <- df[,-ncol(df)]
 df <- as.matrix(df)

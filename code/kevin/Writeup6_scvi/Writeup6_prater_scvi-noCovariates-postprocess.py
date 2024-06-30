@@ -21,7 +21,7 @@ torch.set_float32_matmul_precision("high")
 
 print("Last run with scvi-tools version:", scvi.__version__)
 
-adata = ad.read_h5ad("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup6/Writeup6_eprs_mg_subset_scvi_anndata.h5ad")
+adata = ad.read_h5ad("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup6/Writeup6_prater_scvi-noCovariates_anndata.h5ad")
 
 # https://docs.scvi-tools.org/en/stable/tutorials/notebooks/quick_start/api_overview.html
 # use scVI latent space for UMAP generation
@@ -39,11 +39,11 @@ shuffled_indices = np.random.permutation(adata.n_obs)
 # Reindex the AnnData object
 adata2 = adata[shuffled_indices, :]
 
-save_path = os.path.join(save_dir, "Writeup6_eprs_mg_scvi_Sample_ID.png")
+save_path = os.path.join(save_dir, "Writeup6_prater_scvi-noCovariates_Pt_ID.png")
 # Create the UMAP plot without displaying it
 sc.pl.umap(
     adata2,
-    color=["Sample_ID"],
+    color=["Pt_ID"],
     frameon=False,
     title="By Donor",
     size=5,
@@ -52,11 +52,11 @@ sc.pl.umap(
 # Save the figure manually
 plt.savefig(save_path, bbox_inches='tight')
 
-save_path = os.path.join(save_dir, "Writeup6_eprs_mg_scvi_cognitive_status.png")
+save_path = os.path.join(save_dir, "Writeup6_prater_scvi-noCovariates_CognitiveStatus.png")
 # Create the UMAP plot without displaying it
 sc.pl.umap(
     adata2,
-    color=["cognitive_status"],
+    color=["CognitiveStatus"],
     frameon=False,
     title="By Cognitive Status",
     size=5,
@@ -65,7 +65,20 @@ sc.pl.umap(
 # Save the figure manually
 plt.savefig(save_path, bbox_inches='tight')
 
-save_path = os.path.join(save_dir, "Writeup6_eprs_mg_scvi_SeuratClusters.png")
+save_path = os.path.join(save_dir, "Writeup6_prater_scvi-noCovariates_SeqBatch.png")
+# Create the UMAP plot without displaying it
+sc.pl.umap(
+    adata2,
+    color=["SeqBatch"],
+    frameon=False,
+    title="By Batch",
+    size=5,
+    show=False
+)
+# Save the figure manually
+plt.savefig(save_path, bbox_inches='tight')
+
+save_path = os.path.join(save_dir, "Writeup6_prater_scvi-noCovariates_SeuratClusters.png")
 # Create the UMAP plot without displaying it
 sc.pl.umap(
     adata2,
@@ -78,24 +91,20 @@ sc.pl.umap(
 # Save the figure manually
 plt.savefig(save_path, bbox_inches='tight')
 
-save_path = os.path.join(save_dir, "Writeup6_eprs_mg_scvi_ePRS.png")
-# Create the UMAP plot without displaying it
-sc.pl.umap(
-    adata2,
-    color=["ePRS"],
-    frameon=False,
-    title="By ePRS status",
-    size=5,
-    show=False
-)
-# Save the figure manually
-plt.savefig(save_path, bbox_inches='tight')
+##############
 
+adata.obs["Pt_ID"] = adata.obs["Pt_ID"].astype('category')
 
-# Save the UMAP coordinates
-umap_coords = adata.obsm['X_umap']
-cell_names = adata.obs_names
-df = pd.DataFrame(umap_coords, index = cell_names)
-save_dir = os.path.expanduser("~/kzlinlab/projects/subject-de/out/kevin/Writeup6")
-save_path = os.path.join(save_dir, "Writeup6_eprs_mg_scvi_umap.csv")
-df.to_csv(save_path)
+# denoise the gene expression
+# https://docs.scvi-tools.org/en/stable/tutorials/notebooks/quick_start/api_overview.html
+model = scvi.model.SCVI.load("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup6/Writeup6_prater_scvi-noCovariates-model", 
+                             adata)
+
+unique_batches = adata.obs["Pt_ID"].unique().tolist()
+denoised = model.get_normalized_expression(adata, 
+                                           return_mean=True, 
+                                           transform_batch=unique_batches,
+                                           library_size=1e4)
+
+# Assuming df is your DataFrame
+denoised.to_feather("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup6/Writeup6_prater_scvi-noCovariates-denoised.feather")

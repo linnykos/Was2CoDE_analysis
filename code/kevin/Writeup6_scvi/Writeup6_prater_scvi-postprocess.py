@@ -106,9 +106,16 @@ model = scvi.model.SCVI.load("/home/users/kzlin/kzlinlab/projects/subject-de/out
 # following https://discourse.scverse.org/t/using-categorical-covariate-keys-when-sampling-or-generating-normalised-expression/1493
 # manually set the mode and mean
 categorical_covariates = ["Sex", "Race", "Pt_ID"]
+# Store the original categories
+original_categories = {covariate: adata.obs[covariate].cat.categories for covariate in categorical_covariates}
+
+# Calculate mode for categorical covariates
 for covariate in categorical_covariates:
     mode_value = adata.obs[covariate].mode()[0]
     adata.obs[covariate] = mode_value
+    # Ensure the categorical variable type and categories are retained
+    adata.obs[covariate] = adata.obs[covariate].astype('category')
+    adata.obs[covariate] = adata.obs[covariate].cat.set_categories(original_categories[covariate])
 
 # Calculate mean for continuous covariates
 continuous_covariates = ["percent.mito", "coded_Age"]
