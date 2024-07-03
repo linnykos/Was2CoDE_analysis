@@ -22,8 +22,8 @@ ss_data_norm$CognitiveStatus <- factor(gsub(
 
 # adjust the covariates
 # need to convert to numeric
-categorical_vars <- c("Sex", "SeqBatch", "Race", "CognitiveStatus")
-numerical_vars <- c("PMI", "BrainPh", "FreshBrainWeight", "coded_Age")
+categorical_vars <- c("Sex", "SeqBatch", "CognitiveStatus")
+numerical_vars <- c("PMI", "coded_Age")
 
 tmp <- as.character(ss_data_norm$coded_Age)
 tmp[which(tmp == "90+")] <- "90"
@@ -36,13 +36,13 @@ for(variable in numerical_vars){
   ss_data_norm@meta.data[,variable] <- as.numeric(as.character(ss_data_norm@meta.data[,variable]))
 }
 
-# need to fill in NAs in PMI, BrainPh, Race
+# need to fill in NAs in PMI
 tab_list <- lapply(categorical_vars, function(variable){
   table(ss_data_norm$Pt_ID, ss_data_norm@meta.data[,variable])
 })
 names(tab_list) <- categorical_vars
 
-na_vars <- c("PMI", "BrainPh", "Race")
+na_vars <- c("PMI")
 num_nas <- sapply(na_vars, function(variable){
   tab_mat <- table(ss_data_norm$Pt_ID, ss_data_norm@meta.data[,variable])
   length(which(rowSums(tab_mat) == 0))

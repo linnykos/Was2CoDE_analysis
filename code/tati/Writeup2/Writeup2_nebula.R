@@ -116,9 +116,9 @@ summary(zz)
 neb_data <- nebula::scToNeb(obj = ss_data_norm,
                             assay = "RNA",
                             id = "Pt_ID",
-                            pred = c("CognitiveStatus", "Sex", "PMI", "SeqBatch", "BrainPh", "Race", "FreshBrainWeight", "coded_Age"),
+                            pred = c("CognitiveStatus", "Sex", "PMI", "SeqBatch", "coded_Age"),
                             offset = "nCount_RNA")
-df <- model.matrix( ~ CognitiveStatus + Sex + PMI + SeqBatch + BrainPh + Race + FreshBrainWeight + coded_Age + CognitiveStatus,
+df <- model.matrix( ~ CognitiveStatus + Sex + PMI + SeqBatch + coded_Age + CognitiveStatus,
                     data = neb_data$pred)
 start_time <- Sys.time()
 nebula_res <- nebula::nebula(count = neb_data$count,
