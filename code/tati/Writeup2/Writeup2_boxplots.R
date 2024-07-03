@@ -16,7 +16,6 @@ for (gene in significant_genes) {
   gene_data <- nebula_summary %>%
     filter(gene == !!gene)
   
-  # Create the boxplot
   plot1 <- ggplot(gene_data, aes(x = CognitiveStatus, y = `logFC_CognitiveStatusNo dementia`, fill = CognitiveStatus)) +
     geom_boxplot() +
     scale_fill_viridis(discrete = TRUE, alpha = 0.6) +
@@ -33,3 +32,4 @@ for (gene in significant_genes) {
 
 ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/Writeup2_nebula_boxplot.png"),
                 plot1, device = "png", width = 5, height = 7, units = "in")
+}
