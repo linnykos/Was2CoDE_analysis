@@ -54,11 +54,24 @@ sc.pp.highly_variable_genes(
 
 adata
 
+# # Check for NAs in the observation metadata (adata.obs)
+# na_in_obs = adata.obs.isnull().values.any()
+# print(f"Are there NAs in the observation metadata (adata.obs)? {na_in_obs}")
+
+# # Identify columns in adata.obs with NA values
+# na_columns_obs = adata.obs.columns[adata.obs.isnull().any()].tolist()
+# print(f"Columns with NAs in the observation metadata (adata.obs): {na_columns_obs}")
+
+# # Get a summary of missing values in each column
+# na_summary = adata.obs.isnull().sum()
+# na_summary = na_summary[na_summary > 0]
+# print(f"Summary of NAs in each column:\n{na_summary}")
+
 scvi.model.SCVI.setup_anndata(
     adata,
     layer="counts",
     categorical_covariate_keys=["Sex", "Race", "genotype_APOE"],
-    continuous_covariate_keys=["percent.mito", "coded_Age", "PMI", "nCount_RNA", "BrainPh"],
+    continuous_covariate_keys=["percent.mito", "coded_Age", "nCount_RNA"],
     batch_key="SeqBatch"
 )
 
