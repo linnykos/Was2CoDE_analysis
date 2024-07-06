@@ -36,6 +36,7 @@ adata.obs["SeqBatch"] = adata.obs["SeqBatch"].astype('category')
 adata.obs["Sex"] = adata.obs["Sex"].astype('category')
 adata.obs["Race"] = adata.obs["Race"].astype('category')
 adata.obs["genotype_APOE"] = adata.obs["genotype_APOE"].astype('category')
+adata.obs["CERAD"] = adata.obs["CERAD"].astype('category')
 
 # adding raw counts for referring to it in the future
 adata.layers["counts"] = adata.X.copy()
@@ -67,11 +68,26 @@ adata
 # na_summary = na_summary[na_summary > 0]
 # print(f"Summary of NAs in each column:\n{na_summary}")
 
+# pt_ids_with_na_pmi.unique()
+
+# Define the mapping of Pt_ID to the new PMI values
+# from: https://static-content.springer.com/esm/art%3A10.1038%2Fs43587-023-00424-y/MediaObjects/43587_2023_424_MOESM1_ESM.pdf
+pmi_replacement_values = {
+    'D:1': 5.08,
+    'D:10': 3.33,
+    'D:3': 5.08,
+    'D:15': 6.97
+}
+
+# Replace the NA values in the PMI column with the specified values
+for pt_id, new_pmi in pmi_replacement_values.items():
+    adata.obs.loc[adata.obs['Pt_ID'] == pt_id, 'PMI'] = new_pmi
+
 scvi.model.SCVI.setup_anndata(
     adata,
     layer="counts",
-    categorical_covariate_keys=["Sex", "Race", "genotype_APOE"],
-    continuous_covariate_keys=["percent.mito", "coded_Age", "nCount_RNA"],
+    categorical_covariate_keys=["Sex", "Race", "genotype_APOE", "CERAD"],
+    continuous_covariate_keys=["percent.mito", "coded_Age", "nCount_RNA", "FreshBrainWeight", "PMI"],
     batch_key="SeqBatch"
 )
 
