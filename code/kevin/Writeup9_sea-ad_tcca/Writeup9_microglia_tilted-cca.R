@@ -35,7 +35,7 @@ if(any(sd_vec <= 1e-6)){
 
 set.seed(10)
 multiSVD_obj <- tiltedCCA::create_multiSVD(mat_1 = mat_1b, mat_2 = mat_2b,
-                                           dims_1 = 1:50, dims_2 = 2:50,
+                                           dims_1 = 1:30, dims_2 = 2:30,
                                            center_1 = T, center_2 = F,
                                            normalize_row = T,
                                            normalize_singular_value = T,
