@@ -8,8 +8,6 @@ load("~/kzlinlab/projects/subject-de/out/kevin/Writeup9/Writeup9_SEAAD_MTG_Micro
 
 set.seed(10)
 Seurat::DefaultAssay(seurat_obj) <- "RNA"
-seurat_obj <- Seurat::FindVariableFeatures(seurat_obj,
-                                           nfeatures = 2000)
 mat_1 <- Matrix::t(SeuratObject::LayerData(seurat_obj,
                                            layer = "data",
                                            assay = "RNA",

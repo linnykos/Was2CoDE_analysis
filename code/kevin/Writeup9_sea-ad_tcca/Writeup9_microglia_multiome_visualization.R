@@ -91,6 +91,7 @@ seurat_obj <- Seurat::ScaleData(seurat_obj)
 seurat_obj <- Seurat::RunPCA(seurat_obj, 
                              features = Seurat::VariableFeatures(seurat_obj),
                              verbose = FALSE)
+set.seed(10)
 seurat_obj <- Seurat::FindNeighbors(seurat_obj, dims = 1:30)
 seurat_obj <- Seurat::FindClusters(seurat_obj, resolution = 0.5)
 seurat_obj <- Seurat::RunUMAP(seurat_obj, dims = 1:10)
@@ -100,15 +101,16 @@ Seurat::DefaultAssay(seurat_obj) <- "ATAC"
 seurat_obj <- Signac::RunTFIDF(seurat_obj)
 seurat_obj <- Signac::FindTopFeatures(seurat_obj, min.cutoff = "q0")
 seurat_obj <- Signac::RunSVD(seurat_obj)
+set.seed(10)
+seurat_obj <- Seurat::FindNeighbors(seurat_obj, 
+                                    reduction = 'lsi',
+                                    dims = 2:30)
+seurat_obj <- Seurat::FindClusters(seurat_obj, resolution = 0.5)
 seurat_obj <- Seurat::RunUMAP(seurat_obj, 
                               reduction = "lsi", 
                               dims = 2:30, 
                               reduction.name = "umap_atac", 
                               reduction.key = "atacUMAP_")
-seurat_obj <- Seurat::FindNeighbors(seurat_obj, 
-                                    reduction = 'lsi',
-                                    dims = 2:30)
-seurat_obj <- Seurat::FindClusters(seurat_obj, resolution = 0.5)
 
 seurat_obj <- Seurat::FindMultiModalNeighbors(
   seurat_obj, 
