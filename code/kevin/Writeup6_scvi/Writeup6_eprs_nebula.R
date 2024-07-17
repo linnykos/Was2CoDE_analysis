@@ -10,7 +10,7 @@ ls_vec <- setdiff(ls_vec, "ss_data_norm")
 rm(list = ls_vec)
 gc(TRUE)
 
-tmp <- ss_data_norm
+tmp <- ss_data_norm$integrated_snn_res.0.1
 tmp <- factor(paste0("c:", as.character(tmp)))
 ss_data_norm$integrated_snn_res.0.1 <- tmp
 
