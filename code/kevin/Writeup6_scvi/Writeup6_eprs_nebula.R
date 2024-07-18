@@ -32,7 +32,7 @@ for(i in 1:length(cluster_names)){
                               offset = "nCount_RNA")
   df <- model.matrix(~ ePRS + sex,
                      data = neb_data$pred)
-  if(is.unsorted(neb_data$id) == FALSE){
+  if(is.unsorted(neb_data$id) == TRUE){
     neb_data <- nebula::group_cell(count = neb_data$count, 
                                    id = neb_data$id,
                                    pred = df,
