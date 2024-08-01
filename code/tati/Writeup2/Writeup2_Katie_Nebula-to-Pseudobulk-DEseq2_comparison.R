@@ -60,5 +60,5 @@ plot0 <- ggplot(res, aes(x = -log10(deseq2_pvalue), y = -log10(nebula_pvalue), c
   geom_vline(xintercept = -log10(pCutoff_deseq2), linetype = "dashed", color = "black") + 
   geom_hline(yintercept = -log10(pCutoff_nebula), linetype = "dashed", color = "black")
 
-ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/Writeup2_Pseudobulk-DEseq2_colored_by_GeneLists.png",
+ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/Writeup2_Nebula-to-Pseudobulk-DEseq2.png",
                 plot0, device = "png", width = 7, height = 7, units = "in")
