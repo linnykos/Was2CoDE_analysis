@@ -2,6 +2,8 @@ rm(list=ls())
 library(EnhancedVolcano)
 library(openxlsx)
 library(ggplot2)
+library(IdeasCustom)
+library(dplyr)
 set.seed(10)
 
 load("~/kzlinlab/projects/subject-de/out/tati/Writeup2/Writeup2_nebula.RData")
@@ -79,7 +81,15 @@ plot0 <- ggplot(res, aes(x = logFC_CognitiveStatusNo_dementia, y = -log10(p_Cogn
 ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/Writeup2_nebula_volcano_colored_by_GeneLists.png",
                 plot0, device = "png", width = 7, height = 7, units = "in")
 
+genes_above_threshold <- res %>%
+  filter(-log10(p_CognitiveStatusNo_dementia) > -log10(pCutoff)) %>%
+  select(gene)
 
+print(genes_above_threshold)
+
+write.csv(genes_above_threshold, "~/kzlinlab/projects/subject-de/out/tati/Writeup2/genes_above_threshold_nebula.csv", row.names = FALSE)
+write.table(genes_above_threshold, "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/genes_above_threshold_nebula.csv", 
+            row.names = FALSE, col.names = FALSE, quote = FALSE, sep = ",")
 #########################
 sun_sheet <- openxlsx::read.xlsx(
   xlsxFile = "../../../../../data/1-s2.0-S0092867423009716-mmc1.xlsx",
