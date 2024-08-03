@@ -10,10 +10,10 @@ set.seed(10)
 
 load("~/kzlinlab/projects/subject-de/out/tati/Writeup2/Writeup2_nebula.RData")
 load("~/kzlinlab/projects/subject-de/out/tati/Writeup2/Writeup2_prater_esvd.RData")
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup2/Writeup2_Katie_Pseudobulk-DEseq2.RData")
 
 gene_intersect_esvd_nebula <- intersect(names(eSVD_obj$teststat_vec), 
                             nebula_res$summary$gene)
-
 esvd_p_values <- 10^(-eSVD_obj$pvalue_list$log10pvalue[gene_intersect_esvd_nebula])
 esvd_logfc <- (log2(eSVD_obj$case_mean) - log2(eSVD_obj$control))[gene_intersect_esvd_nebula]
 res <- data.frame(gene = gene_intersect_esvd_nebula,
@@ -115,6 +115,8 @@ correlation_logfc_esvd_nebula <- stats::cor(res$esvd_logfc, res$nebula_logfc)
 plot1 <- ggplot(res, aes(x = esvd_logfc, y = nebula_logfc, color = SignificanceCategory)) +
   geom_point(alpha = 0.7) +
   scale_color_manual(values = c("Both" = "purple", "eSVD" = "red", "NEBULA" = "darkgreen", "Other" = "grey")) +
+  geom_text(aes(label = ifelse(gene %in% c(microglia_prater, housekeeping_hounkpe), as.character(gene), "")),
+            vjust = 1.5, hjust = 0.5, check_overlap = TRUE, size = 3) +
   labs(title = paste("Scatter Plot of Log2FC, Correlation =", round(correlation_logfc_esvd_nebula, 2)),
        x = "Log2 FC (eSVD)",
        y = "Log2 FC (Nebula)") +

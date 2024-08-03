@@ -1,0 +1,11 @@
+rm(list=ls())
+library(Seurat)
+library(SummarizedExperiment)
+library(DESeq2)
+library(IdeasCustom)
+library(ggplot2)
+library(gridExtra)
+library(ggrepel)
+set.seed(10)
+
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup2/Writeup2_Katie_Pseudobulk-DEseq2.RData")
