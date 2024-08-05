@@ -68,6 +68,9 @@ res <- res[c(which(res$SignificanceCategory == "Other"),
              which(res$SignificanceCategory == "Pseudobulk"),
              which(res$SignificanceCategory == "Both")),
 ]
+
+# vector for significant genes
+significant_genes <- res$SignificanceCategory != "Other"
 ############################
 
 
@@ -79,12 +82,13 @@ correlation_pvalue_deseq2_nebula <- stats::cor(-log10(res$deseq2_pvalue),
 plot0 <- ggplot(res, aes(x = -log10(deseq2_pvalue), y = -log10(nebula_pvalue), color = SignificanceCategory)) +
   geom_point(alpha = 0.7) +
   scale_color_manual(values = c("Both" = "purple", "Pseudobulk" = "red", "NEBULA" = "darkgreen", "Other" = "grey")) +
-  geom_text(aes(label = ifelse(gene %in% c(genes_above_threshold_deseq2, genes_above_threshold_nebula), as.character(gene), "")),
-            vjust = 1.5, hjust = 0.5, check_overlap = TRUE, size = 3) +
+  geom_text_repel(aes(label = ifelse(significant_genes, as.character(gene), "")),  # Conditionally label significant genes
+                  box.padding = 0.5, point.padding = 0.3, size = 3, max.overlaps = Inf) +
   labs(title = paste("Scatter Plot of PValues, Correlation =", round(correlation_pvalue_deseq2_nebula, 2)), x = "-Log10 p-value (DESeq2)", y = "-Log10 p-value (Nebula)") +
   theme_minimal() +
   geom_vline(xintercept = -log10(pCutoff_deseq2), linetype = "dashed", color = "black") + 
   geom_hline(yintercept = -log10(pCutoff_nebula), linetype = "dashed", color = "black")
+
 
 ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/Writeup2_PValues_Nebula-to-Pseudobulk-DEseq2.png",
                 plot0, device = "png", width = 7, height = 7, units = "in")
@@ -106,6 +110,8 @@ correlation_logfc_deseq2_nebula <- stats::cor(res$deseq2_logfc, res$nebula_logfc
 plot1 <- ggplot(res, aes(x = deseq2_logfc, y = nebula_logfc, color = SignificanceCategory)) +
   geom_point(alpha = 0.7) +
   scale_color_manual(values = c("Both" = "purple", "Pseudobulk" = "red", "NEBULA" = "darkgreen", "Other" = "grey")) +
+  geom_text_repel(aes(label = ifelse(significant_genes, as.character(gene), "")),  # Conditionally label significant genes
+                  box.padding = 0.5, point.padding = 0.3, size = 3, max.overlaps = Inf) +
   labs(title = paste("Scatter Plot of Log2FC, Correlation =", round(correlation_logfc_deseq2_nebula, 2)),
        x = "Log2 FC (deseq2)",
        y = "Log2 FC (Nebula)") +
