@@ -140,7 +140,7 @@ plot_combination <- function(comb) {
     theme_minimal()
   
   # Save combined plots
-  filename <- paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Comparison_", method1, "_", method2, ".png")
+  filename <- paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2_Katie_Comparison_", method1, "_", method2, ".png")
   combined_plot <- grid.arrange(plot_pvalue, plot_logfc, ncol = 2)
   ggsave(filename, combined_plot, device = "png", width = 14, height = 7, units = "in")
 }
