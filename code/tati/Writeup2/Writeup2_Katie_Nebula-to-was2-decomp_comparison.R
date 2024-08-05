@@ -9,29 +9,29 @@ library(ggrepel)
 set.seed(10)
 
 load("~/kzlinlab/projects/subject-de/out/tati/Writeup2/Writeup2_nebula.RData")
-load("~/kzlinlab/projects/subject-de/out/tati/Writeup2/Writeup2_prater_esvd.RData")
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup2/Writeup2_microglia_Katie_was2_wilcox.RData")
 
-gene_intersect_esvd_nebula <- intersect(names(eSVD_obj$teststat_vec), 
-                            nebula_res$summary$gene)
+# Intersect genes from Nebula and WAS2 datasets
+gene_intersect_nebula_was2 <- intersect(nebula_res$summary$gene, rownames(results_mat))
+was2_pvalues <- results_mat[gene_intersect_nebula_was2, "p_val"]
+was2_logfc <- log2((results_mat[, "mean_dd"] ) / (results_mat[, "mean_nn"] ))[gene_intersect_nebula_was2]
 
-esvd_p_values <- 10^(-eSVD_obj$pvalue_list$log10pvalue[gene_intersect_esvd_nebula])
-esvd_logfc <- (log2(eSVD_obj$case_mean) - log2(eSVD_obj$control))[gene_intersect_esvd_nebula]
-res <- data.frame(gene = gene_intersect_esvd_nebula,
-                  esvd_pvalue = esvd_p_values,
-                  esvd_logfc = esvd_logfc)
+res <- data.frame(gene = gene_intersect_nebula_was2,
+                  was2_pvalue = was2_pvalues,
+                  was2_logfc = was2_logfc)
 rownames(res) <- res$gene
 tmp <- nebula_res$summary
 rownames(tmp) <- tmp$gene
-nebula_pvalue <- tmp[gene_intersect_esvd_nebula, "p_CognitiveStatusNo dementia"]
+nebula_pvalue <- tmp[gene_intersect_nebula_was2, "p_CognitiveStatusNo dementia"]
 res$nebula_pvalue <- nebula_pvalue
-nebula_logfc <- tmp[gene_intersect_esvd_nebula, "logFC_CognitiveStatusNo dementia"]
+nebula_logfc <- tmp[gene_intersect_nebula_was2, "logFC_CognitiveStatusNo dementia"]
 res$nebula_logfc <-nebula_logfc 
 
 #define thresholds
-pval_vec_esvd <- res[,"esvd_pvalue"]
-pval_adj_vec_esvd <- stats::p.adjust(pval_vec_esvd, method = "BH")
-idx_esvd <- which(pval_adj_vec_esvd <= 0.05)
-pCutoff_esvd <- max(pval_vec_esvd[idx_esvd])
+pval_vec_was2 <- res[,"was2_pvalue"]
+pval_adj_vec_was2 <- stats::p.adjust(pval_vec_was2, method = "BH")
+idx_was2 <- which(pval_adj_vec_was2 <= 0.05)
+pCutoff_was2 <- max(pval_vec_was2[idx_was2])
 
 #define thresholds
 pval_vec_nebula <- res[,"nebula_pvalue"]
@@ -56,22 +56,22 @@ pCutoff_nebula <- max(pval_vec_nebula[idx_nebula])
 ############################
 ############################
 # Reorder the levels of SignificanceCategory
-genes_above_threshold_eSVD <- read.csv("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/genes_above_threshold_eSVD.csv",
+genes_above_threshold_was2 <- read.csv("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/genes_above_threshold_was2.csv",
                                        header = FALSE, col.names = "gene")
 genes_above_threshold_nebula <- read.csv("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/genes_above_threshold_nebula.csv",
                                          header = FALSE, col.names = "gene")
 # Create vectors from the data frames for easier checking
-significant_genes_eSVD <- genes_above_threshold_eSVD$gene
+significant_genes_was2 <- genes_above_threshold_was2$gene
 significant_genes_nebula <- genes_above_threshold_nebula$gene
 
-res$SignificanceCategory <- ifelse(rownames(res) %in% significant_genes_eSVD & rownames(res) %in% significant_genes_nebula, "Both",
-                                   ifelse(rownames(res) %in% significant_genes_eSVD, "eSVD",
+res$SignificanceCategory <- ifelse(rownames(res) %in% significant_genes_was2 & rownames(res) %in% significant_genes_nebula, "Both",
+                                   ifelse(rownames(res) %in% significant_genes_was2, "was2",
                                           ifelse(rownames(res) %in% significant_genes_nebula, "NEBULA", "Other")))
-res$SignificanceCategory <- factor(res$SignificanceCategory, levels = c("Other", "NEBULA", "eSVD","Both"))
+res$SignificanceCategory <- factor(res$SignificanceCategory, levels = c("Other", "NEBULA", "was2","Both"))
 
 res <- res[c(which(res$SignificanceCategory == "Other"),
              which(res$SignificanceCategory == "NEBULA"),
-             which(res$SignificanceCategory == "eSVD"),
+             which(res$SignificanceCategory == "was2"),
              which(res$SignificanceCategory == "Both")),
 ]
 # vector for significant genes
@@ -82,59 +82,59 @@ significant_genes <- res$SignificanceCategory != "Other"
 
 ############################
 
-# Create the plot to compare pvalues of esvd and nebula
-correlation_pvalue_esvd_nebula <- stats::cor(-log10(res$esvd_pvalue),
+# Create the plot to compare pvalues of was2 and nebula
+correlation_pvalue_was2_nebula <- stats::cor(-log10(res$was2_pvalue),
                                              -log10(res$nebula_pvalue))
 
-plot0 <- ggplot(res, aes(x = -log10(esvd_pvalue), y = -log10(nebula_pvalue), color = SignificanceCategory)) +
+plot0 <- ggplot(res, aes(x = -log10(was2_pvalue), y = -log10(nebula_pvalue), color = SignificanceCategory)) +
   geom_point(alpha = 0.7) +
-  scale_color_manual(values = c("Both" = "purple", "eSVD" = "red", "NEBULA" = "darkgreen", "Other" = "grey")) +
-  geom_text(aes(label = ifelse(gene %in% c(genes_above_threshold_eSVD, genes_above_threshold_nebula), as.character(gene), "")),
+  scale_color_manual(values = c("Both" = "purple", "was2" = "red", "NEBULA" = "darkgreen", "Other" = "grey")) +
+  geom_text(aes(label = ifelse(gene %in% c(genes_above_threshold_was2, genes_above_threshold_nebula), as.character(gene), "")),
             vjust = 1.5, hjust = 0.5, check_overlap = TRUE, size = 3) +
   geom_text_repel(aes(label = ifelse(significant_genes, as.character(gene), "")),  # Conditionally label significant genes
                   box.padding = 0.5, point.padding = 0.3, size = 3, max.overlaps = Inf) +
-  labs(title = paste("Scatter Plot of PValues, Correlation =", round(correlation_pvalue_esvd_nebula, 2)), x = "-Log10 p-value (eSVD)", y = "-Log10 p-value (NEBULA)") +
+  labs(title = paste("Scatter Plot of PValues, Correlation =", round(correlation_pvalue_was2_nebula, 2)), x = "-Log10 p-value (was2)", y = "-Log10 p-value (NEBULA)") +
   theme_minimal() +
-  geom_vline(xintercept = -log10(pCutoff_esvd), linetype = "dashed", color = "black") +
+  geom_vline(xintercept = -log10(pCutoff_was2), linetype = "dashed", color = "black") +
   geom_hline(yintercept = -log10(pCutoff_nebula), linetype = "dashed", color = "black")
 
-ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/Writeup2_PValues_eSVD-to-NEBULA.png",
+ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/Writeup2_PValues_was2-to-NEBULA.png",
                 plot0, device = "png", width = 7, height = 7, units = "in")
 ############################
 
 ############################
-# Create the plot to compare logfc of esvd and nebula
+# Create the plot to compare logfc of was2 and nebula
 
 # Compute thresholds for significant logFC based on the 90th percentile for both methods
-FCcutoff_esvd <- quantile(abs(res$esvd_logfc), probs = 0.9)
+FCcutoff_was2 <- quantile(abs(res$was2_logfc), probs = 0.9)
 FCcutoff_nebula <- quantile(abs(res$nebula_logfc), probs = 0.9)
 
 # Set axis limits based on the larger 99th percentile of the absolute logFC values from both methods
-xlims <- c(-1, 1) * max(quantile(abs(res$esvd_logfc), probs = 0.99),
+xlims <- c(-1, 1) * max(quantile(abs(res$was2_logfc), probs = 0.99),
                         quantile(abs(res$nebula_logfc), probs = 0.99))
 
 # Compute correlation between logFC values
-correlation_logfc_esvd_nebula <- stats::cor(res$esvd_logfc, res$nebula_logfc)
+correlation_logfc_was2_nebula <- stats::cor(res$was2_logfc, res$nebula_logfc)
 
 # Plot
-plot1 <- ggplot(res, aes(x = esvd_logfc, y = nebula_logfc, color = SignificanceCategory)) +
+plot1 <- ggplot(res, aes(x = was2_logfc, y = nebula_logfc, color = SignificanceCategory)) +
   geom_point(alpha = 0.7) +
-  scale_color_manual(values = c("Both" = "purple", "eSVD" = "red", "NEBULA" = "darkgreen", "Other" = "grey")) +
-  labs(title = paste("Scatter Plot of Log2FC, Correlation =", round(correlation_logfc_esvd_nebula, 2)),
-       x = "Log2 FC (eSVD)",
+  scale_color_manual(values = c("Both" = "purple", "was2" = "red", "NEBULA" = "darkgreen", "Other" = "grey")) +
+  labs(title = paste("Scatter Plot of Log2FC, Correlation =", round(correlation_logfc_was2_nebula, 2)),
+       x = "Log2 FC (was2)",
        y = "Log2 FC (Nebula)") +
   geom_text_repel(aes(label = ifelse(significant_genes, as.character(gene), "")),  # Conditionally label significant genes
                   box.padding = 0.5, point.padding = 0.3, size = 3, max.overlaps = Inf) +
   theme_minimal() +
   geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "black") + # Line of equality
-  geom_vline(xintercept = c(-FCcutoff_esvd, FCcutoff_esvd), linetype = "dotted", color = "blue") +  # Vertical lines for eSVD FC cutoff
+  geom_vline(xintercept = c(-FCcutoff_was2, FCcutoff_was2), linetype = "dotted", color = "blue") +  # Vertical lines for was2 FC cutoff
   geom_hline(yintercept = c(-FCcutoff_nebula, FCcutoff_nebula), linetype = "dotted", color = "purple") +  # Horizontal lines for Nebula FC cutoff
   coord_cartesian(xlim = xlims, ylim = xlims)  # Set limits for x and y axes
 
-ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/Writeup2_Log2FC_eSVD-to-NEBULA.png",
+ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/Writeup2_Log2FC_was2-to-NEBULA.png",
        plot1, device = "png", width = 7, height = 7, units = "in")
 
 # Combine the plot0 and plot1
-combined_plot_esvd_to_nebula <- grid.arrange(plot0, plot1, ncol = 2)  # Arrange side by side
-ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/Writeup2_eSVD-to-NEBULA.png",
-       plot = combined_plot_esvd_to_nebula, device = "png", width = 14, height = 7, units = "in")
+combined_plot_was2_to_nebula <- grid.arrange(plot0, plot1, ncol = 2)  # Arrange side by side
+ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/Writeup2_was2-to-NEBULA.png",
+       plot = combined_plot_was2_to_nebula, device = "png", width = 14, height = 7, units = "in")
