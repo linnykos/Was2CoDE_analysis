@@ -64,8 +64,10 @@ plot_combination <- function(comb) {
   # Calculate adjusted p-values and define cutoffs
   res$pvalue_adj1 <- p.adjust(res$pvalue1, method = "BH")
   res$pvalue_adj2 <- p.adjust(res$pvalue2, method = "BH")
-  pCutoff1 <- max(res$pvalue1[res$pvalue_adj1 <= 0.05])
-  pCutoff2 <- max(res$pvalue2[res$pvalue_adj2 <= 0.05])
+  idx1 <- which(res$pvalue_adj1 <= 0.05)
+  idx2 <- which(res$pvalue_adj2 <= 0.05)
+  pCutoff1 <- max(res[,"pvalue1"][idx1])
+  pCutoff2 <- max(res[,"pvalue2"][idx2])
   
   # Compute thresholds for significant logFC
   FCcutoff1 <- quantile(abs(res$logFC1), 0.9, na.rm = TRUE)
@@ -79,9 +81,9 @@ plot_combination <- function(comb) {
   # Reorder the levels of SignificanceCategory
   ############################
   # Define significance categories based on adjusted p-values
-  res$SignificanceCategory <- ifelse(res$pvalue_adj1 <= 0.05 & res$pvalue_adj2 <= 0.05, "Both",
-                                     ifelse(res$pvalue_adj1 <= 0.05, method1,
-                                            ifelse(res$pvalue_adj2 <= 0.05, method2, "Neither")))
+  res$SignificanceCategory <- ifelse(res$pvalue_adj1 <= pCutoff1 & res$pvalue_adj2 <= pCutoff2, "Both",
+                                     ifelse(res$pvalue_adj1 <= pCutoff1, method1,
+                                            ifelse(res$pvalue_adj2 <= pCutoff2, method2, "Neither")))
 
   res$SignificanceCategory <- factor(res$SignificanceCategory, levels = c("Neither", method1, method2, "Both"))
   
@@ -91,7 +93,7 @@ plot_combination <- function(comb) {
                which(res$SignificanceCategory == "Both")),
   ]
   # vector for significant genes
-  significant_genes <- res$SignificanceCategory != "Other"
+  significant_genes <- res$SignificanceCategory != "Neither"
   correlation_pvalue <- stats::cor(-log10(res$pvalue1), -log10(res$pvalue2), use = "complete.obs")
   correlation_logfc <- stats::cor(res$logFC1, res$logFC2, use = "complete.obs")
   
@@ -99,10 +101,10 @@ plot_combination <- function(comb) {
   # Generate Plots
   ############################
 
-  plot_pvalue <- ggplot(res, aes(x = -log10(pvalue1), y = -log10(pvalue2), color = Significant)) +
+  plot_pvalue <- ggplot(res, aes(x = -log10(pvalue1), y = -log10(pvalue2), color = SignificanceCategory)) +
     geom_point(alpha = 0.7) +
     scale_color_manual(values = c("Neither" = "grey", method1 = "red", method2 = "darkgreen", "Both" = "purple")) +
-    geom_text_repel(aes(label = ifelse(Significant != "Neither", as.character(gene), "")), box.padding = 0.5, point.padding = 0.3, size = 3, max.overlaps = Inf) +
+    geom_text_repel(aes(label = ifelse(SignificanceCategory != "Neither", as.character(gene), "")), box.padding = 0.5, point.padding = 0.3, size = 3, max.overlaps = 10) +
     geom_vline(xintercept = -log10(pCutoff1), linetype = "dashed", color = "red") +
     geom_hline(yintercept = -log10(pCutoff2), linetype = "dashed", color = "blue") +
     labs(title = sprintf("P-value Comparison: %s vs. %s\nCorrelation: %.2f", method1, method2, correlation_pvalue),
@@ -110,10 +112,10 @@ plot_combination <- function(comb) {
          y = sprintf("-Log10 P-value (%s)", method2)) +
     theme_minimal()
   
-  plot_logfc <- ggplot(res, aes(x = logFC1, y = logFC2, color = Significant)) +
+  plot_logfc <- ggplot(res, aes(x = logFC1, y = logFC2, color = SignificanceCategory)) +
     geom_point(alpha = 0.7) +
     scale_color_manual(values = c("Neither" = "grey", method1 = "red", method2 = "darkgreen", "Both" = "purple")) +
-    geom_text_repel(aes(label = ifelse(Significant != "Neither", as.character(gene), "")), box.padding = 0.5, point.padding = 0.3, size = 3, max.overlaps = Inf) +
+    geom_text_repel(aes(label = ifelse(SignificanceCategory != "Neither", as.character(gene), "")), box.padding = 0.5, point.padding = 0.3, size = 3, max.overlaps = 10) +
     geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "black") +
     geom_vline(xintercept = c(-FCcutoff1, FCcutoff1), linetype = "dotted", color = "blue") +
     geom_hline(yintercept = c(-FCcutoff2, FCcutoff2), linetype = "dotted", color = "purple") +
@@ -124,7 +126,7 @@ plot_combination <- function(comb) {
     theme_minimal()
   
   # Save combined plots
-  filename <- paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2_Katie_Comparison_", method1, "_", method2, ".png")
+  filename <- paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/Writeup2_Katie_Comparison_", method1, "to_", method2, ".png")
   combined_plot <- grid.arrange(plot_pvalue, plot_logfc, ncol = 2)
   ggsave(filename, combined_plot, device = "png", width = 14, height = 7, units = "in")
 }
