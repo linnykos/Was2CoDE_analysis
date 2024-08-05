@@ -14,7 +14,7 @@ load("~/kzlinlab/projects/subject-de/out/tati/Writeup2/Writeup2_microglia_Katie_
 # Intersect genes from Nebula and WAS2 datasets
 gene_intersect_nebula_was2 <- intersect(nebula_res$summary$gene, rownames(results_mat))
 was2_pvalues <- results_mat[gene_intersect_nebula_was2, "p_val"]
-was2_logfc <- log2((results_mat[, "mean_dd"] ) / (results_mat[, "mean_nn"] ))[gene_intersect_nebula_was2]
+was2_logfc <- log2((results_mat[, "mean_dn"] ) / (results_mat[, "mean_nn"]+results_mat[, "mean_dd"])/2)[gene_intersect_nebula_was2]
 
 res <- data.frame(gene = gene_intersect_nebula_was2,
                   was2_pvalue = was2_pvalues,
@@ -56,12 +56,14 @@ pCutoff_nebula <- max(pval_vec_nebula[idx_nebula])
 ############################
 ############################
 # Reorder the levels of SignificanceCategory
-genes_above_threshold_was2 <- read.csv("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/genes_above_threshold_was2.csv",
-                                       header = FALSE, col.names = "gene")
 genes_above_threshold_nebula <- read.csv("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/genes_above_threshold_nebula.csv",
                                          header = FALSE, col.names = "gene")
+
+# Extract gene names based on significant indices
+genes_above_threshold_was2 <- res$gene[idx_was2]
 # Create vectors from the data frames for easier checking
-significant_genes_was2 <- genes_above_threshold_was2$gene
+significant_genes_was2 <- genes_above_threshold_was2
+
 significant_genes_nebula <- genes_above_threshold_nebula$gene
 
 res$SignificanceCategory <- ifelse(rownames(res) %in% significant_genes_was2 & rownames(res) %in% significant_genes_nebula, "Both",
@@ -98,7 +100,7 @@ plot0 <- ggplot(res, aes(x = -log10(was2_pvalue), y = -log10(nebula_pvalue), col
   geom_vline(xintercept = -log10(pCutoff_was2), linetype = "dashed", color = "black") +
   geom_hline(yintercept = -log10(pCutoff_nebula), linetype = "dashed", color = "black")
 
-ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/Writeup2_PValues_was2-to-NEBULA.png",
+ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/Writeup2_PValues_Was2-decomp-to-NEBULA.png",
                 plot0, device = "png", width = 7, height = 7, units = "in")
 ############################
 
@@ -136,5 +138,5 @@ ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/ta
 
 # Combine the plot0 and plot1
 combined_plot_was2_to_nebula <- grid.arrange(plot0, plot1, ncol = 2)  # Arrange side by side
-ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/Writeup2_was2-to-NEBULA.png",
+ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/Writeup2_Was2-decomp-to-NEBULA.png",
        plot = combined_plot_was2_to_nebula, device = "png", width = 14, height = 7, units = "in")
