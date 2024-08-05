@@ -56,6 +56,8 @@ res <- res[c(which(res$SignificanceCategory == "Other"),
              which(res$SignificanceCategory == "Both")),
 ]
 #print(res$gene[res$SignificanceCategory == "Both"])
+# vector for significant genes
+significant_genes <- res$SignificanceCategory != "Other"
 
 ############################
 # Now create the plot to compare pvalues of eSVD and Pseudobulk
@@ -67,6 +69,8 @@ plot0 <- ggplot(res, aes(x = -log10(esvd_p_values), y = -log10(deseq2_pvalue), c
   scale_color_manual(values = c("Both" = "purple", "eSVD" = "red", "Pseudobulk" = "darkgreen", "Other" = "grey")) +
   geom_text(aes(label = ifelse(gene %in% c(genes_above_threshold_deseq2, genes_above_threshold_eSVD), as.character(gene), "")),
             vjust = 1.5, hjust = 0.5, check_overlap = TRUE, size = 3) +
+  geom_text_repel(aes(label = ifelse(significant_genes, as.character(gene), "")),  # Conditionally label significant genes
+                  box.padding = 0.5, point.padding = 0.3, size = 3, max.overlaps = Inf) +
   labs(title = paste("Scatter Plot of PValues, Correlation =", round(correlation_pvalue_eSVD_deseq2, 2)), x = "-Log10 p-value (eSVD)", y = "-Log10 p-value (DESeq2)") +
   theme_minimal() +
   geom_vline(xintercept = -log10(pCutoff_esvd), linetype = "dashed", color = "black") + 
@@ -92,6 +96,8 @@ correlation_logfc_eSVD_deseq2 <- stats::cor(res$esvd_logfc, res$deseq2_logfc, us
 plot1 <- ggplot(res, aes(x = esvd_logfc, y = deseq2_logfc, color = SignificanceCategory)) +
   geom_point(alpha = 0.7) +
   scale_color_manual(values = c("Both" = "purple", "eSVD" = "red", "Pseudobulk" = "darkgreen", "Other" = "grey")) +
+  geom_text_repel(aes(label = ifelse(significant_genes, as.character(gene), "")),  # Conditionally label significant genes
+                  box.padding = 0.5, point.padding = 0.3, size = 3, max.overlaps = Inf) +
   labs(title = paste("Scatter Plot of Log2FC, Correlation =", round(correlation_logfc_eSVD_deseq2, 2)),
        x = "Log2 FC (eSVD)",
        y = "Log2 FC (deseq2)") +
