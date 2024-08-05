@@ -96,7 +96,7 @@ plot_combination <- function(comb) {
   correlation_logfc <- stats::cor(res$logFC1, res$logFC2, use = "complete.obs")
   
   ############################
-  # Generate plots
+  # Generate Plots
   ############################
 
   plot_pvalue <- ggplot(res, aes(x = -log10(pvalue1), y = -log10(pvalue2), color = Significant)) +
@@ -110,22 +110,6 @@ plot_combination <- function(comb) {
          y = sprintf("-Log10 P-value (%s)", method2)) +
     theme_minimal()
   
-  plot1 <- ggplot(res, aes(x = was2_logfc, y = esvd_logfc, color = SignificanceCategory)) +
-    geom_point(alpha = 0.7) +
-    scale_color_manual(values = c("Both" = "purple", "was2" = "red", "esvd" = "darkgreen", "Other" = "grey")) +
-    labs(title = paste("Scatter Plot of Log2FC, Correlation =", round(correlation_logfc_was2_esvd, 2)),
-         x = "Log2 FC (was2)",
-         y = "Log2 FC (esvd)") +
-    geom_text_repel(aes(label = ifelse(significant_genes, as.character(gene), "")),  # Conditionally label significant genes
-                    box.padding = 0.5, point.padding = 0.3, size = 3, max.overlaps = Inf) +
-    theme_minimal() +
-    geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "black") + # Line of equality
-    geom_vline(xintercept = c(-FCcutoff_was2, FCcutoff_was2), linetype = "dotted", color = "blue") +  # Vertical lines for was2 FC cutoff
-    geom_hline(yintercept = c(-FCcutoff_esvd, FCcutoff_esvd), linetype = "dotted", color = "purple") +  # Horizontal lines for esvd FC cutoff
-    coord_cartesian(xlim = xlims, ylim = xlims)  # Set limits for x and y axes
-  
-  # Create correlation plots for logFC
-  correlation_logfc <- stats::cor(res$logFC1, res$logFC2, use = "complete.obs")
   plot_logfc <- ggplot(res, aes(x = logFC1, y = logFC2, color = Significant)) +
     geom_point(alpha = 0.7) +
     scale_color_manual(values = c("Neither" = "grey", method1 = "red", method2 = "darkgreen", "Both" = "purple")) +
