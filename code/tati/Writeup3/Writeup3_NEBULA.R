@@ -38,7 +38,7 @@ tab_list <- lapply(categorical_vars, function(variable){
 })
 names(tab_list) <- categorical_vars
 
-na_vars <- c("PMI", "BrainPh", "Race")
+na_vars <- c("PMI", "BrainPh", "Race", "genotype_APOE")
 num_nas <- sapply(na_vars, function(variable){
   tab_mat <- table(ss_data_norm$Pt_ID, ss_data_norm@meta.data[,variable])
   length(which(rowSums(tab_mat) == 0))
