@@ -6,6 +6,7 @@ library(IdeasCustom)
 library(ggplot2)
 library(gridExtra)
 library(ggrepel)
+library(dplyr)
 set.seed(10)
 
 load("~/kzlinlab/projects/subject-de/out/tati/Writeup2/Writeup2_nebula.RData")
@@ -62,8 +63,8 @@ plot_combination <- function(comb) {
   ############################
   
   # Calculate adjusted p-values and define cutoffs
-  res$pvalue_adj1 <- p.adjust(res$pvalue1, method = "BH")
-  res$pvalue_adj2 <- p.adjust(res$pvalue2, method = "BH")
+  res$pvalue_adj1 <- stats::p.adjust(res$pvalue1, method = "BH")
+  res$pvalue_adj2 <- stats::p.adjust(res$pvalue2, method = "BH")
   idx1 <- which(res$pvalue_adj1 <= 0.05)
   idx2 <- which(res$pvalue_adj2 <= 0.05)
   pCutoff1 <- max(res[,"pvalue1"][idx1])
@@ -76,14 +77,14 @@ plot_combination <- function(comb) {
   # Set axis limits based on the 99th percentile of the absolute logFC values
   xlims <- c(-1, 1) * max(quantile(abs(res$logFC1), 0.99, na.rm = TRUE),
                           quantile(abs(res$logFC2), 0.99, na.rm = TRUE))
-  
+
   ############################
   # Reorder the levels of SignificanceCategory
   ############################
   # Define significance categories based on adjusted p-values
-  res$SignificanceCategory <- ifelse(res$pvalue_adj1 <= pCutoff1 & res$pvalue_adj2 <= pCutoff2, "Both",
-                                     ifelse(res$pvalue_adj1 <= pCutoff1, method1,
-                                            ifelse(res$pvalue_adj2 <= pCutoff2, method2, "Neither")))
+  res$SignificanceCategory <- ifelse(-log10(res$pvalue1) > -log10(pCutoff1) & -log10(res$pvalue2) > -log10(pCutoff2), "Both",
+                                     ifelse(-log10(res$pvalue1) > -log10(pCutoff1), method1,
+                                            ifelse(-log10(res$pvalue2) > -log10(pCutoff2), method2, "Neither")))
 
   res$SignificanceCategory <- factor(res$SignificanceCategory, levels = c("Neither", method1, method2, "Both"))
   
@@ -100,10 +101,11 @@ plot_combination <- function(comb) {
   ############################
   # Generate Plots
   ############################
-
+  colors <- setNames(c("grey", "red", "darkgreen", "purple"), c("Neither", as.character(method1), as.character(method2), "Both"))
+  
   plot_pvalue <- ggplot(res, aes(x = -log10(pvalue1), y = -log10(pvalue2), color = SignificanceCategory)) +
     geom_point(alpha = 0.7) +
-    scale_color_manual(values = c("Neither" = "grey", method1 = "red", method2 = "darkgreen", "Both" = "purple")) +
+    scale_color_manual(values = colors) +
     geom_text_repel(aes(label = ifelse(SignificanceCategory != "Neither", as.character(gene), "")), box.padding = 0.5, point.padding = 0.3, size = 3, max.overlaps = 10) +
     geom_vline(xintercept = -log10(pCutoff1), linetype = "dashed", color = "red") +
     geom_hline(yintercept = -log10(pCutoff2), linetype = "dashed", color = "blue") +
@@ -114,7 +116,7 @@ plot_combination <- function(comb) {
   
   plot_logfc <- ggplot(res, aes(x = logFC1, y = logFC2, color = SignificanceCategory)) +
     geom_point(alpha = 0.7) +
-    scale_color_manual(values = c("Neither" = "grey", method1 = "red", method2 = "darkgreen", "Both" = "purple")) +
+    scale_color_manual(values = colors) +
     geom_text_repel(aes(label = ifelse(SignificanceCategory != "Neither", as.character(gene), "")), box.padding = 0.5, point.padding = 0.3, size = 3, max.overlaps = 10) +
     geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "black") +
     geom_vline(xintercept = c(-FCcutoff1, FCcutoff1), linetype = "dotted", color = "blue") +
