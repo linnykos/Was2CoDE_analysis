@@ -106,14 +106,14 @@ plot_combination <- function(comb) {
   significant_method2 <- sum(res$SignificanceCategory %in% c(method2, "Both"))
   significant_both <- sum(res$SignificanceCategory == "Both")
   
-  colors <- setNames(c("#e0e0e0", "#cc0967", "#109163", "#87309e"), c("Neither", as.character(method1), as.character(method2), "Both"))
+  colors <- setNames(c("#e0e0e0", "#cc0967", "#109163", "#bc6a17"), c("Neither", as.character(method1), as.character(method2), "Both"))
   
   plot_pvalue <- ggplot(res, aes(x = -log10(pvalue1), y = -log10(pvalue2), color = SignificanceCategory)) +
     geom_point(alpha = 0.7) +
     scale_color_manual(values = colors) +
     geom_text_repel(aes(label = ifelse(SignificanceCategory != "Neither", as.character(gene), "")), box.padding = 0.5, point.padding = 0.3, size = 3, max.overlaps = 10) +
-    geom_vline(xintercept = -log10(pCutoff1), linetype = "dashed", color = "#fec0e0") +
-    geom_hline(yintercept = -log10(pCutoff2), linetype = "dashed", color = "#bfc0ff") +
+    geom_vline(xintercept = -log10(pCutoff1), linetype = "dashed", color = "#cc0967") +
+    geom_hline(yintercept = -log10(pCutoff2), linetype = "dashed", color = "#bc6a17") +
     labs(title = sprintf("P-value Comparison: %s vs. %s\nCorrelation: %.2f\nTotal Genes: %d, %s: %d, %s: %d, Both: %d",
                          method1, method2, stats::cor(-log10(res$pvalue1), -log10(res$pvalue2), use = "complete.obs"),
                          total_genes, method1, significant_method1, method2, significant_method2, significant_both),
@@ -126,8 +126,8 @@ plot_combination <- function(comb) {
     scale_color_manual(values = colors) +
     geom_text_repel(aes(label = ifelse(SignificanceCategory != "Neither", as.character(gene), "")), box.padding = 0.5, point.padding = 0.3, size = 3, max.overlaps = 10) +
     geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "#2f2f2f") +
-    geom_vline(xintercept = c(-FCcutoff1, FCcutoff1), linetype = "dotted", color = "#bfc0ff") +
-    geom_hline(yintercept = c(-FCcutoff2, FCcutoff2), linetype = "dotted", color = "#87309e") +
+    geom_vline(xintercept = c(-FCcutoff1, FCcutoff1), linetype = "dotted", color = "#010086") +
+    geom_hline(yintercept = c(-FCcutoff2, FCcutoff2), linetype = "dotted", color = "#bc6a17") +
     labs(title = sprintf("Log2FC Comparison: %s vs. %s\nCorrelation: %.2f", method1, method2, correlation_logfc),
          x = sprintf("Log2 FC (%s)", method1),
          y = sprintf("Log2 FC (%s)", method2)) +
