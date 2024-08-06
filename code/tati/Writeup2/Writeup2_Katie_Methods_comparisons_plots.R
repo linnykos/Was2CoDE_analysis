@@ -101,6 +101,11 @@ plot_combination <- function(comb) {
   ############################
   # Generate Plots
   ############################
+  total_genes <- nrow(res)
+  significant_method1 <- sum(res$SignificanceCategory %in% c(method1, "Both"))
+  significant_method2 <- sum(res$SignificanceCategory %in% c(method2, "Both"))
+  significant_both <- sum(res$SignificanceCategory == "Both")
+  
   colors <- setNames(c("grey", "red", "darkgreen", "purple"), c("Neither", as.character(method1), as.character(method2), "Both"))
   
   plot_pvalue <- ggplot(res, aes(x = -log10(pvalue1), y = -log10(pvalue2), color = SignificanceCategory)) +
@@ -109,7 +114,9 @@ plot_combination <- function(comb) {
     geom_text_repel(aes(label = ifelse(SignificanceCategory != "Neither", as.character(gene), "")), box.padding = 0.5, point.padding = 0.3, size = 3, max.overlaps = 10) +
     geom_vline(xintercept = -log10(pCutoff1), linetype = "dashed", color = "red") +
     geom_hline(yintercept = -log10(pCutoff2), linetype = "dashed", color = "blue") +
-    labs(title = sprintf("P-value Comparison: %s vs. %s\nCorrelation: %.2f", method1, method2, correlation_pvalue),
+    labs(title = sprintf("P-value Comparison: %s vs. %s\nCorrelation: %.2f\nTotal Genes: %d, %s: %d, %s: %d, Both: %d",
+                         method1, method2, stats::cor(-log10(res$pvalue1), -log10(res$pvalue2), use = "complete.obs"),
+                         total_genes, method1, significant_method1, method2, significant_method2, significant_both),
          x = sprintf("-Log10 P-value (%s)", method1),
          y = sprintf("-Log10 P-value (%s)", method2)) +
     theme_minimal()
