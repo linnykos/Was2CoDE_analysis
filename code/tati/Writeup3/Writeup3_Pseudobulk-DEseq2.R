@@ -122,4 +122,4 @@ deseq2_res$padj_custom <- stats::p.adjust(deseq2_res[,"pvalue"], method = "BH")
 
 save(deseq2_res,
      date_of_run, session_info,
-     file = "~/kzlinlab/projects/subject-de/out/tati/Writeup2/Writeup2_Katie_Pseudobulk-DEseq2.RData")
+     file = "~/kzlinlab/projects/subject-de/out/tati/Writeup3/Writeup3_Katie_Pseudobulk-DEseq2.RData")
