@@ -4,7 +4,7 @@
 #SBATCH --partition=all-20c96g
 #SBATCH --time=48:00:00
 
-#SBATCH --job-name=nebula
+#SBATCH --job-name=esvd
 #SBATCH --mem-per-cpu=50gb
 
 #SBATCH --error=/home/users/%u/kzlinlab/projects/subject-de/out/tati/Writeup3/slurm/slurm_%j.err
