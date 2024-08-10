@@ -73,7 +73,7 @@ covariate_df <- data.frame(covariate_dat)
 for(variable in setdiff(c("Pt_ID", categorical_vars), "Study_Designation")){
   covariate_df[,variable] <- factor(covariate_df[,variable], levels = names(sort(table(covariate_df[,variable]), decreasing = T)))
 }
-covariate_df[,"Study_Designation"] <- factor(covariate_df[,"Study_Designation"], levels = c("AD", "Ctrl"))
+covariate_df[,"Study_Designation"] <- factor(covariate_df[,"Study_Designation"], levels = c("Ctrl", "AD"))
 covariates <- eSVD2::format_covariates(dat = mat,
                                        covariate_df = covariate_df,
                                        rescale_numeric_variables = numerical_vars)
@@ -84,11 +84,11 @@ print("Initialization")
 time_start1 <- Sys.time()
 eSVD_obj <- eSVD2::initialize_esvd(dat = mat,
                                    covariates = covariates[,-grep("Pt_ID", colnames(covariates))],
-                                   case_control_variable = "Study_Designation_Dementia",
+                                   case_control_variable = "Study_Designation_AD",
                                    bool_intercept = T,
                                    k = 30,
                                    lambda = 0.1,
-                                   metadata_case_control = covariates[,"Study_Designation_Dementia"],
+                                   metadata_case_control = covariates[,"Study_Designation_AD"],
                                    metadata_individual = covariate_df[,"Pt_ID"],
                                    verbose = 1)
 time_end1 <- Sys.time()
