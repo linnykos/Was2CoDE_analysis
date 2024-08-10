@@ -4,6 +4,7 @@ library(future)
 library(rngtools)
 library(Seurat)
 library(nebula)
+library(eSVD2)
 set.seed(10)
 
 print("Starting")
