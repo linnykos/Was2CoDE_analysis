@@ -73,7 +73,7 @@ covariate_df <- data.frame(covariate_dat)
 for(variable in setdiff(c("Pt_ID", categorical_vars), "Study_Designation")){
   covariate_df[,variable] <- factor(covariate_df[,variable], levels = names(sort(table(covariate_df[,variable]), decreasing = T)))
 }
-covariate_df[,"Study_Designation"] <- factor(covariate_df[,"Study_Designation"], levels = c("No_dementia", "Dementia"))
+covariate_df[,"Study_Designation"] <- factor(covariate_df[,"Study_Designation"], levels = c("AD", "Ctrl"))
 covariates <- eSVD2::format_covariates(dat = mat,
                                        covariate_df = covariate_df,
                                        rescale_numeric_variables = numerical_vars)
