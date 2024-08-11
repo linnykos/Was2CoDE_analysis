@@ -73,6 +73,8 @@ color_vec <- sapply(seurat_obj$synchrony, function(val){
 
 names(alignment_vec) <- Seurat::Cells(seurat_obj)
 
+save(seurat_obj, session_info, date_of_run,
+     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup9/Writeup9_SEAAD_MTG_Microglia-PVM_tcca-with-synchrony.RData")
 
 png(paste0("~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup9/Writeup9_microglia_synchrony.png"),
     height = 3000, width = 3000, units = "px", res = 500)
@@ -129,4 +131,44 @@ p1 <- p1 + ggplot2::stat_summary(fun=mean, geom="point", shape=16, size=3, color
 p1 <- p1 + ggplot2::ggtitle(paste("Correlation:", round(cor_val, 2)))
 ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup9/Writeup9_microglia_synchrony-violinplots.png"),
                 p1, device = "png", width = 12, height = 3, units = "in")
+
+#######################
+
+# calculate the percentage of cells in cluster 11
+donor_vec <- unique(seurat_obj$donor_id)
+cluster_11_proportion <- sapply(donor_vec, function(donor){
+  idx <- which(seurat_obj$donor_id == donor)
+  idx2 <- which(seurat_obj$RNA_snn_res.0.5 == "11")
+  length(intersect(idx, idx2))/length(idx)*100
+})
+names(cluster_11_proportion) <- donor_vec
+round(cluster_11_proportion,2)
+
+tab_mat <- table(seurat_obj$donor_id, seurat_obj$Cognitive_status)
+ad_donors <- rownames(tab_mat)[which(tab_mat[,"Dementia"] != 0)]
+control_donors <- rownames(tab_mat)[which(tab_mat[,"No_dementia"] != 0)]
+
+mean(cluster_11_proportion[ad_donors])
+mean(cluster_11_proportion[control_donors])
+
+x_vec <- cluster_11_proportion[ad_donors]
+y_vec <- cluster_11_proportion[control_donors]
+
+stats::wilcox.test(x = x_vec, y = y_vec)
+
+####
+
+ad_cells <- which(seurat_obj$donor_id %in% ad_donors)
+length(intersect(
+  which(seurat_obj$RNA_snn_res.0.5 == "11"),
+  ad_cells
+))/length(ad_cells)
+
+control_cells <- which(seurat_obj$donor_id %in% control_donors)
+length(intersect(
+  which(seurat_obj$RNA_snn_res.0.5 == "11"),
+  control_cells
+))/length(control_cells)
+
+
 

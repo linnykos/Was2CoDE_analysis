@@ -10,6 +10,8 @@ ls_vec <- setdiff(ls_vec, "ss_data_norm")
 rm(list = ls_vec)
 gc(TRUE)
 
+table(ss_data_norm$UWA, ss_data_norm$ePRS)
+
 ss_data_norm <- subset(ss_data_norm, 
                        features = Seurat::VariableFeatures(ss_data_norm))
 
@@ -40,11 +42,13 @@ for(i in 1:length(cluster_names)){
                                    id = neb_data$id,
                                    pred = df,
                                    offset = neb_data$offset)
-  } 
+  } else {
+    neb_data$pred <- df
+  }
   
   nebula_res <- nebula::nebula(count = neb_data$count, 
                                id = neb_data$id,
-                               pred = df,
+                               pred = neb_data$pred,
                                offset = neb_data$offset,
                                model = "NBGMM",
                                verbose = TRUE)
@@ -60,7 +64,7 @@ session_info <- devtools::session_info()
 note <- paste("Working from ~/kzlinlab/data/jayadev_pu1-only_eprs/QCd_louvain_multi_clustered_ws_28pcs_ePRS_23s_uns_ADNChigh_20240503_anch.rdata.",
               "Applying NEBULA.")
 
-save(nebula_res, 
+save(nebula_res_list, 
      date_of_run, session_info, note,
      file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup6/Writeup6_eprs_nebula.RData")
 

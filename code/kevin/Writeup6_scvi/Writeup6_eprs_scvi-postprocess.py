@@ -30,9 +30,15 @@ sc.pp.neighbors(adata, use_rep=SCVI_LATENT_KEY)
 sc.tl.umap(adata, min_dist=0.3)
 
 # Path to the directory where the plot will be saved
-save_dir = os.path.expanduser("~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup6")
+save_dir = os.path.expanduser("~/kzlinlab/projects/subject-de/git/subject-de_kevin/csv/kevin/Writeup6")
 # Create the directory if it does not exist
 os.makedirs(save_dir, exist_ok=True)
+
+cell_names = adata.obs_names
+df = pd.DataFrame(adata.obsm['X_scVI'], index=cell_names)
+
+save_path = os.path.join(save_dir, "Writeup6_eprs_mg_scvi_scVI.csv")
+df.to_csv(save_path, index=True)
 
 # Generate a shuffled index array
 shuffled_indices = np.random.permutation(adata.n_obs)
