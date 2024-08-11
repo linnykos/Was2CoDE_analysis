@@ -106,7 +106,7 @@ for(vr in numerical_var){
   metadata_pseudobulk[,vr] <- scale(metadata_pseudobulk[,vr])
 }
 
-metadata_pseudobulk[,"Study_Designation"] <- relevel(metadata_pseudobulk[,"Study_Designation"], ref = "No_dementia")
+metadata_pseudobulk[,"Study_Designation"] <- relevel(metadata_pseudobulk[,"Study_Designation"], ref = "Ctrl")
 
 dds <- DESeq2::DESeqDataSetFromMatrix(countData = mat_pseudobulk,
                                       colData = metadata_pseudobulk,
@@ -117,7 +117,7 @@ nms <- DESeq2::resultsNames(dds)
 deseq2_pval <- DESeq2::results(dds)$pvalue
 stats::quantile(deseq2_pval, na.rm = T)
 
-deseq2_res <- DESeq2::results(dds, name="Study_Designation_Dementia_vs_No_dementia")
+deseq2_res <- DESeq2::results(dds, name="Study_Designation_AD_vs_Ctrl")
 deseq2_res$padj_custom <- stats::p.adjust(deseq2_res[,"pvalue"], method = "BH")
 
 save(deseq2_res,
