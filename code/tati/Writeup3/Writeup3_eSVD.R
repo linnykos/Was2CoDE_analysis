@@ -78,6 +78,9 @@ covariates <- eSVD2::format_covariates(dat = mat,
                                        covariate_df = covariate_df,
                                        rescale_numeric_variables = numerical_vars)
 
+colnames(covariates) <- gsub(",", "_", colnames(covariates))
+
+#print(colnames(covariates))
 ############
 
 print("Initialization")
