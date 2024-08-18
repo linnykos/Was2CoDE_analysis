@@ -64,5 +64,13 @@ dev.off()
 # update the RNA assay
 ss_data_norm[["RNA"]] <- as(object = ss_data_norm[["RNA"]], Class = "Assay5")
 
+# change 1 in "Braak" to "BraakI", and do the same for others
+# CERAD is "Absent", "Sparse", "Frequent", "Moderate"
+
+
 # put factors
+
+
+
+# add in all the highly variable genes and other relevant genes
 

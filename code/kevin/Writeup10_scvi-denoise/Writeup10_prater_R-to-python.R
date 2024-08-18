@@ -89,10 +89,12 @@ vec[which(tmp %in% c("apoe34", "apoe44"))] <- 1
 ss_data_norm$APOEe4_status <- vec
 
 # checking
-categorical_vars <- c("Sex", "SeqBatch", "Race", "Study_Designation")
-numerical_vars <- c("PMI","coded_Age", "APOEe4_status")
+categorical_vars <- c("Sex", "SeqBatch", "Race", "Study_Designation", "APOEe4_status", "Pt_ID")
+numerical_vars <- c("PMI","coded_Age")
 
 zz <- ss_data_norm@meta.data[,c(categorical_vars, numerical_vars)]
+stopifnot(sapply(zz[,numerical_vars], is.numeric))
+stopifnot(sapply(zz[,categorical_vars], is.numeric))
 stopifnot(!any(is.na(zz)))
 stopifnot(!any(zz == "NA"))
 stopifnot(all(!sapply(1:ncol(zz), is.factor)))

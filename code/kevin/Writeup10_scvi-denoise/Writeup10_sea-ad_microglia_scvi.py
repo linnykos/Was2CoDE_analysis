@@ -14,16 +14,17 @@ from collections import Counter
 
 print("Last run with scvi-tools version:", scvi.__version__)
 
-file_path = "/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_prater_cleaned.h5ad"
+file_path = "/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_sea-ad_microglia_cleaned.h5ad"
 adata = ad.read_h5ad(file_path)
 
-adata.obs["SeqBatch"] = adata.obs["SeqBatch"].astype('category')
-adata.obs["Sex"] = adata.obs["Sex"].astype('category')
-adata.obs["Race"] = adata.obs["Race"].astype('category')
-adata.obs["APOEe4_status"] = adata.obs["APOEe4_status"].astype('category')
-adata.obs["Pt_ID"] = adata.obs["Pt_ID"].astype('category')
+adata.obs["assay"] = adata.obs["assay"].astype('category')
+adata.obs["sex"] = adata.obs["sex"].astype('category')
+adata.obs["self_reported_ethnicity"] = adata.obs["self_reported_ethnicity"].astype('category')
+adata.obs["APOE4status"] = adata.obs["APOE4status"].astype('category')
+adata.obs["donor_id"] = adata.obs["donor_id"].astype('category')
 
-# adata.obs["Race"].value_counts()
+# adata.obs["self_reported_ethnicity"].value_counts()
+# adata.obs["donor_id"].value_counts()
 
 # adding raw counts for referring to it in the future
 adata.layers["counts"] = adata.X.copy()
@@ -36,7 +37,7 @@ sc.pp.log1p(adata)
 sc.pp.highly_variable_genes(
     adata,
     n_top_genes=5000,
-    batch_key="Pt_ID",
+    batch_key="donor_id",
     subset=True
 )
 
@@ -45,9 +46,9 @@ adata
 scvi.model.SCVI.setup_anndata(
     adata,
     layer="counts",
-    categorical_covariate_keys=["Sex", "Race", "APOEe4_status"],
-    continuous_covariate_keys=["coded_Age", "PMI"],
-    batch_key="SeqBatch"
+    categorical_covariate_keys=["sex", "self_reported_ethnicity", "APOE4status"],
+    continuous_covariate_keys=["Ageatdeath", "PMI"],
+    batch_key="assay"
 )
 
 model = scvi.model.SCVI(adata,
@@ -59,7 +60,7 @@ model.train()
 SCVI_LATENT_KEY = "X_scVI"
 adata.obsm[SCVI_LATENT_KEY] = model.get_latent_representation()
 
-model.save(dir_path="/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_prater_scvi-model", 
+model.save(dir_path="/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_sea-ad_microglia_scvi-model", 
            overwrite=True)
 
 reserved_names = {'_index'}
@@ -69,6 +70,6 @@ if adata.raw is not None:
     if '_index' in adata.raw.var.columns:
         adata.raw.var.rename(columns={'_index': 'index_raw_var'}, inplace=True)
 
-adata.write("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_prater_scvi_anndata.h5ad")
+adata.write("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_sea-ad_microglia_scvi_anndata.h5ad")
 
 print("Done! :)")
