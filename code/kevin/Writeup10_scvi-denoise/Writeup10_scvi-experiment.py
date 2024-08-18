@@ -33,10 +33,6 @@ adata.obs["Race"] = adata.obs["Race"].astype('category')
 model = scvi.model.SCVI.load("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup6/Writeup6_prater_scvi-model", 
                              adata)
 
-# grab the posterior mean
-
-posterior_mean = model.get_latent_representation(give_mean=True)
-
 # adjust the donors covariates (leave the batch untouched)
 # going based on https://github.com/linnykos/subject-de/blob/kevin/code/kevin/Writeup6_scvi/Writeup6_prater_scvi.py
 # manually set the mode and mean
@@ -61,9 +57,6 @@ for covariate in continuous_covariates:
 ## double-checking
 adata.obs["Sex"].value_counts()
 adata.obs["coded_Age"].value_counts()
-
-# what if we set the model's adata?
-model.adata = adata
 
 # push it through the decoder
 
@@ -96,6 +89,7 @@ print(adata)
 print()
 
 model.adata_manager.transfer_fields(adata_target=adata)
+model.adata_manager.view_registry()
 
 # try again? push it through the decoder
 
