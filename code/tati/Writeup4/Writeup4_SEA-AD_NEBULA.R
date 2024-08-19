@@ -70,12 +70,21 @@ summary(zz)
 
 ##########################
 
-neb_data <- nebula::scToNeb(obj = seurat_obj@meta.data,
+neb_data <- nebula::scToNeb(obj = seurat_obj,
                             assay = "RNA",
                             id = "donor_id",
                             pred = c("ADNC", "sex", "PMI", "assay", "AgeAtDeath", "APOE4 status","self_reported_ethnicity"),
                             offset = "nCount_RNA")
-df <- model.matrix( ~ ADNC + sex + PMI + assay + AgeAtDeath + APOE4 status + self_reported_ethnicity,
+
+order_index <- order(neb_data$id)
+# Reorder the count matrix by the id
+neb_data$count <- neb_data$count[, order_index]
+# Reorder the other components of neb_data
+neb_data$id <- neb_data$id[order_index]
+neb_data$pred <- neb_data$pred[order_index, ]
+neb_data$offset <- neb_data$offset[order_index]
+
+df <- model.matrix( ~ ADNC + sex + PMI + assay + AgeAtDeath + APOE4.status + self_reported_ethnicity,
                     data = neb_data$pred)
 start_time <- Sys.time()
 nebula_res <- nebula::nebula(count = neb_data$count,
