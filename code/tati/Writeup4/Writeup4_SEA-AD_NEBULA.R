@@ -6,7 +6,7 @@ library(Seurat)
 library(nebula)
 set.seed(10)
 
-print("Starting")
+print("Starting!")
 
 load("~/kzlinlab/projects/subject-de/out/kevin/Writeup2/Writeup2_sea-ad_microglia_preprocess.RData")
 
