@@ -47,7 +47,7 @@ seurat_obj$APOE4_status <- ifelse(seurat_obj@meta.data$APOE4.status == "Y", 1,
 # Convert PMI Categories to (Numeric or) Factor
 seurat_obj$PMI <- factor(seurat_obj$PMI, levels = c("32to59hours", "59to87hours", "87to114hours"))
 
-categorical_vars <- c("ADNC", "sex", "assay", "self_reported_ethnicity","APOE4 status","PMI")
+categorical_vars <- c("ADNC", "sex", "assay", "self_reported_ethnicity","APOE4_status","PMI")
 numerical_vars <- c("AgeAtDeath")
 
 tmp <- as.character(seurat_obj$AgeAtDeath)
@@ -73,7 +73,7 @@ summary(zz)
 neb_data <- nebula::scToNeb(obj = seurat_obj,
                             assay = "RNA",
                             id = "donor_id",
-                            pred = c("ADNC", "sex", "PMI", "assay", "AgeAtDeath", "APOE4 status","self_reported_ethnicity"),
+                            pred = c("ADNC", "sex", "PMI", "assay", "AgeAtDeath", "APOE4_status","self_reported_ethnicity"),
                             offset = "nCount_RNA")
 
 order_index <- order(neb_data$id)
@@ -84,7 +84,7 @@ neb_data$id <- neb_data$id[order_index]
 neb_data$pred <- neb_data$pred[order_index, ]
 neb_data$offset <- neb_data$offset[order_index]
 
-df <- model.matrix( ~ ADNC + sex + PMI + assay + AgeAtDeath + APOE4.status + self_reported_ethnicity,
+df <- model.matrix( ~ ADNC + sex + PMI + assay + AgeAtDeath + APOE4_status + self_reported_ethnicity,
                     data = neb_data$pred)
 start_time <- Sys.time()
 nebula_res <- nebula::nebula(count = neb_data$count,

@@ -48,7 +48,7 @@ seurat_obj$APOE4_status <- ifelse(seurat_obj@meta.data$APOE4.status == "Y", 1,
 # Convert PMI Categories to (Numeric or) Factor
 seurat_obj$PMI <- factor(seurat_obj$PMI, levels = c("32to59hours", "59to87hours", "87to114hours"))
 
-categorical_vars <- c("ADNC", "sex", "assay", "self_reported_ethnicity","APOE4 status","PMI")
+categorical_vars <- c("ADNC", "sex", "assay", "self_reported_ethnicity","APOE4_status","PMI")
 numerical_vars <- c("AgeAtDeath")
 
 tmp <- as.character(seurat_obj$AgeAtDeath)
@@ -64,13 +64,12 @@ for (variable in numerical_vars) {
   seurat_obj@meta.data[, variable] <- as.numeric(as.character(seurat_obj@meta.data[, variable]))
 }
 
-
 zz <- seurat_obj@meta.data[,c(categorical_vars, numerical_vars)]
 stopifnot(!any(is.na(zz)))
 summary(zz)
 
 ###########
-
+seurat_obj <- FindVariableFeatures(seurat_obj, selection.method = "vst", nfeatures = 3000)
 gene_vec <- Seurat::VariableFeatures(seurat_obj[["RNA"]])
 seurat_obj <- subset(seurat_obj, features = gene_vec)
 
@@ -78,31 +77,34 @@ mat <- Matrix::t(SeuratObject::LayerData(seurat_obj,
                                          assay = "RNA", 
                                          layer = "counts"))
 
-covariate_dat <- seurat_obj@meta.data[,c("Pt_ID", categorical_vars, numerical_vars)]
+covariate_dat <- seurat_obj@meta.data[,c("donor_id", categorical_vars, numerical_vars)]
 covariate_df <- data.frame(covariate_dat)
-for(variable in setdiff(c("Pt_ID", categorical_vars), "Study_Designation")){
-  covariate_df[,variable] <- factor(covariate_df[,variable], levels = names(sort(table(covariate_df[,variable]), decreasing = T)))
+
+# table(seurat_obj$ADNC)
+covariate_df$ADNC <- factor(seurat_obj$ADNC, levels = c("Control", "Case"))
+for(variable in setdiff(c("donor_id", categorical_vars), "ADNC")){
+  covariate_df[,variable] <- factor(covariate_df[,variable], levels = names(sort(table(covariate_df[,variable]), decreasing = TRUE)))
 }
-covariate_df[,"Study_Designation"] <- factor(covariate_df[,"Study_Designation"], levels = c("Ctrl", "AD"))
+# colSums(is.na(covariate_df))
 covariates <- eSVD2::format_covariates(dat = mat,
                                        covariate_df = covariate_df,
                                        rescale_numeric_variables = numerical_vars)
 
-colnames(covariates) <- gsub(",", "_", colnames(covariates))
+# colnames(covariates) <- gsub(",", "_", colnames(covariates))
 
-#print(colnames(covariates))
+# print(colnames(covariates))
 ############
 
 print("Initialization")
 time_start1 <- Sys.time()
 eSVD_obj <- eSVD2::initialize_esvd(dat = mat,
-                                   covariates = covariates[,-grep("Pt_ID", colnames(covariates))],
-                                   case_control_variable = "Study_Designation_AD",
+                                   covariates = covariates[,-grep("donor_id", colnames(covariates))],
+                                   case_control_variable = "ADNC_AD",
                                    bool_intercept = T,
                                    k = 30,
                                    lambda = 0.1,
-                                   metadata_case_control = covariates[,"Study_Designation_AD"],
-                                   metadata_individual = covariate_df[,"Pt_ID"],
+                                   metadata_case_control = covariates[,"ADNC_AD"],
+                                   metadata_individual = covariate_df[,"donor_id"],
                                    verbose = 1)
 time_end1 <- Sys.time()
 
