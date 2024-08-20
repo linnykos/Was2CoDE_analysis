@@ -69,7 +69,7 @@ stopifnot(!any(is.na(zz)))
 summary(zz)
 
 ###########
-seurat_obj <- FindVariableFeatures(seurat_obj, selection.method = "vst", nfeatures = 3000)
+seurat_obj <- Seurat::FindVariableFeatures(seurat_obj, selection.method = "vst", nfeatures = 3000)
 gene_vec <- Seurat::VariableFeatures(seurat_obj[["RNA"]])
 seurat_obj <- subset(seurat_obj, features = gene_vec)
 
@@ -99,11 +99,11 @@ print("Initialization")
 time_start1 <- Sys.time()
 eSVD_obj <- eSVD2::initialize_esvd(dat = mat,
                                    covariates = covariates[,-grep("donor_id", colnames(covariates))],
-                                   case_control_variable = "ADNC_AD",
+                                   case_control_variable = "ADNC_Case",
                                    bool_intercept = T,
                                    k = 30,
                                    lambda = 0.1,
-                                   metadata_case_control = covariates[,"ADNC_AD"],
+                                   metadata_case_control = covariates[,"ADNC_Case"],
                                    metadata_individual = covariate_df[,"donor_id"],
                                    verbose = 1)
 time_end1 <- Sys.time()
@@ -120,7 +120,7 @@ time_start2 <- Sys.time()
 eSVD_obj <- eSVD2::opt_esvd(input_obj = eSVD_obj,
                             l2pen = 0.1,
                             max_iter = 100,
-                            offset_variables = setdiff(colnames(eSVD_obj$covariates), "diagnosis_ASD"),
+                            offset_variables = setdiff(colnames(eSVD_obj$covariates), "ADNC_Case"),
                             tol = 1e-6,
                             verbose = 1,
                             fit_name = "fit_First",
