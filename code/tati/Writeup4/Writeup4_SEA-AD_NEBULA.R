@@ -23,9 +23,9 @@ seurat_obj$AgeAtDeath <- age_vec
 seurat_obj$Lewy.body.disease.pathology <- seurat_obj@meta.data[,"Lewy body disease pathology"]
 seurat_obj$APOE4.status <- seurat_obj@meta.data[,"APOE4 status"]
 #colnames(seurat_obj@meta.data)
-
-# gene_vec <- Seurat::VariableFeatures(seurat_obj@meta.data[["RNA"]])
-# seurat_obj@meta.data <- subset(seurat_obj@meta.data, features = gene_vec)
+seurat_obj <- FindVariableFeatures(seurat_obj, selection.method = "vst", nfeatures = 3000)
+gene_vec <- Seurat::VariableFeatures(seurat_obj@meta.data[["RNA"]])
+seurat_obj@meta.data <- subset(seurat_obj@meta.data, features = gene_vec)
 
 tmp <- paste0("ID_", as.character(seurat_obj@meta.data$donor_id))
 seurat_obj$donor_id <- factor(tmp)
