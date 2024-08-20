@@ -23,9 +23,9 @@ seurat_obj$AgeAtDeath <- age_vec
 seurat_obj$Lewy.body.disease.pathology <- seurat_obj@meta.data[,"Lewy body disease pathology"]
 seurat_obj$APOE4.status <- seurat_obj@meta.data[,"APOE4 status"]
 #colnames(seurat_obj@meta.data)
-seurat_obj <- FindVariableFeatures(seurat_obj, selection.method = "vst", nfeatures = 3000)
-gene_vec <- Seurat::VariableFeatures(seurat_obj@meta.data[["RNA"]])
-seurat_obj@meta.data <- subset(seurat_obj@meta.data, features = gene_vec)
+
+# gene_vec <- Seurat::VariableFeatures(seurat_obj@meta.data[["RNA"]])
+# seurat_obj@meta.data <- subset(seurat_obj@meta.data, features = gene_vec)
 
 tmp <- paste0("ID_", as.character(seurat_obj@meta.data$donor_id))
 seurat_obj$donor_id <- factor(tmp)
@@ -34,14 +34,14 @@ seurat_obj <- subset(seurat_obj, subset = ADNC != "Reference")
 
 # Reclassify ADNC levels
 seurat_obj$ADNC <- with(seurat_obj@meta.data, 
-                                  ifelse(ADNC %in% c("NotAD", "Low"), "Control", 
-                                         ifelse(ADNC %in% c("Intermediate", "High"), "Case", ADNC)))
+                        ifelse(ADNC %in% c("NotAD", "Low"), "Control", 
+                               ifelse(ADNC %in% c("Intermediate", "High"), "Case", ADNC)))
 
 # table(seurat_obj$donor_id, seurat_obj$ADNC)
 
 # Convert APOE4 status to binary (0 for "N", 1 for "Y")
 seurat_obj$APOE4_status <- ifelse(seurat_obj@meta.data$APOE4.status == "Y", 1, 
-                                            ifelse(seurat_obj@meta.data$APOE4.status == "N", 0, NA))
+                                  ifelse(seurat_obj@meta.data$APOE4.status == "N", 0, NA))
 
 # table(seurat_obj$donor_id, seurat_obj$APOE4_status)
 # Convert PMI Categories to (Numeric or) Factor
@@ -63,10 +63,14 @@ for (variable in numerical_vars) {
   seurat_obj@meta.data[, variable] <- as.numeric(as.character(seurat_obj@meta.data[, variable]))
 }
 
-
 zz <- seurat_obj@meta.data[,c(categorical_vars, numerical_vars)]
 stopifnot(!any(is.na(zz)))
 summary(zz)
+
+###########
+seurat_obj <- Seurat::FindVariableFeatures(seurat_obj, selection.method = "vst", nfeatures = 3000)
+gene_vec <- Seurat::VariableFeatures(seurat_obj[["RNA"]])
+seurat_obj <- subset(seurat_obj, features = gene_vec)
 
 ##########################
 
