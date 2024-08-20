@@ -19,19 +19,14 @@ dat_list <- list(
     logFC = log2(eSVD_obj$case_mean / eSVD_obj$control),
     genes = names(eSVD_obj$teststat_vec)
   ),
-  WAS2 = list(
-    pvalue = results_mat[,"p_val"],
-    logFC = log2((results_mat[, "mean_dn"]) / ((results_mat[, "mean_nn"] + results_mat[, "mean_dd"]) / 2)),
-    genes = rownames(results_mat)
-  ),
   DESeq2 = list(
     pvalue = deseq2_res[,"pvalue"],
     logFC = deseq2_res[,"log2FoldChange"],
     genes = rownames(deseq2_res)
   ),
   NEBULA = list(
-    pvalue = nebula_res$summary[,"p_CognitiveStatusNo dementia"],
-    logFC = nebula_res$summary[,"logFC_CognitiveStatusNo dementia"],
+    pvalue = nebula_res$summary[,"p_Study_DesignationCtrl"],
+    logFC = nebula_res$summary[,"logFC_Study_DesignationCtrl"],
     genes = nebula_res$summary$gene
   )
 )
@@ -133,7 +128,7 @@ plot_combination <- function(comb) {
     theme_minimal()
   
   # Save combined plots
-  filename <- paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup2/Writeup3_Katie_Comparison_", method1, "to_", method2, ".png")
+  filename <- paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup3/Writeup3_Katie_Comparison_", method1, "to_", method2, ".png")
   combined_plot <- grid.arrange(plot_pvalue, plot_logfc, ncol = 2)
   ggsave(filename, combined_plot, device = "png", width = 14, height = 7, units = "in")
 }
