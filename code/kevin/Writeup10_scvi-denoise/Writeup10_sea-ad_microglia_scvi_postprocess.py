@@ -21,11 +21,11 @@ torch.set_float32_matmul_precision("high")
 
 print("Last run with scvi-tools version:", scvi.__version__)
 
-adata = ad.read_h5ad("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_prater_scvi_anndata.h5ad")
+adata = ad.read_h5ad("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_sea-ad_microglia_scvi_anndata.h5ad")
 
 # denoise the gene expression
 # https://docs.scvi-tools.org/en/stable/tutorials/notebooks/quick_start/api_overview.html
-model = scvi.model.SCVI.load("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_prater_scvi-model", 
+model = scvi.model.SCVI.load("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_sea-ad_microglia_scvi-model", 
                              adata)
 
 # adjust the donors covariates (leave the batch untouched)
@@ -34,6 +34,14 @@ model = scvi.model.SCVI.load("/home/users/kzlin/kzlinlab/projects/subject-de/out
 categorical_covariates = ["sex", "self_reported_ethnicity", "APOE4status"]
 # Store the original categories
 original_categories = {covariate: adata.obs[covariate].cat.categories for covariate in categorical_covariates}
+
+unique_pt_ids = adata.obs['Pt_ID'].unique()
+
+# Create an empty matrix of all 0's
+
+# Loop over each unique donor
+
+# Find
 
 # Calculate mode for categorical covariates
 for covariate in categorical_covariates:
