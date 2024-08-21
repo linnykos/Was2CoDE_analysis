@@ -75,14 +75,14 @@ seurat_obj <- subset(seurat_obj, features = gene_vec)
 
 subj_vec <- seurat_obj$donor_id
 
-Seurat::DefaultAssay(ss_data_norm) <- "RNA"
-mat <- SeuratObject::LayerData(ss_data_norm, 
+Seurat::DefaultAssay(seurat_obj) <- "RNA"
+mat <- SeuratObject::LayerData(seurat_obj, 
                                assay = "RNA", 
                                layer = "counts",
                                features = Seurat::VariableFeatures(seurat_obj))
 mat <- as.matrix(mat)
-metadata <- ss_data_norm@meta.data[,c(categorical_var, numerical_var)]
-for(var in categorical_var){
+metadata <- seurat_obj@meta.data[,c(categorical_vars, numerical_vars)]
+for(var in categorical_vars){
   metadata[,var] <- as.factor(metadata[,var])
 }
 
@@ -95,22 +95,38 @@ metadata_pseudobulk <- as.data.frame(matrix(NA, nrow = num_subj, ncol = ncol(met
 colnames(metadata_pseudobulk) <- colnames(metadata)
 rownames(metadata_pseudobulk) <- uniq_subj_vec
 
+# for(subj in uniq_subj_vec){
+#   idx <- which(subj_vec == subj)
+#   mat_pseudobulk[,subj] <- Matrix::rowSums(mat[,idx])
+#   
+#   for(vr in categorical_vars){
+#     metadata_pseudobulk[subj, vr] <- as.character(unique(metadata[idx,vr]))
+#   }
+#   for(vr in numerical_vars){
+#     metadata_pseudobulk[subj, vr] <- mean(metadata[idx,vr])
+#   }
+# }
+
 for(subj in uniq_subj_vec){
   idx <- which(subj_vec == subj)
   mat_pseudobulk[,subj] <- Matrix::rowSums(mat[,idx])
   
-  for(vr in categorical_var){
-    metadata_pseudobulk[subj, vr] <- as.character(unique(metadata[idx,vr]))
+  for(vr in categorical_vars){
+    # Select the most frequent value
+    most_frequent_value <- names(sort(table(metadata[idx, vr]), decreasing = TRUE))[1]
+    metadata_pseudobulk[subj, vr] <- most_frequent_value
   }
-  for(vr in numerical_var){
-    metadata_pseudobulk[subj, vr] <- mean(metadata[idx,vr])
+  
+  for(vr in numerical_vars){
+    metadata_pseudobulk[subj, vr] <- mean(metadata[idx, vr])
   }
 }
 
-for(vr in categorical_var){
+
+for(vr in categorical_vars){
   metadata_pseudobulk[,vr] <- factor(metadata_pseudobulk[,vr])
 }
-for(vr in numerical_var){
+for(vr in numerical_vars){
   metadata_pseudobulk[,vr] <- scale(metadata_pseudobulk[,vr])
 }
 
