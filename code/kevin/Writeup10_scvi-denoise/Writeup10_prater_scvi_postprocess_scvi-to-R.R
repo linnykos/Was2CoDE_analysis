@@ -112,6 +112,10 @@ dev.off()
 
 #############
 
+SeuratObject::LayerData(object = ss_data_norm, 
+                        assay = "RNA", 
+                        layer = "scale.data") <- NULL
+
 date_of_run <- Sys.time()
 session_info <- devtools::session_info()
 note <- "After running scVI."
