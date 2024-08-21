@@ -17,7 +17,6 @@ rownames(df) <- rowname_vec
 # df2 <- scale(df); cor_mat <- crossprod(df2)/nrow(df2); diag(cor_mat) <- NA
 
 Seurat::DefaultAssay(ss_data_norm) <- "RNA"
-ss_data_norm[["integrated"]] <- NULL
 
 Seurat::VariableFeatures(ss_data_norm) <- colnames(df)
 ss_data_norm <- subset(ss_data_norm, features = Seurat::VariableFeatures(ss_data_norm))
@@ -110,5 +109,14 @@ for(variable in var_vec){
 }
 
 dev.off()
+
+#############
+
+date_of_run <- Sys.time()
+session_info <- devtools::session_info()
+note <- "After running scVI."
+save(ss_data_norm,
+     date_of_run, session_info, note,
+     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_prater_scVI-postprocessed.RData")
 
 
