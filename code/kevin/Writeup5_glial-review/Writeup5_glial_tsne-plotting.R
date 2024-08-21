@@ -5,6 +5,8 @@ load("~/kzlinlab/projects/subject-de/out/kevin/Writeup5/Writeup5_glial_tsne.RDat
 
 source("Writeup5_glial_palette.R")
 
+tsne_list <- umap_list # amending a typo
+
 supertype_vec <- seurat_all$Supertype
 supertype_vec[supertype_vec == "Astro_6-SEAAD"] <- "Astro_6"
 supertype_vec[supertype_vec == "Micro-PVM_1_1-SEAAD"] <- "Micro-PVM_1"
@@ -27,7 +29,7 @@ for(i in 1:length(tsne_list)){
   
   plot1 <- Seurat::DimPlot(seurat_all, 
                            reduction = "tsne",
-                           label = TRUE,
+                           label = FALSE,
                            repel = TRUE,
                            label.size = 2.5,
                            group.by = "Supertype2",

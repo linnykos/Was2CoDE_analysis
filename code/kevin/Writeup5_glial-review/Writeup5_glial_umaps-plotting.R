@@ -41,7 +41,7 @@ for(i in 1:10){
   
   plot1 <- Seurat::DimPlot(seurat_all, 
                            reduction = "umap",
-                           label = TRUE,
+                           label = FALSE,
                            repel = TRUE,
                            label.size = 2.5,
                            group.by = "Supertype2",
@@ -67,7 +67,7 @@ for(i in 1:10){
   
   plot1 <- Seurat::DimPlot(seurat_all, 
                            reduction = "umap",
-                           label = TRUE,
+                           label = FALSE,
                            repel = TRUE,
                            label.size = 2.5,
                            group.by = "Supertype2",
@@ -93,7 +93,7 @@ for(i in 1:10){
   
   plot1 <- Seurat::DimPlot(seurat_all, 
                            reduction = "umap",
-                           label = TRUE,
+                           label = FALSE,
                            repel = TRUE,
                            label.size = 2.5,
                            group.by = "Supertype2",

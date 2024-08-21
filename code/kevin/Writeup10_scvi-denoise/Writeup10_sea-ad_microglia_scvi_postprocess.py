@@ -31,7 +31,7 @@ model = scvi.model.SCVI.load("/home/users/kzlin/kzlinlab/projects/subject-de/out
 # adjust the donors covariates (leave the batch untouched)
 # going based on https://github.com/linnykos/subject-de/blob/kevin/code/kevin/Writeup6_scvi/Writeup6_prater_scvi.py
 # manually set the mode and mean
-categorical_covariates = ["Sex", "Race", "APOEe4_status"]
+categorical_covariates = ["sex", "self_reported_ethnicity", "APOE4status"]
 # Store the original categories
 original_categories = {covariate: adata.obs[covariate].cat.categories for covariate in categorical_covariates}
 
@@ -44,7 +44,7 @@ for covariate in categorical_covariates:
     adata.obs[covariate] = adata.obs[covariate].cat.set_categories(original_categories[covariate])
 
 # Calculate mean for continuous covariates
-continuous_covariates = ["coded_Age", "PMI"]
+continuous_covariates = ["Ageatdeath", "PMI"]
 for covariate in continuous_covariates:
     mean_value = adata.obs[covariate].mean()
     adata.obs[covariate] = mean_value
@@ -68,4 +68,4 @@ denoised = model.get_normalized_expression(return_mean=False,
                                            library_size=1000)
 
 # Assuming df is your DataFrame
-denoised.to_feather("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_prater_scvi.feather")
+denoised.to_feather("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_sea-ad_microglia_scvi.feather")
