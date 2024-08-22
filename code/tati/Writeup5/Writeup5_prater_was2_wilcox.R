@@ -6,13 +6,15 @@ library(hrbrthemes)
 library(viridis)
 library(Seurat)
 library(IdeasCustom)
-load("~/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_prater_scVI-postprocessed.RData")
+set.seed(10)
+
+load ("~/kzlinlab/projects/subject-de/out/tati/Writeup5/Writeup5_microglia_ideascustom.RData")
 
 results_mat <- IdeasCustom::was2de_pvalue(dist_list, meta_ind)
 date_of_run <- Sys.time()
 session_info <- devtools::session_info()
 note <- paste("Wilcoxin_test of the microglia data.",
-              "This was done on the data in ~/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_prater_scVI-postprocessed.RData")
+              "This was done on the data in ~/kzlinlab/projects/subject-de/out/tati/Writeup5/Writeup5_microglia_ideascustom.RData")
 
 save(results_mat,
      date_of_run, session_info, note,
