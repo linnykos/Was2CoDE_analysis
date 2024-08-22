@@ -95,9 +95,9 @@ metadata_pseudobulk <- as.data.frame(matrix(NA, nrow = num_subj, ncol = ncol(met
 colnames(metadata_pseudobulk) <- colnames(metadata)
 rownames(metadata_pseudobulk) <- uniq_subj_vec
 
-# for(subj in uniq_subj_vec){
-#   idx <- which(subj_vec == subj)
-#   mat_pseudobulk[,subj] <- Matrix::rowSums(mat[,idx])
+# for(subj in uniq_subj_vec){ #for each donor
+#   idx <- which(subj_vec == subj) # find all cells for each donor
+#   mat_pseudobulk[,subj] <- Matrix::rowSums(mat[,idx]) #sum up all the cells
 #   
 #   for(vr in categorical_vars){
 #     metadata_pseudobulk[subj, vr] <- as.character(unique(metadata[idx,vr]))
