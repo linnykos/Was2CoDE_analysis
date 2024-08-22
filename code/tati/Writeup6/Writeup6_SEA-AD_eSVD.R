@@ -66,7 +66,7 @@ stopifnot(!any(is.na(zz)))
 summary(zz)
 
 ###########
-seurat_obj <- Seurat::FindVariableFeatures(seurat_obj, selection.method = "vst", nfeatures = 3000)
+
 gene_vec <- Seurat::VariableFeatures(seurat_obj[["RNA"]])
 seurat_obj <- subset(seurat_obj, features = gene_vec)
 
