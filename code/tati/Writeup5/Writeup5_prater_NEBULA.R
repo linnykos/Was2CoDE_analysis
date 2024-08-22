@@ -18,7 +18,7 @@ ss_data_norm <- subset(ss_data_norm, features = gene_vec)
 tmp <- paste0("ID_", as.character(ss_data_norm$Pt_ID))
 ss_data_norm$Pt_ID <- factor(tmp)
 
-categorical_vars <- c("Sex", "SeqBatch", "Race", "Study_Designation","genotype_APOE")
+categorical_vars <- c("Sex", "SeqBatch", "Race", "Study_Designation","APOEe4_status")
 numerical_vars <- c("PMI","coded_Age")
 
 tmp <- as.character(ss_data_norm$coded_Age)
@@ -40,9 +40,9 @@ summary(zz)
 neb_data <- nebula::scToNeb(obj = ss_data_norm,
                             assay = "RNA",
                             id = "Pt_ID",
-                            pred = c("Study_Designation", "Sex", "PMI", "SeqBatch", "coded_Age", "genotype_APOE","Race"),
+                            pred = c("Study_Designation", "Sex", "PMI", "SeqBatch", "coded_Age", "APOEe4_status","Race"),
                             offset = "nCount_RNA")
-df <- model.matrix( ~ Study_Designation + Sex + PMI + SeqBatch + coded_Age + genotype_APOE + Race,
+df <- model.matrix( ~ Study_Designation + Sex + PMI + SeqBatch + coded_Age + APOEe4_status + Race,
                     data = neb_data$pred)
 head(df)
 start_time <- Sys.time()
