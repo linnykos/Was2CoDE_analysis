@@ -8,7 +8,7 @@ set.seed(10)
 
 print("Starting!")
 
-load("~/kzlinlab/projects/subject-de/out/kevin/Writeup2/Writeup2_sea-ad_microglia_preprocess.RData")
+load("~/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_sea-ad_microglia_scVI-postprocessed.RData") 
 
 # construct the age vector
 age_vec <- sapply(seurat_obj$development_stage, function(x){
@@ -17,15 +17,14 @@ age_vec <- sapply(seurat_obj$development_stage, function(x){
 
 age_vec[which(seurat_obj$development_stage == "80yearoldandoverhumanstage")] <- "90"
 age_vec <- as.numeric(age_vec)
-seurat_obj$AgeAtDeath <- age_vec
+seurat_obj$Ageatdeath <- age_vec
 
 
-seurat_obj$Lewy.body.disease.pathology <- seurat_obj@meta.data[,"Lewy body disease pathology"]
-seurat_obj$APOE4.status <- seurat_obj@meta.data[,"APOE4 status"]
+seurat_obj$Lewy.body.disease.pathology <- seurat_obj@meta.data[,"Lewybodydiseasepathology"]
+seurat_obj$APOE4.status <- seurat_obj@meta.data[,"APOE4status"]
 #colnames(seurat_obj@meta.data)
 
 # gene_vec <- Seurat::VariableFeatures(seurat_obj@meta.data[["RNA"]])
-# seurat_obj@meta.data <- subset(seurat_obj@meta.data, features = gene_vec)
 
 tmp <- paste0("ID_", as.character(seurat_obj@meta.data$donor_id))
 seurat_obj$donor_id <- factor(tmp)
@@ -44,15 +43,12 @@ seurat_obj$APOE4_status <- ifelse(seurat_obj@meta.data$APOE4.status == "Y", 1,
                                   ifelse(seurat_obj@meta.data$APOE4.status == "N", 0, NA))
 
 # table(seurat_obj$donor_id, seurat_obj$APOE4_status)
-# Convert PMI Categories to (Numeric or) Factor
-seurat_obj$PMI <- factor(seurat_obj$PMI, levels = c("32to59hours", "59to87hours", "87to114hours"))
 
-categorical_vars <- c("ADNC", "sex", "assay", "self_reported_ethnicity","APOE4_status","PMI")
-numerical_vars <- c("AgeAtDeath")
+categorical_vars <- c("ADNC", "sex", "assay", "self_reported_ethnicity","APOE4_status")
+numerical_vars <- c("Ageatdeath","PMI")
 
-tmp <- as.character(seurat_obj$AgeAtDeath)
-tmp[which(tmp == "90+")] <- "90"
-seurat_obj@meta.data$AgeAtDeath <- tmp
+tmp <- as.character(seurat_obj$Ageatdeath)
+seurat_obj@meta.data$Ageatdeath <- tmp
 
 
 for (variable in categorical_vars) {
@@ -66,9 +62,7 @@ for (variable in numerical_vars) {
 zz <- seurat_obj@meta.data[,c(categorical_vars, numerical_vars)]
 stopifnot(!any(is.na(zz)))
 summary(zz)
-
 ###########
-seurat_obj <- Seurat::FindVariableFeatures(seurat_obj, selection.method = "vst", nfeatures = 3000)
 gene_vec <- Seurat::VariableFeatures(seurat_obj[["RNA"]])
 seurat_obj <- subset(seurat_obj, features = gene_vec)
 
@@ -77,7 +71,7 @@ seurat_obj <- subset(seurat_obj, features = gene_vec)
 neb_data <- nebula::scToNeb(obj = seurat_obj,
                             assay = "RNA",
                             id = "donor_id",
-                            pred = c("ADNC", "sex", "PMI", "assay", "AgeAtDeath", "APOE4_status","self_reported_ethnicity"),
+                            pred = c("ADNC", "sex", "PMI", "assay", "Ageatdeath", "APOE4_status","self_reported_ethnicity"),
                             offset = "nCount_RNA")
 
 order_index <- order(neb_data$id)
@@ -88,7 +82,7 @@ neb_data$id <- neb_data$id[order_index]
 neb_data$pred <- neb_data$pred[order_index, ]
 neb_data$offset <- neb_data$offset[order_index]
 
-df <- model.matrix( ~ ADNC + sex + PMI + assay + AgeAtDeath + APOE4_status + self_reported_ethnicity,
+df <- model.matrix( ~ ADNC + sex + PMI + assay + Ageatdeath + APOE4_status + self_reported_ethnicity,
                     data = neb_data$pred)
 start_time <- Sys.time()
 nebula_res <- nebula::nebula(count = neb_data$count,
@@ -101,13 +95,12 @@ end_time <- Sys.time()
 
 date_of_run <- Sys.time()
 session_info <- devtools::session_info()
-note <- paste("Working from ~/kzlinlab/projects/subject-de/out/kevin/Writeup2/Writeup2_sea-ad_microglia_preprocess.RData
-.",
+note <- paste("Working from ~/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_sea-ad_microglia_scVI-postprocessed.RData",
               "Applying NEBULA on SEA-AD.")
 
 save(nebula_res, 
      date_of_run, session_info, note,
      start_time, end_time,
-     file = "~/kzlinlab/projects/subject-de/out/tati/Writeup4/Writeup4_SEA-AD_NEBULA.RData")
+     file = "~/kzlinlab/projects/subject-de/out/tati/Writeup6/Writeup6_SEA-AD_NEBULA.RData")
 
 print("Done! :)")
