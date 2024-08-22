@@ -10,4 +10,4 @@
 #SBATCH --error=/home/users/%u/kzlinlab/projects/subject-de/out/tati/Writeup5/slurm/slurm_%j.err
 #SBATCH --output=/home/users/%u/kzlinlab/projects/subject-de/out/tati/Writeup5/slurm/slurm_%j.out
 
-R CMD BATCH --no-save --no-restore Writeup5_prater_SEA-AD_NEBULA.R ../../../../../out/tati/Writeup5/slurm/$SLURM_JOB_NAME-$SLURM_JOB_ID.Rout
+R CMD BATCH --no-save --no-restore Writeup5_prater_NEBULA.R ../../../../../out/tati/Writeup5/slurm/$SLURM_JOB_NAME-$SLURM_JOB_ID.Rout
