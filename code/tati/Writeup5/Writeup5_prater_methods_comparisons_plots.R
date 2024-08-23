@@ -12,7 +12,7 @@ set.seed(10)
 load("~/kzlinlab/projects/subject-de/out/tati/Writeup5/Writeup5_prater_NEBULA.RData")
 load("~/kzlinlab/projects/subject-de/out/tati/Writeup5/Writeup5_prater_Pseudobulk-DEseq2.RData")
 load("~/kzlinlab/projects/subject-de/out/tati/Writeup5/Writeup5_prater_esvd.RData")
-# load("~/kzlinlab/projects/subject-de/out/tati/Writeup5/Writeup5_microglia_Katie_was2_wilcox.RData")
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup5/Writeup5_prater_was2_wilcox.RData")
 
 
 dat_list <- list(
@@ -21,11 +21,11 @@ dat_list <- list(
     logFC = log2(eSVD_obj$case_mean / eSVD_obj$control),
     genes = names(eSVD_obj$teststat_vec)
   ),
-  # WAS2 = list(
-  #   pvalue = results_mat[,"p_val"],
-  #   logFC = log2((results_mat[, "mean_dn"]) / ((results_mat[, "mean_nn"] + results_mat[, "mean_dd"]) / 2)),
-  #   genes = rownames(results_mat)
-  # ),
+  WAS2 = list(
+    pvalue = results_mat[,"p_val"],
+    logFC = log2((results_mat[, "mean_dn"]) / ((results_mat[, "mean_nn"] + results_mat[, "mean_dd"]) / 2)),
+    genes = rownames(results_mat)
+  ),
   DESeq2 = list(
     pvalue = deseq2_res[,"pvalue"],
     logFC = deseq2_res[,"log2FoldChange"],
@@ -78,7 +78,10 @@ plot_combination <- function(comb) {
   # Set axis limits based on the 99th percentile of the absolute logFC values
   xlims <- c(-1, 1) * max(quantile(abs(res$logFC1), 0.99, na.rm = TRUE),
                           quantile(abs(res$logFC2), 0.99, na.rm = TRUE))
-  
+  second_largest_pvalue1 <- sort(-log10(res$pvalue1), decreasing = TRUE)[2]
+  second_largest_pvalue2 <- sort(-log10(res$pvalue2), decreasing = TRUE)[2]
+  ylim_max <- second_largest_pvalue2
+
   ############################
   # Reorder the levels of SignificanceCategory
   ############################
@@ -120,7 +123,8 @@ plot_combination <- function(comb) {
                          total_genes, method1, significant_method1, method2, significant_method2, significant_both),
          x = sprintf("-Log10 P-value (%s)", method1),
          y = sprintf("-Log10 P-value (%s)", method2)) +
-    theme_minimal()
+    theme_minimal()+
+    ylim(0, ylim_max) 
   
   plot_logfc <- ggplot(res, aes(x = logFC1, y = logFC2, color = SignificanceCategory)) +
     geom_point(alpha = 0.7) +
@@ -132,7 +136,8 @@ plot_combination <- function(comb) {
     labs(title = sprintf("Log2FC Comparison: %s vs. %s\nCorrelation: %.2f", method1, method2, correlation_logfc),
          x = sprintf("Log2 FC (%s)", method1),
          y = sprintf("Log2 FC (%s)", method2)) +
-    theme_minimal()
+    theme_minimal()+
+    xlim(xlims[1], xlims[2])
   
   # Save combined plots
   filename <- paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup5/Writeup5_prater_Comparison_", method1, "to_", method2, ".png")

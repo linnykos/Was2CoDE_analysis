@@ -7,7 +7,7 @@ library(dplyr)
 library(DESeq2)
 set.seed(10)
 
-load("~/kzlinlab/projects/subject-de/out/tati/Writeup5/Writeup5_prater_Pseudobulk-DEseq2.RData")
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup6/Writeup6_SEA-AD_Pseudobulk-DEseq2.RData")
 
 res <- deseq2_res
 
@@ -33,7 +33,7 @@ plot1 <- EnhancedVolcano::EnhancedVolcano(
   ylim = ylim
 )
 
-ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup5/Writeup5_prater_Pseudobulk-DEseq2_volcano.png",
+ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup6/Writeup6_SEA-AD_Pseudobulk-DEseq2_volcano.png",
                 plot1, device = "png", width = 7, height = 7, units = "in")
 
 #########################
@@ -77,7 +77,7 @@ plot0 <- ggplot(res, aes(x = log2FoldChange, y = -log10(pvalue), color = GeneTyp
   geom_vline(xintercept = c(-FCcutoff, FCcutoff), linetype = "dashed", color = "black") + 
   geom_hline(yintercept = -log10(pCutoff), linetype = "dashed", color = "black")
 
-ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup5/Writeup5_prater_Pseudobulk-DEseq2_colored_by_GeneLists.png",
+ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup6/Writeup6_SEA-AD_Pseudobulk-DEseq2_colored_by_GeneLists.png",
                 plot0, device = "png", width = 7, height = 7, units = "in")
 
 genes_above_threshold <- res %>%
@@ -86,5 +86,5 @@ genes_above_threshold <- res %>%
 
 print(genes_above_threshold)
 
-write.table(genes_above_threshold, "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup5/_prater_genes_above_threshold_Pseudobulk-DEseq2.csv", 
+write.table(genes_above_threshold, "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup6/Writeup6_SEA-AD_genes_above_threshold_Pseudobulk-DEseq2.csv", 
             row.names = FALSE, col.names = FALSE, quote = FALSE, sep = ",")

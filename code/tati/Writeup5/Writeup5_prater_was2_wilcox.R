@@ -8,9 +8,12 @@ library(Seurat)
 library(IdeasCustom)
 set.seed(10)
 
-load ("~/kzlinlab/projects/subject-de/out/tati/Writeup5/Writeup5_microglia_ideascustom.RData")
-
-results_mat <- IdeasCustom::was2de_pvalue(dist_list, meta_ind)
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup5/Writeup5_microglia_ideascustom.RData")
+# meta_ind <- meta_ind[!is.na(meta_ind$LATEScore), ]
+# sum(is.na(meta_ind))
+meta_ind$Dementia_Status <- ifelse(meta_ind$Study_Designation == "Ctrl", "No_dementia", "Dementia")
+# table(meta_ind$Dementia_Status)
+results_mat <- IdeasCustom::was2de_pvalue(dist_list, meta_ind, "Dementia_Status")
 date_of_run <- Sys.time()
 session_info <- devtools::session_info()
 note <- paste("Wilcoxin_test of the microglia data.",

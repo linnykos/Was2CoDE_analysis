@@ -8,7 +8,6 @@ library(ggplot2)
 library(data.table)
 library(doRNG)
 print(sessionInfo())
-
 load("~/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_prater_scVI-postprocessed.RData")
 
 # the loaded dataset is called "ss_data_norm"
@@ -26,7 +25,6 @@ meta_cell$individual <- meta_cell$Pt_ID
 meta_cell$cell_id <- row.names(meta_cell) 
 meta_ind     <- data.frame("individual" = ss_data_norm$Pt_ID,
                            "Study_Designation" = ss_data_norm$Study_Designation,
-                           "Study_Designation" = ss_data_norm$Study_Designation,
                            "Sex" = ss_data_norm$Sex,
                            "APOEe4_status" = ss_data_norm$APOEe4_status,
                            "PMI" = ss_data_norm$PMI,
@@ -37,7 +35,6 @@ meta_ind     <- data.frame("individual" = ss_data_norm$Pt_ID,
                            "ThalPhase" = ss_data_norm$ThalPhase,
                            "BraakStage" = ss_data_norm$BraakStage,
                            "CERAD" = ss_data_norm$CERAD,
-                           "LATEScore" = ss_data_norm$LATEScore,
                            "SeqBatch" = ss_data_norm$SeqBatch,
                            "coded_Age" = ss_data_norm$coded_Age,
                            row.names=NULL
@@ -71,7 +68,6 @@ dmy_SB<- dmy_SB[,-which.max(colSums(dmy_SB)),drop=FALSE]
 
 meta_ind     <- unique(data.frame("individual" = ss_data_norm$Pt_ID,
                                   "Study_Designation" = dmy_SD,
-                                  "Study_Designation" = ss_data_norm$Study_Designation,
                                   "Sex" = dmy_Sex,
                                   "APOEe4_status" = dmy_gen,
                                   "PMI" = ss_data_norm$PMI,
