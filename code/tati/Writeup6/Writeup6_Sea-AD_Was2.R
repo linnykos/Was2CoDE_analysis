@@ -10,7 +10,7 @@ library(doRNG)
 print(sessionInfo())
 
 load("~/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_sea-ad_microglia_scVI-postprocessed.RData") 
-
+#
 set.seed(10)
 
 count_matrix <- SeuratObject::LayerData(seurat_obj,
