@@ -18,14 +18,15 @@ count_matrix <- SeuratObject::LayerData(seurat_obj,
                                         layer = "data",
                                         assay = "RNA")
 
+
 meta_cell <- seurat_obj@meta.data
 meta_cell$individual <- meta_cell$donor_id
 meta_cell$cell_id <- row.names(meta_cell) 
 
 meta_ind     <- unique(data.frame("individual" = seurat_obj$donor_id,
+                                  "ADNC"= seurat_obj$ADNC,
                                   row.names=NULL
 ))
-
 
 for(j in 1:ncol(meta_ind)){
   if(!is.numeric(meta_ind[,j])) next()
