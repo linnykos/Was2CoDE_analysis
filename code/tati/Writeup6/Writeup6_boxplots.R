@@ -11,7 +11,7 @@ load("~/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_sea-ad_microg
 count_mat <- SeuratObject::LayerData(seurat_obj, layer = "data", assay = "RNA") # genes by cells
 
 # first, create a list (one element per donor) that contains the indicies of all the cells for that donor
-meta_data <- seurat_obj@meta.data
+meta.data <- seurat_obj@meta.data
 donor_ids <- meta_data$donor_id
 cell_names <- colnames(count_mat)
 cell_df <- data.frame(cell_name = cell_names, donor_id = donor_ids, stringsAsFactors = FALSE)
@@ -68,14 +68,27 @@ for (gene in genes_of_interest) {
                   names(color_mapping)[color_mapping == "blue"])
     df$donor_id <- factor(df$donor_id, levels = ordering)
     
+    # Create a data frame of the boxplot statistics
+    boxplot_stats <- df %>%
+      group_by(donor_id) %>%
+      summarise(
+        lower_whisker = quantile(expression, 0.25) - 1.5 * IQR(expression),
+        upper_whisker = quantile(expression, 0.75) + 1.5 * IQR(expression)
+      )
+    
+    # Find the maximum value of the upper whiskers
+    max_upper_whisker <- max(boxplot_stats$upper_whisker)
+    
     k <- which(nebula_res$summary$gene == gene)
     plot <- ggplot(df, aes(x = donor_id, y = expression, fill = donor_id)) +
-      geom_boxplot() + 
+      ggrastr::rasterize(geom_boxplot(outlier.shape = NA), dpi = 72) + 
       scale_fill_manual(values = color_mapping) +
       theme_minimal() +
+      theme(legend.position = "none") +
       labs(title = paste("Expression of", gene, "\nNebula LFC: ", round(nebula_res$summary[k, "logFC_ADNCControl"], 2)), 
            x = "Donor", 
-           y = "Expression")
+           y = "Expression") +
+      ylim(min(df$expression), max_upper_whisker) # Adjust the y-axis limits
     
     print(plot)
   }, error = function(e) {
