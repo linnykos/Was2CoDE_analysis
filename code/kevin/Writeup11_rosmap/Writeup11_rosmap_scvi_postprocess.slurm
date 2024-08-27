@@ -5,7 +5,7 @@
 #SBATCH --time=48:00:00
 
 #SBATCH --job-name=scvi_rosmap_post
-#SBATCH --mem-per-cpu=100gb
+#SBATCH --mem-per-cpu=80gb
 
 #SBATCH --error=/home/users/%u/kzlinlab/projects/subject-de/out/kevin/Writeup11/slurm/slurm_%j.err
 #SBATCH --output=/home/users/%u/kzlinlab/projects/subject-de/out/kevin/Writeup11/slurm/slurm_%j.out
