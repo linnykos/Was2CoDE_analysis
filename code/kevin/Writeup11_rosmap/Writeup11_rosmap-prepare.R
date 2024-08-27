@@ -82,8 +82,8 @@ metadata_donor$Study <- factor(vec)
 rownames(metadata_donor) <- metadata_donor$individualID
 
 # start transferring variables over
-categorical_variables <- c("Study", "educ", "race", "spanish", "apoe_genotype", 
-                           "age_death", "sex", "APOEe4_status")
+categorical_variables <- c("Study", "race", "spanish", "apoe_genotype", 
+                           "sex", "APOEe4_status")
 numerical_variables <- c("educ", "age_at_visit_max", "age_first_ad_dx",
                          "age_death", "cts_mmse30_first_ad_dx", 
                          "cts_mmse30_lv", "pmi", 
@@ -119,6 +119,44 @@ keep_vec <- rep(TRUE, length(Seurat::Cells(seurat_obj)))
 keep_vec[is.na(seurat_obj$ADpath)] <- FALSE
 seurat_obj$keep <- keep_vec
 seurat_obj <- subset(seurat_obj, keep == TRUE)
+
+# remove all non-microglia
+keep_vec <- rep(FALSE, length(Seurat::Cells(seurat_obj)))
+keep_vec[grep("Mic", seurat_obj$celltype)] <- TRUE
+seurat_obj$keep <- keep_vec
+seurat_obj <- subset(seurat_obj, keep == TRUE)
+
+# keep only PFC
+keep_vec <- rep(FALSE, length(Seurat::Cells(seurat_obj)))
+keep_vec[which(seurat_obj$brainRegion == "PFC")] <- TRUE
+seurat_obj$keep <- keep_vec
+seurat_obj <- subset(seurat_obj, keep == TRUE)
+
+# rename any categoricals to be not numbers
+seurat_obj$seurat_clusters <- factor(paste0("c", seurat_obj$seurat_clusters))
+
+# remove any person with less than 50 cells
+donor_cellnumbers <- table(seurat_obj$subject)
+donor_keep <- names(donor_cellnumbers)[which(donor_cellnumbers >= 50)]
+keep_vec <- rep(FALSE, length(Seurat::Cells(seurat_obj)))
+keep_vec[seurat_obj$subject %in% donor_keep] <- TRUE
+seurat_obj$keep <- keep_vec
+seurat_obj <- subset(seurat_obj, keep == TRUE)
+
+categorical_variables <- c("subject", "brainRegion", "batch", 
+                           "ADdiag3types", "Pt_ID", "Study", 
+                            "race", "spanish", "apoe_genotype", 
+                            "sex", "APOEe4_status", "celltype",
+                           "seurat_clusters")
+for(variable in categorical_variables){
+  seurat_obj@meta.data[,variable] <- droplevels(seurat_obj@meta.data[,variable])
+}
+
+seurat_obj
+summary(seurat_obj@meta.data)
+SeuratObject::LayerData(seurat_obj,
+                        assay = "RNA", 
+                        layer = "counts")[1:10,1:10]
 
 ####
 
