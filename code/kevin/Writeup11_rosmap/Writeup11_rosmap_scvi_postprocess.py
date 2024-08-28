@@ -40,7 +40,7 @@ unique_pt_ids = adata.obs["Pt_ID"].unique()
 adata_obs_original = adata.obs.copy()
 
 accumulator_matrix = np.zeros((adata.n_obs, adata.n_vars))
-unique_batches = adata_obs_original["assay"].unique().tolist()
+unique_batches = adata_obs_original["batch"].unique().tolist()
 
 # Loop over each donor
 for i in range(len(unique_pt_ids)):
