@@ -36,7 +36,7 @@ categorical_covariates = ["sex", "race", "APOEe4_status"]
 original_categories = {covariate: adata.obs[covariate].cat.categories for covariate in categorical_covariates}
 
 # Extracting the unique values of 'donor_id' from the obs attribute
-unique_pt_ids = adata.obs["donor_id"].unique()
+unique_pt_ids = adata.obs["Pt_ID"].unique()
 adata_obs_original = adata.obs.copy()
 
 accumulator_matrix = np.zeros((adata.n_obs, adata.n_vars))
@@ -47,7 +47,7 @@ for i in range(len(unique_pt_ids)):
     print(f"Working on subject {i + 1} out of {len(unique_pt_ids)}")
     
     pt = unique_pt_ids[i]
-    subset = adata_obs_original[adata_obs_original['donor_id'] == pt]
+    subset = adata_obs_original[adata_obs_original['Pt_ID'] == pt]
     
     # grab the relevant values
     sex_value = subset["sex"].iloc[0]
