@@ -42,9 +42,14 @@ adata_obs_original = adata.obs.copy()
 accumulator_matrix = np.zeros((adata.n_obs, adata.n_vars))
 unique_batches = adata_obs_original["batch"].unique().tolist()
 
+log_file = open("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup11/Writeup11_rosmap_scvi_postprocess_log.txt")
+
+print("Starting to work on donors")
 # Loop over each donor
 for i in range(len(unique_pt_ids)):
     print(f"Working on subject {i + 1} out of {len(unique_pt_ids)}")
+    log_file.write(f"Working on subject {i + 1} out of {len(unique_pt_ids)}")
+    log_file.flush()
     
     pt = unique_pt_ids[i]
     subset = adata_obs_original[adata_obs_original['Pt_ID'] == pt]
@@ -76,10 +81,20 @@ for i in range(len(unique_pt_ids)):
     
     accumulator_matrix += denoised_array
 
+
+print("Wrapping up")
+log_file.write("Wrapping up")
+log_file.flush()
 accumulator_matrix = accumulator_matrix / len(unique_pt_ids)
 denoised_average = pd.DataFrame(accumulator_matrix)
 denoised_average.index = adata.obs_names
 denoised_average.columns = adata.var_names
 
+print("Saving")
+log_file.write("Saving")
+log_file.flush()
 # Assuming df is your DataFrame
 denoised_average.to_feather("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup11/Writeup11_rosmap_scvi.feather")
+
+log_file.close()
+print("Done! :)")
