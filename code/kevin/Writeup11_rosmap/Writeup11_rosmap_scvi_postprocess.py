@@ -42,7 +42,7 @@ adata_obs_original = adata.obs.copy()
 accumulator_matrix = np.zeros((adata.n_obs, adata.n_vars))
 unique_batches = adata_obs_original["batch"].unique().tolist()
 
-log_file = open("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup11/Writeup11_rosmap_scvi_postprocess_log.txt")
+log_file = open("/home/users/kzlin/kzlinlab/projects/subject-de/out/kevin/Writeup11/Writeup11_rosmap_scvi_postprocess_log.txt", 'w')
 
 print("Starting to work on donors")
 # Loop over each donor
