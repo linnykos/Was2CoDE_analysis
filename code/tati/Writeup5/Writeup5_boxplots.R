@@ -5,6 +5,8 @@ library(tidyverse)
 library(hrbrthemes)
 library(viridis)
 library(Seurat)
+library(ggrastr)
+library(ggplot2)
 
 load("~/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_prater_scVI-postprocessed.RData")
 
@@ -79,3 +81,70 @@ grDevices::pdf(file = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati
   
   # Close PDF device
   grDevices::graphics.off()
+  
+  
+  ######### Was 2 #########
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup5/Writeup5_microglia_ideascustom.RData")
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup5/Writeup5_prater_was2_wilcox.RData")
+ls()
+
+# Extract p-values from the matrix
+pvalue_vec <- results_mat[, "p_val"]
+
+# Assign gene names to the p-value vector
+names(pvalue_vec) <- rownames(results_mat)
+
+# Adjust p-values using the BH method
+pvalue_vec_adjusted <- p.adjust(pvalue_vec, method = "BH")
+
+# Find genes with adjusted p-values <= 0.05
+genes_of_interest <- names(pvalue_vec_adjusted)[pvalue_vec_adjusted <= 0.05]
+
+# Ensure genes of interest are in the count matrix
+genes_of_interest <- intersect(genes_of_interest, rownames(count_mat))
+
+
+pdf(file = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup5/Writeup5_was2_boxplots.pdf",
+    width = 8, height = 8, onefile = TRUE)
+
+# Iterate over each gene of interest and create a boxplot
+for (gene in genes_of_interest) {
+  tryCatch({
+    # Find the correct row for that gene in the count matrix
+    gene_index <- which(rownames(count_mat) == gene)
+    
+    # Extract expression for that gene
+    expression_value <- count_mat[gene_index, ]
+    
+    df <- data.frame(
+      expression = expression_value,
+      Pt_ID = meta_data$Pt_ID,
+      Study_Designation = meta_data$Study_Designation
+    )
+    
+    # Set ordering of donors
+    ordering <- c(names(color_mapping)[color_mapping == "red"],
+                  names(color_mapping)[color_mapping == "blue"])
+    df$Pt_ID <- factor(df$Pt_ID, levels = ordering)
+    
+    # Get the was2 LFC for the gene
+    was2_lfc <- results_mat[gene, "mean_dd"] - results_mat[gene, "mean_nn"]
+    
+    # Generate boxplot with was2 LFC labeling
+    plot <- ggplot(df, aes(x = Pt_ID, y = expression, fill = Pt_ID)) +
+      geom_boxplot() + 
+      scale_fill_manual(values = color_mapping) +
+      theme_minimal() +
+      labs(title = paste("Expression of", gene, "\nwas2 LFC: ", round(was2_lfc, 2)), 
+           x = "Donor", 
+           y = "Expression")
+    
+    # Print the plot to the PDF file
+    print(plot)
+  }, error = function(e) {
+    message("Error plotting gene: ", gene, " - ", e$message)
+  })
+}
+
+# Close the PDF device
+graphics.off()

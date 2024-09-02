@@ -6,9 +6,9 @@ library(Seurat)
 
 set.seed(10)
 
-load("~/kzlinlab/projects/subject-de/out/tati/Writeup5/Writeup5_microglia_ideascustom.RData")
-load("~/kzlinlab/projects/subject-de/out/tati/Writeup5/Writeup5_prater_was2_wilcox.RData")
-ls()
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup6/Writeup6_SEA-AD_microglia_ideascustom.RData")
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup6/Writeup6_SEA-AD_was2_wilcox.RData")
+# ls()
 
 compute_statistics <- function(dist_list, meta_ind, pval_list) {
   n_gene <- dim(dist_list$distance)[1]
@@ -146,10 +146,12 @@ ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de
 
 ############ Volcano plot ############
 library(EnhancedVolcano)
-
+meta_ind$ADNC <- with(meta_ind, 
+                      ifelse(ADNC %in% c("NotAD", "Low"), "Control", 
+                             ifelse(ADNC %in% c("Intermediate", "High"), "Case", ADNC)))
 # Compute avg_log2FC
-dementia_indices <- which(meta_ind$Study_Designation == "AD")
-no_dementia_indices <- which(meta_ind$Study_Designation == "Ctrl")
+dementia_indices <- which(meta_ind$ADNC == "Case")
+no_dementia_indices <- which(meta_ind$ADNC == "Control")
 
 # Create a vector to store avg_log2FC 
 i <- 1
@@ -181,6 +183,7 @@ pval_adj_vec <- stats::p.adjust(pval_vec, method = "BH")
 
 # Identify indices of genes with adjusted p-values <= 0.05
 idx <- which(pval_adj_vec <= 0.05)
+#idx
 
 # Define p-value cutoff as the maximum p-value among those with adjusted p-value <= 0.05
 pCutoff <- max(pval_vec[idx])
@@ -193,6 +196,13 @@ xlim <- c(-1,1) * quantile(abs(results_mat[,"mean_dd"] - results_mat[,"mean_nn"]
 
 # Define y-axis limits (you may adjust this depending on your data visualization needs)
 ylim <- c(0, 20)
+
+# print(pCutoff)
+# print(FCcutoff)
+# print(xlim)
+# head(volcano_data)
+# summary(volcano_data$avg_log2FC)
+# summary(volcano_data$pval)
 
 # Create the Volcano plot
 Plot4 <- EnhancedVolcano::EnhancedVolcano(
@@ -209,5 +219,5 @@ Plot4 <- EnhancedVolcano::EnhancedVolcano(
 )
 
 
-ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup5/Writeup5_Was2_volcano.png"),
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup6/Writeup6_Was2_volcano.png"),
                 Plot4, device = "png", width = 7, height = 7, units = "in")

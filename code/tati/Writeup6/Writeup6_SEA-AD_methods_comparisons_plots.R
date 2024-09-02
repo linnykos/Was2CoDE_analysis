@@ -12,7 +12,7 @@ set.seed(10)
 load("~/kzlinlab/projects/subject-de/out/tati/Writeup6/Writeup6_SEA-AD_NEBULA.RData")
 load("~/kzlinlab/projects/subject-de/out/tati/Writeup6/Writeup6_SEA-AD_Pseudobulk-DEseq2.RData")
 load("~/kzlinlab/projects/subject-de/out/tati/Writeup6/Writeup6_SEA-AD_eSVD.RData")
-# load("~/kzlinlab/projects/subject-de/out/tati/Writeup6/Writeup6_microglia_Was2_wilcox.RData")
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup6/Writeup6_SEA-AD_was2_wilcox.RData")
 
 
 dat_list <- list(
@@ -21,11 +21,11 @@ dat_list <- list(
     logFC = log2(eSVD_obj$case_mean / eSVD_obj$control),
     genes = names(eSVD_obj$teststat_vec)
   ),
-  # WAS2 = list(
-  #   pvalue = results_mat[,"p_val"],
-  #   logFC = log2((results_mat[, "mean_dn"]) / ((results_mat[, "mean_nn"] + results_mat[, "mean_dd"]) / 2)),
-  #   genes = rownames(results_mat)
-  # ),
+  WAS2 = list(
+    pvalue = results_mat[,"p_val"],
+    logFC = log2((results_mat[, "mean_dn"]) / ((results_mat[, "mean_nn"] + results_mat[, "mean_dd"]) / 2)),
+    genes = rownames(results_mat)
+  ),
   DESeq2 = list(
     pvalue = deseq2_res[,"pvalue"],
     logFC = deseq2_res[,"log2FoldChange"],
@@ -135,7 +135,7 @@ plot_combination <- function(comb) {
     theme_minimal()
   
   # Save combined plots
-  filename <- paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup6/Writeup6_SEA-AD_prater_Comparison_", method1, "_to_", method2, ".png")
+  filename <- paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup6/Writeup6_SEA-AD_Comparison_", method1, "_to_", method2, ".png")
   combined_plot <- grid.arrange(plot_pvalue, plot_logfc, ncol = 2)
   ggsave(filename, combined_plot, device = "png", width = 14, height = 7, units = "in")
 }
