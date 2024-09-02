@@ -2,7 +2,7 @@
 
 #SBATCH --account=biostat
 #SBATCH --partition=all-12c128g
-#SBATCH --time=72:00:00
+#SBATCH --time=96:00:00
 
 #SBATCH --job-name=seaad-was2
 #SBATCH --mem-per-cpu=100gb
