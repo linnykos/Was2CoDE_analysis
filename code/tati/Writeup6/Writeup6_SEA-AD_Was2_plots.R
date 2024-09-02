@@ -30,8 +30,8 @@ compute_statistics <- function(dist_list, meta_ind, pval_list) {
     loc_dist2 <- location / (distance^2)
     size_dist2 <- size / (distance^2)
     
-    case_indices <- which(meta_ind$Study_Designation == "AD")
-    control_indices <- which(meta_ind$Study_Designation == "Ctrl")
+    case_indices <- which(meta_ind$ADNC == "Case")
+    control_indices <- which(meta_ind$ADNC == "Control")
     
     loc_dist2_case_control <- loc_dist2[case_indices, control_indices]
     size_dist2_case_control <- size_dist2[case_indices, control_indices]
@@ -96,7 +96,7 @@ plot1 <- ggplot(statistics_df, aes(x = median_loc_dist2_case_case_control_contro
         panel.background = element_rect(fill = "white"))
 plot1 <-plot1+scale_color_gradient2(midpoint = mid, low = "blue", mid = "beige", high = "red", space = "Lab") 
 # print(plot1)
-ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup5/Writeup5_Was2_location_distance.png"),
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup6/Writeup6_Was2_location_distance.png"),
                 plot = plot1, device = "png", width = 8, height = 7, units = "in")
 
 
@@ -119,7 +119,7 @@ plot2 <- ggplot(statistics_df, aes(x = median_size_dist2_case_case_control_contr
 
 plot2 <-plot2+scale_color_gradient2(midpoint = mid, low = "blue", mid = "beige", high = "red", space = "Lab")
 
-ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup5/Writeup5_Was2_size_distance.png"),
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup6/Writeup6_Was2_size_distance.png"),
                 plot = plot2, device = "png", width = 8, height = 7, units = "in")
 
 # Plot 3: Median of size/distance^2 vs location/dist^2 Case-Control
@@ -141,7 +141,7 @@ plot3 <- ggplot(statistics_df,
         panel.background = element_rect(fill = "white")) +
   scale_color_gradient2(midpoint = mid, low = "blue", mid = "beige", high = "red", space = "Lab")
 
-ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup5/Writeup5_Was2_size_location.png"),
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup6/Writeup6_Was2_size_location.png"),
                 plot = plot3, device = "png", width = 8, height = 7, units = "in")
 
 ############ Volcano plot ############
