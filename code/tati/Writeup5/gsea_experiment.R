@@ -5,6 +5,8 @@ teststat_vec <- -log10(nebula_res$summary[,"p_Study_DesignationAD"]) # our "prox
 names(teststat_vec) <- nebula_res$summary[,"gene"]
 
 # BiocManager::install("org.Hs.eg.db")
+# BiocManager::install("ggtree")
+# BiocManager::install("enrichplot")
 # BiocManager::install("clusterProfiler")
 # BiocManager::install("AnnotationDbi")
 
