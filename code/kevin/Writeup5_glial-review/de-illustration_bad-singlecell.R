@@ -41,9 +41,9 @@ control_gaussian_list <- lapply(1:n, function(i){
   cbind(xseq, yseq)
 })
 
-png(paste0("/Users/kevinlin/Library/CloudStorage/Dropbox/Collaboration-and-People/tati/git/subject-de/figures/kevin/Writeup5/de-illustration_bad-singlecell.png"),
-    height = 1200, width = 2000,
-    units = "px", res = 500)
+# png(paste0("/Users/kevinlin/Library/CloudStorage/Dropbox/Collaboration-and-People/tati/git/subject-de/figures/kevin/Writeup5/de-illustration_bad-singlecell.png"),
+#     height = 1200, width = 2000,
+#     units = "px", res = 500)
 par(mar = c(3,0.25,0,0.25), bg = NA)
 plot(NA,
      xlim = xlim,
@@ -71,7 +71,7 @@ for(i in 1:n){
 }
 
 axis(side = 1, lwd = 2, cex.axis = 1.25, cex.lab = 1.25)
-graphics.off()
+# graphics.off()
 
 #################
 

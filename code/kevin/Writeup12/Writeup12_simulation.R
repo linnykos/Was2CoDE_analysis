@@ -1,5 +1,5 @@
 rm(list=ls())
-n <- 20
+n <- 10
 case_color_palette <- grDevices::colorRampPalette(c(rgb(140, 0, 0, maxColorValue = 255),
                                                     rgb(244, 84, 84, maxColorValue = 255)))(n)
 control_color_palette <- grDevices::colorRampPalette(c(rgb(47, 60, 190, maxColorValue = 255),
@@ -10,16 +10,16 @@ case_color_trans_palette <- paste0(case_color_palette, two_letters)
 control_color_trans_palette <- paste0(control_color_palette, two_letters)
 
 set.seed(10)
-case_mean_vec <- 0.3 + runif(n, min = -0.1, 0.1)
-case_sd_vec <- rep(0.7, n)
+case_mean_vec <- 0.6 + runif(n, min = -0.3, 0.3)
+case_sd_vec <- rep(0.3, n)
 case_size_vec <- rep(1, n)
 
-control_mean_vec <- 0.5 + runif(n, min = -0.1, 0.1)
-control_sd_vec <- rep(0.7, n)
+control_mean_vec <- 0.3 + runif(n, min = -0.3, 0.3)
+control_sd_vec <- rep(0.3, n)
 control_size_vec <- rep(1, n)
 
 xlim <- c(-1,2)
-ylim <- c(0, 20)
+ylim <- c(0, 10)
 
 case_gaussian_list <- lapply(1:n, function(i){
   mean_val <- case_mean_vec[i]
@@ -40,9 +40,6 @@ control_gaussian_list <- lapply(1:n, function(i){
   cbind(xseq, yseq)
 })
 
-# png(paste0("/Users/kevinlin/Library/CloudStorage/Dropbox/Collaboration-and-People/tati/git/subject-de/figures/kevin/Writeup5/de-illustration_bad-pseudobulk.png"),
-#     height = 1200, width = 2000,
-#     units = "px", res = 500)
 par(mar = c(3,0.25,0,0.25))
 plot(NA,
      xlim = xlim,
@@ -70,58 +67,3 @@ for(i in 1:n){
 }
 
 axis(side = 1, lwd = 2, cex.axis = 1.25, cex.lab = 1.25)
-# graphics.off()
-
-#################
-
-# actually test out this seting
-set.seed(10)
-case_list <- lapply(1:n, function(i){
-  stats::rnorm(n = case_size_vec[i]*100,
-               mean = case_mean_vec[i],
-               sd = case_sd_vec[i])
-})
-control_list <- lapply(1:n, function(i){
-  stats::rnorm(n = control_size_vec[i]*100,
-               mean = control_mean_vec[i],
-               sd = control_sd_vec[i])
-})
-
-# single-cell testing
-case_cells <- sapply(case_list, mean)
-control_cells <- sapply(control_list, mean)
-stats::wilcox.test(x = case_cells,
-                   y = control_cells)
-
-# donor testing
-avg_posterior_case_mean_mat <- sapply(case_list, mean)
-avg_posterior_case_var_mat <- sapply(case_list, stats::var)
-avg_posterior_control_mean_mat <- sapply(control_list, mean)
-avg_posterior_control_var_mat <- sapply(control_list, stats::var)
-
-case_gaussian_mean <- mean(avg_posterior_case_mean_mat)
-control_gaussian_mean <- mean(avg_posterior_control_mean_mat)
-case_gaussian_var <- eSVD2:::.compute_mixture_gaussian_variance(
-  avg_posterior_mean_mat = matrix(avg_posterior_case_mean_mat, ncol = 1),
-  avg_posterior_var_mat = matrix(avg_posterior_case_var_mat, ncol = 1)
-)
-control_gaussian_var <- eSVD2:::.compute_mixture_gaussian_variance(
-  avg_posterior_mean_mat = matrix(avg_posterior_control_mean_mat, ncol = 1),
-  avg_posterior_var_mat = matrix(avg_posterior_control_var_mat, ncol = 1)
-)
-
-n1 <- n
-n2 <- n
-teststat_vec <- (case_gaussian_mean - control_gaussian_mean) /
-  (sqrt(case_gaussian_var/n1 + control_gaussian_var/n2))
-
-df_num <- (case_gaussian_var/n1 + control_gaussian_var/n2)^2
-df_denom <- (case_gaussian_var/n1)^2/(n1-1) + (control_gaussian_var/n2)^2/(n2-1)
-df_vec <- df_num/df_denom
-
-1-stats::pt(abs(teststat_vec), df = df_vec)
-
-
-
-
-
