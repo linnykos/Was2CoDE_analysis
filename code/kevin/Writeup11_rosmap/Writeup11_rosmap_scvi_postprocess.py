@@ -48,7 +48,7 @@ print("Starting to work on donors")
 # Loop over each donor
 for i in range(len(unique_pt_ids)):
     print(f"Working on subject {i + 1} out of {len(unique_pt_ids)}")
-    log_file.write(f"Working on subject {i + 1} out of {len(unique_pt_ids)}")
+    log_file.write(f"Working on subject {i + 1} out of {len(unique_pt_ids)}\n")
     log_file.flush()
     
     pt = unique_pt_ids[i]
