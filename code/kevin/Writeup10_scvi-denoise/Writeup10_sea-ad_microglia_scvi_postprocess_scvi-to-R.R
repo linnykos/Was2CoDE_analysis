@@ -4,7 +4,8 @@ library(SeuratObject)
 library(SeuratDisk)
 library(arrow)
 
-load("~/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_sea-ad_microglia_cleaned.RData")
+out_folder <- "~/kzlinlab/projects/subject-de/out/kevin/Writeup10/"
+load(paste0(out_folder, "Writeup10_sea-ad_microglia_cleaned.RData"))
 seurat_obj <- Seurat::UpdateSeuratObject(seurat_obj)
 
 # Reading the Feather file
@@ -20,6 +21,9 @@ Seurat::DefaultAssay(seurat_obj) <- "RNA"
 
 Seurat::VariableFeatures(seurat_obj) <- colnames(df)
 seurat_obj <- subset(seurat_obj, features = Seurat::VariableFeatures(seurat_obj))
+stopifnot(all(sort(colnames(df)) == sort(SeuratObject::Features(seurat_obj))))
+
+df <- df[Seurat::Cells(seurat_obj), SeuratObject::Features(seurat_obj)]
 SeuratObject::LayerData(object = seurat_obj, 
                         assay = "RNA", 
                         layer = "data") <- t(df)
@@ -38,6 +42,12 @@ seurat_obj <- Seurat::RunUMAP(seurat_obj, dims = 1:30)
 # update the RNA assay
 seurat_obj[["RNA"]] <- as(object = seurat_obj[["RNA"]], Class = "Assay5")
 
+seurat_obj$ADNC.refined <- seurat_obj$ADNC
+vec <- seurat_obj$ADNC
+vec[vec %in% c("NotAD", "Low")] <- "Control"
+vec[vec %in% c("Intermediate", "High")] <- "Case"
+seurat_obj$ADNC <- vec
+
 # put factors
 factor_vars_list <- list(Braakstage = TRUE,
                          CERADscore = c("Absent", "Sparse", "Frequent", "Moderate"),
@@ -49,7 +59,8 @@ factor_vars_list <- list(Braakstage = TRUE,
                          self_reported_ethnicity = TRUE,
                          development_stage = TRUE,
                          Cognitivestatus = c("Nodementia", "Dementia"),
-                         ADNC = c("NotAD", "Low", "Intermediate", "High"),
+                         ADNC = c("Control", "Case"),
+                         ADNC.refined = c("NotAD", "Low", "Intermediate", "High"),
                          APOE4status = c("N", "Y"),
                          donor_id = names(sort(table(seurat_obj$donor_id), decreasing = TRUE)),
                          seurat_clusters = TRUE,
@@ -86,8 +97,10 @@ for(kk in 1:length(factor_vars_list)){
   } else {
     level_vec <- factor_vars_list[[kk]]
   }
-  seurat_obj@meta.data[,col_idx] <- factor(vec, levels = level_vec)
+  seurat_obj@meta.data[,col_idx] <- droplevels(factor(vec, levels = level_vec))
 }
+
+summary(seurat_obj@meta.data)
 
 #######################
 
@@ -142,6 +155,13 @@ session_info <- devtools::session_info()
 note <- "After running scVI."
 save(seurat_obj,
      date_of_run, session_info, note,
-     file = "~/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_sea-ad_microglia_scVI-postprocessed.RData")
+     file = paste0(out_folder, "Writeup10_sea-ad_microglia_scVI-postprocessed.RData"))
 
+
+#########
+
+seurat_obj
+summary(seurat_obj@meta.data)
+length(unique(seurat_obj$donor_id))
+table(seurat_obj$donor_id, seurat_obj$ADNC)
 
