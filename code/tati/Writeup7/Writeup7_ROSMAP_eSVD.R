@@ -11,75 +11,31 @@ print("Starting")
 
 load("~/kzlinlab/projects/subject-de/out/kevin/Writeup11/Writeup11_rosmap_scVI-postprocessed.RData") 
 # head(seurat_obj@meta.data)
+# colnames(seurat_obj@meta.data)
+# table(seurat_obj$Pt_ID, seurat_obj$ADpath)
 
-# construct the age vector
-age_vec <- sapply(seurat_obj$development_stage, function(x){
-  substr(x, start = 0, stop = 2)
-})
-
-age_vec[which(seurat_obj$development_stage == "80yearoldandoverhumanstage")] <- "90"
-age_vec <- as.numeric(age_vec)
-seurat_obj$Ageatdeath <- age_vec
-
-
-seurat_obj$Lewy.body.disease.pathology <- seurat_obj@meta.data[,"Lewybodydiseasepathology"]
-seurat_obj$APOE4.status <- seurat_obj@meta.data[,"APOE4status"]
-#colnames(seurat_obj@meta.data)
-
-# gene_vec <- Seurat::VariableFeatures(seurat_obj@meta.data[["RNA"]])
-
-tmp <- paste0("ID_", as.character(seurat_obj@meta.data$donor_id))
-seurat_obj$donor_id <- factor(tmp)
-# Remove "Reference" donors using subset function
-seurat_obj <- subset(seurat_obj, subset = ADNC != "Reference")
-
-# Reclassify ADNC levels
-seurat_obj$ADNC <- with(seurat_obj@meta.data, 
-                        ifelse(ADNC %in% c("NotAD", "Low"), "Control", 
-                               ifelse(ADNC %in% c("Intermediate", "High"), "Case", ADNC)))
-
-# table(seurat_obj$donor_id, seurat_obj$ADNC)
-
-# Convert APOE4 status to binary (0 for "N", 1 for "Y")
-seurat_obj$APOE4_status <- ifelse(seurat_obj@meta.data$APOE4.status == "Y", 1, 
-                                  ifelse(seurat_obj@meta.data$APOE4.status == "N", 0, NA))
-
-# table(seurat_obj$donor_id, seurat_obj$APOE4_status)
-
-categorical_vars <- c("ADNC", "sex", "assay", "self_reported_ethnicity","APOE4_status")
-numerical_vars <- c("Ageatdeath","PMI")
-
-tmp <- as.character(seurat_obj$Ageatdeath)
-seurat_obj@meta.data$Ageatdeath <- tmp
-
-
-for (variable in categorical_vars) {
-  seurat_obj@meta.data[, variable] <- factor(seurat_obj@meta.data[, variable])
-}
-
-for (variable in numerical_vars) {
-  seurat_obj@meta.data[, variable] <- as.numeric(as.character(seurat_obj@meta.data[, variable]))
-}
+categorical_vars <- c("ADpath", "sex", "race", "batch", "APOEe4_status")
+numerical_vars <- c("age_death", "pmi")
 
 zz <- seurat_obj@meta.data[,c(categorical_vars, numerical_vars)]
 stopifnot(!any(is.na(zz)))
 summary(zz)
 
 ###########
-
-gene_vec <- Seurat::VariableFeatures(seurat_obj[["RNA"]])
-seurat_obj <- subset(seurat_obj, features = gene_vec)
+# 
+# gene_vec <- Seurat::VariableFeatures(seurat_obj[["RNA"]])
+# seurat_obj <- subset(seurat_obj, features = gene_vec)
 
 mat <- Matrix::t(SeuratObject::LayerData(seurat_obj, 
                                          assay = "RNA", 
                                          layer = "counts"))
 
-covariate_dat <- seurat_obj@meta.data[,c("donor_id", categorical_vars, numerical_vars)]
+covariate_dat <- seurat_obj@meta.data[,c("Pt_ID", categorical_vars, numerical_vars)]
 covariate_df <- data.frame(covariate_dat)
 
-# table(seurat_obj$ADNC)
-covariate_df$ADNC <- factor(seurat_obj$ADNC, levels = c("Control", "Case"))
-for(variable in setdiff(c("donor_id", categorical_vars), "ADNC")){
+# table(seurat_obj$ADpath)
+covariate_df$ADpath <- factor(seurat_obj$ADpath, levels = c("no", "yes"))
+for(variable in setdiff(c("Pt_ID", categorical_vars), "ADpath")){
   covariate_df[,variable] <- factor(covariate_df[,variable], levels = names(sort(table(covariate_df[,variable]), decreasing = TRUE)))
 }
 # colSums(is.na(covariate_df))
@@ -95,17 +51,17 @@ covariates <- eSVD2::format_covariates(dat = mat,
 print("Initialization")
 time_start1 <- Sys.time()
 eSVD_obj <- eSVD2::initialize_esvd(dat = mat,
-                                   covariates = covariates[,-grep("donor_id", colnames(covariates))],
-                                   case_control_variable = "ADNC_Case",
+                                   covariates = covariates[,-grep("Pt_ID", colnames(covariates))],
+                                   case_control_variable = "ADpath_yes",
                                    bool_intercept = T,
                                    k = 30,
                                    lambda = 0.1,
-                                   metadata_case_control = covariates[,"ADNC_Case"],
-                                   metadata_individual = covariate_df[,"donor_id"],
+                                   metadata_case_control = covariates[,"ADpath_yes"],
+                                   metadata_individual = covariate_df[,"Pt_ID"],
                                    verbose = 1)
 time_end1 <- Sys.time()
 
-omitted_variables <- colnames(eSVD_obj$covariates)[grep("SeqBatch", colnames(eSVD_obj$covariates))]
+omitted_variables <- colnames(eSVD_obj$covariates)[grep("batch", colnames(eSVD_obj$covariates))]
 eSVD_obj <- eSVD2::reparameterization_esvd_covariates(
   input_obj = eSVD_obj,
   fit_name = "fit_Init",
@@ -117,7 +73,7 @@ time_start2 <- Sys.time()
 eSVD_obj <- eSVD2::opt_esvd(input_obj = eSVD_obj,
                             l2pen = 0.1,
                             max_iter = 100,
-                            offset_variables = setdiff(colnames(eSVD_obj$covariates), "ADNC_Case"),
+                            offset_variables = setdiff(colnames(eSVD_obj$covariates), "ADpath_Case"),
                             tol = 1e-6,
                             verbose = 1,
                             fit_name = "fit_First",
@@ -176,14 +132,14 @@ time_end5 <- Sys.time()
 
 date_of_run <- Sys.time()
 session_info <- devtools::session_info()
-note <- paste("Working from ~/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_sea-ad_microglia_scVI-postprocessed.RData,
-              Applying eSVD2.")
+note <- paste("Working from ~/kzlinlab/projects/subject-de/out/kevin/Writeup11/Writeup11_rosmap_scVI-postprocessed.RData,
+              Applying eSVD2 on ROSMAP.")
 
 save(date_of_run, session_info, note,
      eSVD_obj,
      time_start1, time_end1, time_start2, time_end2,
      time_start3, time_end3, time_start4, time_end4,
      time_start5, time_end5,
-     file = "~/kzlinlab/projects/subject-de/out/tati/Writeup6/Writeup6_SEA-AD_eSVD.RData")
+     file = "~/kzlinlab/projects/subject-de/out/tati/Writeup7/Writeup7_ROSMAP_eSVD.RData")
 
 print("Done! :)")

@@ -77,12 +77,12 @@ end_time <- Sys.time()
 
 date_of_run <- Sys.time()
 session_info <- devtools::session_info()
-note <- paste("Working from ~/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_sea-ad_microglia_scVI-postprocessed.RData",
-              "Applying NEBULA on SEA-AD.")
+note <- paste("Working from ~/kzlinlab/projects/subject-de/out/kevin/Writeup11/Writeup11_rosmap_scVI-postprocessed.RData",
+              "Applying NEBULA on ROSMAP.")
 
 save(nebula_res, 
      date_of_run, session_info, note,
      start_time, end_time,
-     file = "~/kzlinlab/projects/subject-de/out/tati/Writeup6/Writeup6_SEA-AD_NEBULA.RData")
+     file = "~/kzlinlab/projects/subject-de/out/tati/Writeup7/Writeup7_ROSMAP_NEBULA.RData")
 
 print("Done! :)")
