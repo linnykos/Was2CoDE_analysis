@@ -55,4 +55,7 @@ ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de
 # https://yulab-smu.top/biomedical-knowledge-mining-book/enrichplot.html?q=gsea#ridgeline-plot-for-expression-distribution-of-gsea-result
 # clusterProfiler::dotplot(gse, showCategory=30) + ggtitle("dotplot for GSEA")
 
-
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup7/Writeup7_ROSMAP_eSVD.RData")
+head(eSVD_obj)
+teststat_vec <- eSVD_obj[,log2(eSVD_obj$case_mean / eSVD_obj$control)]
+names(teststat_vec) <- eSVD_obj[,"gene"]
