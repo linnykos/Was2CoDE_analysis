@@ -32,8 +32,8 @@ dat_list <- list(
     genes = rownames(deseq2_res)
   ),
   NEBULA = list(
-    pvalue = nebula_res$summary[,"p_ADNCControl"],
-    logFC = nebula_res$summary[,"logFC_ADNCControl"],
+    pvalue = nebula_res$summary[,"p_ADNCCase"],
+    logFC = nebula_res$summary[,"p_ADNCCase"],
     genes = nebula_res$summary$gene
   )
 )

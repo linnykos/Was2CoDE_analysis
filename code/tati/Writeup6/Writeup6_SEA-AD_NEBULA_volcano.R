@@ -11,22 +11,22 @@ load("~/kzlinlab/projects/subject-de/out/tati/Writeup6/Writeup6_SEA-AD_NEBULA.RD
 head(nebula_res$summary)
 res <- nebula_res$summary
 
-pval_vec <- res[,"p_ADNCControl"]
+pval_vec <- res[,"p_ADNCCase"]
 pval_adj_vec <- stats::p.adjust(pval_vec, method = "BH")
 idx <- which(pval_adj_vec <= 0.05)
 #define thresholds
 pCutoff <- max(pval_vec[idx])
-FCcutoff <- quantile(abs(res[,"logFC_ADNCControl"]), probs = 0.9)
-xlim <- c(-1,1) * quantile(abs(res[,"logFC_ADNCControl"]), probs = 0.99)
+FCcutoff <- quantile(abs(res[,"logFC_ADNCCase"]), probs = 0.9)
+xlim <- c(-1,1) * quantile(abs(res[,"logFC_ADNCCase"]), probs = 0.99)
 
-idx <- which(abs(res[,"logFC_ADNCControl"]) <= max(xlim))
+idx <- which(abs(res[,"logFC_ADNCCase"]) <= max(xlim))
 ylim <- c(0, max(-log10(pval_vec[idx])))
 
 plot1 <- EnhancedVolcano::EnhancedVolcano(
   res,
   lab = res$gene,
-  x = "logFC_ADNCControl",
-  y = "p_ADNCControl",
+  x = "logFC_ADNCCase",
+  y = "p_ADNCCase",
   pCutoff = pCutoff,
   FCcutoff = FCcutoff,
   xlim = xlim,
@@ -45,13 +45,13 @@ housekeeping_hounkpe <- housekeeping_hounkpe_df$Gene
 head(nebula_res$summary)
 res <- nebula_res$summary
 #define thresholds
-pval_vec <- res[,"p_ADNCControl"]
+pval_vec <- res[,"p_ADNCCase"]
 pval_adj_vec <- stats::p.adjust(pval_vec, method = "BH")
 idx <- which(pval_adj_vec <= 0.05)
 
 pCutoff <- max(pval_vec[idx])
-FCcutoff <- quantile(abs(res[,"logFC_ADNCControl"]), probs = 0.9)
-xlim <- c(-1,1) * quantile(abs(res[,"logFC_ADNCControl"]), probs = 0.99)
+FCcutoff <- quantile(abs(res[,"logFC_ADNCCase"]), probs = 0.9)
+xlim <- c(-1,1) * quantile(abs(res[,"logFC_ADNCCase"]), probs = 0.99)
 ylim <- c(0, max(-log10(pval_vec[idx])))
 
 
@@ -67,7 +67,7 @@ res <- res[c(which(res$GeneType == "Other"),
 ]
 
 # Now create the plot
-plot0 <- ggplot(res, aes(x = logFC_ADNCControl, y = -log10(p_ADNCControl), color = GeneType)) +
+plot0 <- ggplot(res, aes(x = logFC_ADNCCase, y = -log10(p_ADNCCase), color = GeneType)) +
   geom_point(alpha = 0.7) +
   scale_color_manual(values = c("Prater" = "red", "Housekeeping" = "green", "Other" = "grey")) +
   geom_text(aes(label = ifelse(gene %in% c(microglia_prater, housekeeping_hounkpe), as.character(gene), "")),
@@ -82,7 +82,7 @@ ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/f
                 plot0, device = "png", width = 7, height = 7, units = "in")
 
 genes_above_threshold <- res %>%
-  filter(-log10(p_ADNCControl) > -log10(pCutoff)) %>%
+  filter(-log10(p_ADNCCase) > -log10(pCutoff)) %>%
   select(gene)
 
 print(genes_above_threshold)
@@ -103,10 +103,10 @@ write.table(genes_above_threshold, "~/kzlinlab/projects/subject-de/git/subject-d
 # 
 # # create a custom volcano plot
 # 
-# lfc_vec <- res[,"logFC_ADNCControl"]
+# lfc_vec <- res[,"logFC_ADNCCase"]
 # xlim <- c(-1,1) * quantile(abs(lfc_vec), probs = 0.99)
 # 
-# pvalue_vec <- res[,"p_ADNCControl"]
+# pvalue_vec <- res[,"p_ADNCCase"]
 # logpval_vec <- -log10(pvalue_vec)
 # df <- data.frame(lfc = lfc_vec,
 #                  log10pval = logpval_vec,

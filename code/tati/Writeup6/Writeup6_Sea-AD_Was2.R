@@ -42,7 +42,7 @@ var_per_cell  =  "nCount_RNA"
 
 save(meta_cell, meta_ind,
      var_per_cell, var2test, var2test_type, var2adjust,
-     file = "~/kzlinlab/projects/subject-de/out/tati/Writeup2/Writeup2_microglia_ideascustom.RData")
+     file = "~/kzlinlab/projects/subject-de/out/tati/Writeup6/Writeup6_microglia_ideascustom.RData")
 
 dist_list = IdeasCustom::ideas_dist_custom(count_input = count_matrix, 
                                            meta_cell = meta_cell, 
