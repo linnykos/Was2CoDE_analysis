@@ -16,24 +16,24 @@ pval_adj_vec <- stats::p.adjust(pval_vec, method = "BH")
 idx <- which(pval_adj_vec <= 0.05)
 #define thresholds
 pCutoff <- max(pval_vec[idx])
-FCcutoff <- quantile(abs(res[,"logFC_ADNCControl"]), probs = 0.9)
-xlim <- c(-1,1) * quantile(abs(res[,"logFC_ADNCControl"]), probs = 0.99)
+FCcutoff <- quantile(abs(res[,"logFC_ADpathyes"]), probs = 0.9)
+xlim <- c(-1,1) * quantile(abs(res[,"logFC_ADpathyes"]), probs = 0.99)
 
-idx <- which(abs(res[,"logFC_ADNCControl"]) <= max(xlim))
+idx <- which(abs(res[,"logFC_ADpathyes"]) <= max(xlim))
 ylim <- c(0, max(-log10(pval_vec[idx])))
 
 plot1 <- EnhancedVolcano::EnhancedVolcano(
   res,
   lab = res$gene,
-  x = "logFC_ADNCControl",
-  y = "p_ADNCControl",
+  x = "logFC_ADpathyes",
+  y = "p_ADpathyes",
   pCutoff = pCutoff,
   FCcutoff = FCcutoff,
   xlim = xlim,
   ylim = ylim
 )
 
-ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup6/Writeup6_SEA-AD_NEBULA_volcano.png",
+ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup7/Writeup7_ROSMAP_NEBULA_volcano.png",
                 plot1, device = "png", width = 7, height = 7, units = "in")
 
 #########################
@@ -45,13 +45,13 @@ housekeeping_hounkpe <- housekeeping_hounkpe_df$Gene
 head(nebula_res$summary)
 res <- nebula_res$summary
 #define thresholds
-pval_vec <- res[,"p_ADNCControl"]
+pval_vec <- res[,"p_ADpathyes"]
 pval_adj_vec <- stats::p.adjust(pval_vec, method = "BH")
 idx <- which(pval_adj_vec <= 0.05)
 
 pCutoff <- max(pval_vec[idx])
-FCcutoff <- quantile(abs(res[,"logFC_ADNCControl"]), probs = 0.9)
-xlim <- c(-1,1) * quantile(abs(res[,"logFC_ADNCControl"]), probs = 0.99)
+FCcutoff <- quantile(abs(res[,"logFC_ADpathyes"]), probs = 0.9)
+xlim <- c(-1,1) * quantile(abs(res[,"logFC_ADpathyes"]), probs = 0.99)
 ylim <- c(0, max(-log10(pval_vec[idx])))
 
 
@@ -67,7 +67,7 @@ res <- res[c(which(res$GeneType == "Other"),
 ]
 
 # Now create the plot
-plot0 <- ggplot(res, aes(x = logFC_ADNCControl, y = -log10(p_ADNCControl), color = GeneType)) +
+plot0 <- ggplot(res, aes(x = logFC_ADpathyes, y = -log10(p_ADpathyes), color = GeneType)) +
   geom_point(alpha = 0.7) +
   scale_color_manual(values = c("Prater" = "red", "Housekeeping" = "green", "Other" = "grey")) +
   geom_text(aes(label = ifelse(gene %in% c(microglia_prater, housekeeping_hounkpe), as.character(gene), "")),
@@ -78,17 +78,17 @@ plot0 <- ggplot(res, aes(x = logFC_ADNCControl, y = -log10(p_ADNCControl), color
   geom_vline(xintercept = c(-FCcutoff, FCcutoff), linetype = "dashed", color = "black") + 
   geom_hline(yintercept = -log10(pCutoff), linetype = "dashed", color = "black")
 
-ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup6/Writeup6_SEA-AD_NEBULA_volcano_colored_by_GeneLists.png",
+ggplot2::ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup7/Writeup7_ROSMAP_NEBULA_volcano_colored_by_GeneLists.png",
                 plot0, device = "png", width = 7, height = 7, units = "in")
 
 genes_above_threshold <- res %>%
-  filter(-log10(p_ADNCControl) > -log10(pCutoff)) %>%
+  filter(-log10(p_ADpathyes) > -log10(pCutoff)) %>%
   select(gene)
 
 print(genes_above_threshold)
 
-write.csv(genes_above_threshold, "~/kzlinlab/projects/subject-de/out/tati/Writeup6/genes_above_threshold_NEBULA.csv", row.names = FALSE)
-write.table(genes_above_threshold, "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup6/genes_above_threshold_NEBULA.csv", 
+write.csv(genes_above_threshold, "~/kzlinlab/projects/subject-de/out/tati/Writeup7/genes_above_threshold_NEBULA.csv", row.names = FALSE)
+write.table(genes_above_threshold, "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup7/genes_above_threshold_NEBULA.csv", 
             row.names = FALSE, col.names = FALSE, quote = FALSE, sep = ",")
 #########################
 # sun_sheet <- openxlsx::read.xlsx(
@@ -103,10 +103,10 @@ write.table(genes_above_threshold, "~/kzlinlab/projects/subject-de/git/subject-d
 # 
 # # create a custom volcano plot
 # 
-# lfc_vec <- res[,"logFC_ADNCControl"]
+# lfc_vec <- res[,"logFC_ADpathyes"]
 # xlim <- c(-1,1) * quantile(abs(lfc_vec), probs = 0.99)
 # 
-# pvalue_vec <- res[,"p_ADNCControl"]
+# pvalue_vec <- res[,"p_ADpathyes"]
 # logpval_vec <- -log10(pvalue_vec)
 # df <- data.frame(lfc = lfc_vec,
 #                  log10pval = logpval_vec,
