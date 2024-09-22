@@ -17,11 +17,22 @@ rownames(df) <- rowname_vec
 
 Seurat::DefaultAssay(seurat_obj) <- "RNA"
 
+all(colnames(df) %in% SeuratObject::Features(seurat_obj))
+
 Seurat::VariableFeatures(seurat_obj) <- colnames(df)
 seurat_obj <- subset(seurat_obj, features = Seurat::VariableFeatures(seurat_obj))
+all(sort(colnames(df)) == sort(SeuratObject::Features(seurat_obj)))
+
+Seurat::VariableFeatures(seurat_obj) <- SeuratObject::Features(seurat_obj)
+df <- df[Seurat::Cells(seurat_obj), SeuratObject::Features(seurat_obj)]
 SeuratObject::LayerData(object = seurat_obj, 
                         assay = "RNA", 
                         layer = "data") <- t(df)
+
+# remove NAs
+keep_vec <- !is.na(seurat_obj$pmi)
+seurat_obj$keep <- keep_vec
+seurat_obj <- subset(seurat_obj, keep == TRUE)
 
 # compute PCA and UMAP
 seurat_obj <- Seurat::ScaleData(seurat_obj)
@@ -66,7 +77,7 @@ for(kk in 1:length(factor_vars_list)){
   } else {
     level_vec <- factor_vars_list[[kk]]
   }
-  seurat_obj@meta.data[,col_idx] <- factor(vec, levels = level_vec)
+  seurat_obj@meta.data[,col_idx] <- droplevels(factor(vec, levels = level_vec))
 }
 
 #######################
