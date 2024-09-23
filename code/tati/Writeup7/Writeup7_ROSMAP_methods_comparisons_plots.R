@@ -81,18 +81,18 @@ plot_combination <- function(comb) {
   pCutoff1 <- max(res[,"pvalue1"][idx1])
   pCutoff2 <- max(res[,"pvalue2"][idx2])
   
-  # Handle cases where idx1 or idx2 is empty
-  if (length(idx1) == 0) {
-    pCutoff1 <- Inf
-  } else {
-    pCutoff1 <- max(res[,"pvalue1"][idx1], na.rm = TRUE)
-  }
-  
-  if (length(idx2) == 0) {
-    pCutoff2 <- Inf
-  } else {
-    pCutoff2 <- max(res[,"pvalue2"][idx2], na.rm = TRUE)
-  }
+  # # Handle cases where idx1 or idx2 is empty
+  # if (length(idx1) == 0) {
+  #   pCutoff1 <- Inf
+  # } else {
+  #   pCutoff1 <- max(res[,"pvalue1"][idx1], na.rm = TRUE)
+  # }
+  # 
+  # if (length(idx2) == 0) {
+  #   pCutoff2 <- Inf
+  # } else {
+  #   pCutoff2 <- max(res[,"pvalue2"][idx2], na.rm = TRUE)
+  # }
   
   # Compute thresholds for significant logFC
   FCcutoff1 <- quantile(abs(res$logFC1), 0.9, na.rm = TRUE)
