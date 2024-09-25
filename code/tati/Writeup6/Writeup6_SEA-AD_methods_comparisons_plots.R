@@ -33,7 +33,7 @@ dat_list <- list(
   ),
   NEBULA = list(
     pvalue = nebula_res$summary[,"p_ADNCCase"],
-    logFC = nebula_res$summary[,"p_ADNCCase"],
+    logFC = nebula_res$summary[,"logFC_ADNCCase"],
     genes = nebula_res$summary$gene
   )
 )
