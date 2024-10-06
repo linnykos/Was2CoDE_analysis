@@ -13,11 +13,11 @@ set.seed(10)
 
 n_donors <- 20  # Total number of donors
 n_cells_per_donor <- 200
-n_genes <- 10
+n_genes <- 3
 
 # Mean and standard deviation vectors for cases and controls
-case_mean_vec <- 2 + runif(n_donors/2, min = -0.5, 0.5)
-case_sd_vec <- rep(1, n_donors/2)
+case_mean_vec <- 0 + runif(n_donors/2, min = -0.5, 0.5)
+case_sd_vec <- rep(5, n_donors/2)
 case_size_vec <- rep(1, n_donors/2)
 control_mean_vec <- 0 + runif(n_donors/2, min = -0.5, 0.5)
 control_sd_vec <- rep(1, n_donors/2)
@@ -26,9 +26,9 @@ control_size_vec <- rep(1, n_donors/2)
 # Function to generate count data for a single donor
 generate_donor_data <- function(mean_val, sd_val, size_val, n_cells, n_genes) {
   x <- matrix(rnorm(n_cells * n_genes, mean = mean_val, sd = sd_val), nrow = n_genes, ncol = n_cells)
-  x <- x - min(x)  # Shift to non-negative values
-  x <- x / max(x) * size_val * 1000  # Scale
-  round(x)  # Round to integer counts
+  # x <- x - min(x)  # Shift to non-negative values
+  # x <- x / max(x) * size_val * 1000  # Scale
+  # round(x)  # Round to integer counts
 }
 
 # Generate data for case and control groups
@@ -51,34 +51,34 @@ colnames(count_matrix) <- paste0("Cell_", 1:(n_donors * n_cells_per_donor))
 rownames(meta_data) <- colnames(count_matrix)
 
 # Create Seurat object
-seurat_obj <- CreateSeuratObject(counts = count_matrix, meta.data = meta_data)
+# seurat_obj <- CreateSeuratObject(counts = count_matrix, meta.data = meta_data)
 
 # Verify the Seurat object
-print(seurat_obj)
-print(table(seurat_obj$ADNC, seurat_obj$donor_id))
+# print(seurat_obj)
+# print(table(seurat_obj$ADNC, seurat_obj$donor_id))
 
 # Perform standard Seurat preprocessing
-seurat_obj <- NormalizeData(seurat_obj)
-seurat_obj <- FindVariableFeatures(seurat_obj)
-seurat_obj <- ScaleData(seurat_obj)
-seurat_obj <- RunPCA(seurat_obj)
+# seurat_obj <- NormalizeData(seurat_obj)
+# seurat_obj <- FindVariableFeatures(seurat_obj)
+# seurat_obj <- ScaleData(seurat_obj)
+# seurat_obj <- RunPCA(seurat_obj)
 
 # Extract the processed data matrix
-count_matrix <- as.matrix(GetAssayData(seurat_obj, slot = "data"))
+# count_matrix <- as.matrix(GetAssayData(seurat_obj, slot = "data"))
 
 # Create meta_cell dataframe
 meta_cell <- data.frame(
-  cell_id = colnames(seurat_obj),
-  individual = seurat_obj$donor_id,
-  donor_id = seurat_obj$donor_id,
-  nCount_RNA = seurat_obj$nCount_RNA,
-  ADNC = seurat_obj$ADNC
+  cell_id = colnames(count_matrix),
+  individual = meta_data$donor_id,
+  donor_id = meta_data$donor_id,
+  nCount_RNA = meta_data$nCount_RNA,
+  ADNC = meta_data$ADNC
 )
 
 # Create meta_ind dataframe
 meta_ind <- unique(data.frame(
-  "individual" = seurat_obj$donor_id,
-  "ADNC" = seurat_obj$ADNC
+  "individual" = meta_data$donor_id,
+  "ADNC" = meta_data$ADNC
 ))
 
 # Handle missing data in meta_ind
@@ -128,7 +128,9 @@ library(reshape2)
 load("~/kzlinlab/projects/subject-de/out/tati/Writeup8/Writeup8_simulated_microglia_results.RData")
 ls()
 
-location_data <- dist_list$location
+# location_data <- dist_list$location
+# location_data <- dist_list$distance
+location_data <- dist_list$size
 
 # Prepare data for plotting
 plot_data <- data.frame()
@@ -136,9 +138,23 @@ for (i in 1:dim(location_data)[1]) {  # For each gene
   gene_data <- location_data[i,,]
   gene_data_melted <- melt(gene_data)
   gene_data_melted$Gene <- dimnames(location_data)[[1]][i]
-  gene_data_melted$Condition <- ifelse(as.numeric(gene_data_melted$Var1) <= 10, "No Dementia", "Dementia")
+  
+  vec <- sapply(1:nrow(gene_data_melted), function(i){
+    x <- gene_data_melted[i,]
+    if(x$Var1 >= x$Var2) return("Ignore") ## We might change IdeasCustom::ideas_dist_custom so that we only compute this once (not twice)
+    if(x$Var1 <= 10 & x$Var2 <= 10){
+      return("Case-Case")
+    } else if (x$Var1 > 10 & x$Var2 > 10){
+      return("Control-Control")
+    } else{
+      return("Case-Control")
+    }
+  })
+  
+  gene_data_melted$Condition <- vec
   plot_data <- rbind(plot_data, gene_data_melted)
 }
+plot_data <- plot_data[plot_data$Condition != "Ignore",]
 
 # Rename columns
 colnames(plot_data) <- c("Individual1", "Individual2", "Location", "Gene", "Condition")
@@ -163,7 +179,9 @@ p <- ggplot(summary_data, aes(x = Gene, y = Mean, fill = Condition)) +
   geom_bar(stat = "identity", position = position_dodge(width = 0.9), alpha = 0.7) +
   geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD), 
                 position = position_dodge(width = 0.9), width = 0.25) +
-  scale_fill_manual(values = c("Dementia" = "red", "No Dementia" = "blue")) +
+  scale_fill_manual(values = c("Case-Case" = "red", 
+                               "Case-Control" = "blue",
+                               "Control-Control" = "yellow")) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "top") +
@@ -176,13 +194,16 @@ print(p)
 ggsave("simulation_plot_updated.png", p, width = 12, height = 8, dpi = 300)
 
 # Density plot for a specific gene (e.g., Gene-1)
-gene_of_interest <- "Gene-1"
+gene_of_interest <- "Gene_1"
 gene_data <- plot_data %>% filter(Gene == gene_of_interest)
 
 p_density <- ggplot(gene_data, aes(x = Location, fill = Condition)) +
   geom_density(alpha = 0.7) +
-  scale_fill_manual(values = c("Dementia" = "red", "No Dementia" = "blue")) +
+  scale_fill_manual(values = c("Case-Case" = "red", 
+                               "Case-Control" = "blue",
+                               "Control-Control" = "yellow")) +
   theme_minimal() +
+  ylim(c(0,5)) +
   labs(x = "Location", y = "Density", title = paste("Distribution of", gene_of_interest, "Expression"))
 
 # Display the density plot
