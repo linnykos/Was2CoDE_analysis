@@ -1,14 +1,9 @@
-# Load required libraries
 library(ggplot2)
 library(dplyr)
 library(DESeq2)
 library(Seurat)
 library(ggrepel)
-
-# Set seed for reproducibility
 set.seed(10)
-
-# Load the data
 load("~/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_sea-ad_microglia_scVI-postprocessed.RData")
 
 # Extract metadata and expression data
@@ -92,9 +87,8 @@ sum(is.na(log2fc))
 
 result_df$log2FC <- log2fc[result_df$Gene]
 result_df <- result_df %>% filter(!is.na(log2FC)) # Remove rows with NA in log2FC
-result_df$Significance <- ifelse(result_df$P_Value < 0.05, 
-                                 ifelse(abs(result_df$log2FC) > 1, "Significant", "Not Significant"),
-                                 "Not Significant")
+result_df$P_Value_adjusted <- stats::p.adjust(result_df$P_Value, method = "BH")
+result_df$Significance <- ifelse(result_df$P_Value_adjusted < 0.05, "Significant", "Not Significant")
 
 summary(result_df)
 
@@ -125,3 +119,27 @@ print(significant_genes)
 # volc_plot <- volc_plot + 
 #   xlim(-max(abs(result_df$log2FC)), max(abs(result_df$log2FC))) +
 #   ylim(0, max(-log10(result_df$P_Value)))
+
+#####################
+
+# GSEA analysis
+library(org.Hs.eg.db)
+library(clusterProfiler)
+
+teststat_vec <-result_df[,"log2FC"]
+names(teststat_vec) <- rownames(result_df)
+teststat_vec <- sort(teststat_vec, decreasing = TRUE)
+
+set.seed(10)
+gse <- clusterProfiler::gseGO(
+  teststat_vec,
+  ont = "BP", # what kind of pathways are you interested in
+  keyType = "SYMBOL",
+  OrgDb = "org.Hs.eg.db",
+  pvalueCutoff = 0.05,       # p-value threshold for pathways
+  minGSSize = 10,            # minimum gene set size
+  maxGSSize = 500            # maximum gene set size
+)
+
+head(as.data.frame(gse))
+

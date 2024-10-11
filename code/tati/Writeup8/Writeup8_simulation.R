@@ -11,17 +11,18 @@ registerDoParallel(cores = 4)
 
 set.seed(10)
 
-n_donors <- 20  # Total number of donors
+n_donors <- 20 
 n_cells_per_donor <- 200
 n_genes <- 3
 
-# Mean and standard deviation vectors for cases and controls
+# Mean and standard deviation vectors for cases and controls, change mean/sd for other settings
 case_mean_vec <- 0 + runif(n_donors/2, min = -0.5, 0.5)
 case_sd_vec <- rep(5, n_donors/2)
 case_size_vec <- rep(1, n_donors/2)
 control_mean_vec <- 0 + runif(n_donors/2, min = -0.5, 0.5)
 control_sd_vec <- rep(1, n_donors/2)
 control_size_vec <- rep(1, n_donors/2)
+# to do: documentation for the 4 settings
 
 # Function to generate count data for a single donor
 generate_donor_data <- function(mean_val, sd_val, size_val, n_cells, n_genes) {
