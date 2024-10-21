@@ -1,10 +1,16 @@
+rm(list=ls())
 library(ggplot2)
 library(dplyr)
 library(DESeq2)
 library(Seurat)
 library(ggrepel)
+library(clusterProfiler)
+library(org.Hs.eg.db)
 set.seed(10)
-load("~/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_sea-ad_microglia_scVI-postprocessed.RData")
+load("~/kzlinlab/projects/subject-de/out/kevin/Writeup10/Writeup10_prater_scVI-postprocessed.RData")
+
+gene_vec <- Seurat::VariableFeatures(ss_data_norm[["RNA"]])
+ss_data_norm <- subset(ss_data_norm, features = gene_vec)
 
 extract_donor_class <- function(seurat_obj,
                                 donor_variable_name,
@@ -23,43 +29,39 @@ extract_donor_class <- function(seurat_obj,
 }
 
 condition <- extract_donor_class(
-  seurat_obj = seurat_obj,
-  donor_variable_name = "donor_id",
-  class_variable_name = "ADNC",
-  class_variable_order = c("Control", "Case")
+  seurat_obj = ss_data_norm,
+  donor_variable_name = "Pt_ID",
+  class_variable_name = "Study_Designation",
+  class_variable_order = c("Ctrl", "AD")
 )
 
-meta_data <- seurat_obj@meta.data
-donor_labels <- meta_data$donor_id
-
-
-# ADNC <- meta_data$ADNC  # Disease status: "Control" or "Case"
-# ADNC <- factor(ADNC, levels = c("Control", "Case"))
-
-calculate_variance <- function(seurat_obj, donor_labels) {
-  genes <- rownames(seurat_obj)
-  donors <- unique(donor_labels)
+# Variance
+calculate_variance <- function(seurat_obj, donor_ids) {
+  expression_matrix <- GetAssayData(seurat_obj, slot = "data")
   
-  variance_matrix <- matrix(NA, nrow = length(donors), ncol = nrow(seurat_obj))
+  genes <- rownames(expression_matrix)
+  donors <- unique(donor_ids)
+  
+  variance_matrix <- matrix(NA, nrow = length(donors), ncol = length(genes))
   colnames(variance_matrix) <- genes
   rownames(variance_matrix) <- donors
   
-  for (gene_idx in 1:nrow(seurat_obj)) {
+  for (gene in genes) {
+    gene_expression <- expression_matrix[gene, ]
     for (donor in donors) {
-      donor_cells <- seurat_obj[gene_idx, donor_labels == donor]
-      variance_matrix[as.character(donor), gene_idx] <- var(donor_cells, na.rm = TRUE)
+      donor_cells <- gene_expression[donor_ids == donor]
+      variance_matrix[as.character(donor), gene] <- var(donor_cells, na.rm = TRUE)
     }
   }
   
   return(variance_matrix)
 }
+meta_data <- ss_data_norm@meta.data
+donor_ids <- meta_data$Pt_ID
 
+variance_matrix <- calculate_variance(ss_data_norm, donor_ids)
 
-seurat_obj <- GetAssayData(seurat_obj, layer = "data")  # Get normalized expression data
-variance_matrix <- calculate_variance(seurat_obj, donor_labels)
-
-
-# Function 2: Wilcoxon test
+#Wilcoxon test
 perform_wilcoxon_test <- function(variance_matrix, condition) {
   stopifnot(nrow(variance_matrix) == length(condition), # check the number of donors
             all(sort(rownames(variance_matrix)) == sort(names(condition))), # check that the donor names match
@@ -86,6 +88,7 @@ perform_wilcoxon_test <- function(variance_matrix, condition) {
 
 wilcoxon_p_values <- perform_wilcoxon_test(variance_matrix, condition)
 
+# some random things [[You can comment these lines out]]
 ######
 quantile(wilcoxon_p_values)
 sort(wilcoxon_p_values, decreasing = FALSE)[1:100]
@@ -132,7 +135,7 @@ result_df <- result_df %>%
   mutate(P_Value_adjusted = p.adjust(P_Value, method = "BH"),
          Significance = ifelse(P_Value_adjusted < 0.05, "Significant", "Not Significant"))
 
-save(result_df, file = "~/kzlinlab/projects/subject-de/out/tati/Writeup6/Writeup6_SEA-AD_variance_results.RData")
+save(result_df, file = "~/kzlinlab/projects/subject-de/out/tati/Writeup5/Writeup5_Prater_variance_results.RData")
 
 # volcano plot
 top_genes <- result_df %>%
@@ -149,7 +152,7 @@ volc_plot <- ggplot(result_df, aes(x = log2FC, y = -log10(P_Value), color = Sign
   theme_minimal() +
   theme(legend.position = "bottom")
 
-ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup6/Writeup6_SEA-AD_variance_volcano.png",
+ggsave(filename = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup5/Writeup5_Prater_variance_volcano.png",
        plot = volc_plot, device = "png", width = 7, height = 7, units = "in")
 
 # Print significant genes
@@ -188,7 +191,7 @@ library(enrichplot)
 ridge_plot <- ridgeplot(gse) +
   labs(x = "Enrichment Score",
        y = "GO Biological Process",
-       title = "Gene Set Enrichment Analysis Variance SEA-AD",
+       title = "Gene Set Enrichment Analysis Variance Prater's",
        subtitle = "Distribution of enrichment scores for top GO terms") +
   theme(plot.title = element_text(size = 16, hjust = 0.5),
         plot.subtitle = element_text(size = 12, hjust = 0.5),
@@ -196,5 +199,5 @@ ridge_plot <- ridgeplot(gse) +
         axis.text.y = element_text(size = 8))
 
 
-save_path <- "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup6/Writeup6_SEA-AD_variance_GSEA_ridge_plot.png"
+save_path <- "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup5/Writeup5_Prater_variance_GSEA_ridge_plot.png"
 ggsave(save_path, ridge_plot, width = 12, height = 8, dpi = 300)

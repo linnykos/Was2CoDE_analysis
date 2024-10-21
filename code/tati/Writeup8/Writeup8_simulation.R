@@ -7,6 +7,9 @@ library(data.table)
 library(foreach)
 library(doRNG)
 library(doParallel)
+library(ggplot2)
+library(dplyr)
+library(reshape2)
 registerDoParallel(cores = 4)
 
 set.seed(10)
@@ -15,31 +18,90 @@ n_donors <- 20
 n_cells_per_donor <- 200
 n_genes <- 3
 
-# Mean and standard deviation vectors for cases and controls, change mean/sd for other settings
-case_mean_vec <- 0 + runif(n_donors/2, min = -0.5, 0.5)
-case_sd_vec <- rep(5, n_donors/2)
-case_size_vec <- rep(1, n_donors/2)
-control_mean_vec <- 0 + runif(n_donors/2, min = -0.5, 0.5)
-control_sd_vec <- rep(1, n_donors/2)
-control_size_vec <- rep(1, n_donors/2)
-# to do: documentation for the 4 settings
+# # Mean and standard deviation vectors for cases and controls, change mean/sd for other settings
+# case_mean_vec <- 0 + runif(n_donors/2, min = -0.5, 0.5)
+# case_sd_vec <- rep(5, n_donors/2)
+# case_size_vec <- rep(1, n_donors/2)
+# control_mean_vec <- 0 + runif(n_donors/2, min = -0.5, 0.5)
+# control_sd_vec <- rep(1, n_donors/2)
+# control_size_vec <- rep(1, n_donors/2)
+# # to do: documentation for the 4 settings
+# 
+# # Function to generate count data for a single donor
+# generate_donor_data <- function(mean_val, sd_val, size_val, n_cells, n_genes) {
+#   x <- matrix(rnorm(n_cells * n_genes, mean = mean_val, sd = sd_val), nrow = n_genes, ncol = n_cells)
+#   # x <- x - min(x)  # Shift to non-negative values
+#   # x <- x / max(x) * size_val * 1000  # Scale
+#   # round(x)  # Round to integer counts
+# }
+# 
+# # Generate data for case and control groups
+# case_data <- lapply(1:(n_donors/2), function(i) generate_donor_data(case_mean_vec[i], case_sd_vec[i], case_size_vec[i], n_cells_per_donor, n_genes))
+# control_data <- lapply(1:(n_donors/2), function(i) generate_donor_data(control_mean_vec[i], control_sd_vec[i], control_size_vec[i], n_cells_per_donor, n_genes))
 
-# Function to generate count data for a single donor
-generate_donor_data <- function(mean_val, sd_val, size_val, n_cells, n_genes) {
-  x <- matrix(rnorm(n_cells * n_genes, mean = mean_val, sd = sd_val), nrow = n_genes, ncol = n_cells)
+##########################################################
+###different simulation settings####
+##########################################################
+
+# 1. Group level: Case vs Control differences
+case_group_mean <- 2  # Higher expression in case group
+control_group_mean <- 0
+
+# 2. Donor level: Variability between donors within each group
+donor_sd <- 0.5
+
+# 3. Cell level: Variability between cells within each donor
+cell_sd <- 1
+
+# Generate mean expression levels for each donor
+case_mean_vec <- rnorm(n_donors/2, mean = case_group_mean, sd = donor_sd)
+control_mean_vec <- rnorm(n_donors/2, mean = control_group_mean, sd = donor_sd)
+
+# Standard deviation vectors for cell-to-cell variability
+case_sd_vec <- rep(cell_sd, n_donors/2)
+control_sd_vec <- rep(cell_sd, n_donors/2)
+
+# Size factors (if needed for count data generation)
+case_size_vec <- rep(1, n_donors/2)
+control_size_vec <- rep(1, n_donors/2)
+
+# Documentation for the 4 settings
+# 1. Group level difference:
+#    - Cases have a mean expression of 2, controls have a mean of 0
+# 
+# 2. Donor-to-donor variability:
+#    - Within each group, donor means are drawn from a normal distribution
+#    - The standard deviation (donor_sd = 0.5) determines how much donors vary within their group
+# 
+# 3. Cell-to-cell variability:
+#    - Within each donor, cell expression values are drawn from a normal distribution
+#    - (cell_sd = 1) how much cells vary within a donor
+# 
+# 4. Size factors:
+#    - Currently set to 1 for all donors, assuming equal sequencing depth
+#    - Can be adjusted if you want to simulate varying sequencing depths between donors
+
+generate_donor_data <- function(donor_mean, cell_sd, size_val, n_cells, n_genes) {
+  x <- matrix(rnorm(n_cells * n_genes, mean = donor_mean, sd = cell_sd), 
+              nrow = n_genes, 
+              ncol = n_cells)
+  # Optional: transform to count data if needed
   # x <- x - min(x)  # Shift to non-negative values
   # x <- x / max(x) * size_val * 1000  # Scale
-  # round(x)  # Round to integer counts
+  # x <- round(x)  # Round to integer counts
+  return(x)
 }
 
-# Generate data for case and control groups
-case_data <- lapply(1:(n_donors/2), function(i) generate_donor_data(case_mean_vec[i], case_sd_vec[i], case_size_vec[i], n_cells_per_donor, n_genes))
-control_data <- lapply(1:(n_donors/2), function(i) generate_donor_data(control_mean_vec[i], control_sd_vec[i], control_size_vec[i], n_cells_per_donor, n_genes))
+case_data <- lapply(1:(n_donors/2), function(i) 
+  generate_donor_data(case_mean_vec[i], case_sd_vec[i], case_size_vec[i], n_cells_per_donor, n_genes))
+control_data <- lapply(1:(n_donors/2), function(i) 
+  generate_donor_data(control_mean_vec[i], control_sd_vec[i], control_size_vec[i], n_cells_per_donor, n_genes))
+
+########################################################
 
 # Combine all data
 count_matrix <- do.call(cbind, c(case_data, control_data))
 
-# Create metadata
 meta_data <- data.frame(
   donor_id = rep(1:n_donors, each = n_cells_per_donor),
   ADNC = rep(c(rep(1, n_donors/2), rep(0, n_donors/2)), each = n_cells_per_donor),
@@ -81,7 +143,7 @@ meta_ind <- unique(data.frame(
   "individual" = meta_data$donor_id,
   "ADNC" = meta_data$ADNC
 ))
-
+ 
 # Handle missing data in meta_ind
 for(j in 1:ncol(meta_ind)){
   if(!is.numeric(meta_ind[,j])) next()
@@ -101,14 +163,7 @@ print(meta_ind)
 save(meta_cell, meta_ind,
      var_per_cell, var2test, var2test_type, var2adjust,
      file = "~/kzlinlab/projects/subject-de/out/tati/Writeup8/Writeup8_simulated_data.RData")
-
-dist_list <- IdeasCustom::ideas_dist_custom(count_input = count_matrix, 
-                                            meta_cell = meta_cell, 
-                                            meta_ind = meta_ind, 
-                                            var_per_cell = var_per_cell, 
-                                            var2test = var2test, 
-                                            var2test_type = var2test_type,
-                                            verbose = 3)
+   
 
 date_of_run <- Sys.time()
 session_info <- devtools::session_info()
@@ -129,9 +184,9 @@ library(reshape2)
 load("~/kzlinlab/projects/subject-de/out/tati/Writeup8/Writeup8_simulated_microglia_results.RData")
 ls()
 
-# location_data <- dist_list$location
+location_data <- dist_list$location
 # location_data <- dist_list$distance
-location_data <- dist_list$size
+# location_data <- dist_list$size
 
 # Prepare data for plotting
 plot_data <- data.frame()
@@ -168,14 +223,13 @@ summary_data <- plot_data %>%
     SD = sd(Location)
   )
 
-# Set up color palettes
+# color palettes
 n <- length(unique(plot_data$Gene))
 dementia_color_palette <- colorRampPalette(c(rgb(140, 0, 0, maxColorValue = 255),
                                              rgb(244, 84, 84, maxColorValue = 255)))(n)
 no_dementia_color_palette <- colorRampPalette(c(rgb(47, 60, 190, maxColorValue = 255),
                                                 rgb(27, 198, 245, maxColorValue = 255)))(n)
 
-# Create the plot
 p <- ggplot(summary_data, aes(x = Gene, y = Mean, fill = Condition)) +
   geom_bar(stat = "identity", position = position_dodge(width = 0.9), alpha = 0.7) +
   geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD), 
@@ -188,10 +242,8 @@ p <- ggplot(summary_data, aes(x = Gene, y = Mean, fill = Condition)) +
         legend.position = "top") +
   labs(x = "Gene", y = "Mean Location", title = "Gene Expression Comparison: Dementia vs No Dementia")
 
-# Display the plot
 print(p)
 
-# Save the plot
 ggsave("simulation_plot_updated.png", p, width = 12, height = 8, dpi = 300)
 
 # Density plot for a specific gene (e.g., Gene-1)
@@ -204,7 +256,7 @@ p_density <- ggplot(gene_data, aes(x = Location, fill = Condition)) +
                                "Case-Control" = "blue",
                                "Control-Control" = "yellow")) +
   theme_minimal() +
-  ylim(c(0,5)) +
+  # ylim(c(0,5)) + # (Include this if you need to zoom in)
   labs(x = "Location", y = "Density", title = paste("Distribution of", gene_of_interest, "Expression"))
 
 # Display the density plot
