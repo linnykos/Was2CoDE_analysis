@@ -192,6 +192,7 @@ gse_df[1:100,"Description"]
 
 library(DOSE)
 library(enrichplot)
+library(ggplot2)
 
 ridge_plot <- ridgeplot(gse) +
   labs(x = "Enrichment Score",
@@ -203,6 +204,11 @@ ridge_plot <- ridgeplot(gse) +
         axis.title = element_text(size = 12),
         axis.text.y = element_text(size = 8))
 
-
 save_path <- "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup7/Writeup7_ROSMAP_variance_GSEA_ridge_plot.png"
 ggsave(save_path, ridge_plot, width = 12, height = 8, dpi = 300)
+
+#dot_plot
+plot1 <- enrichplot::dotplot(gse, showCategory=30) + ggplot2::ggtitle("dotplot for GSEA (ROSMAP, Variance test)")
+plot1 <- plot1 + ggplot2::theme(axis.text.y = ggplot2::element_text(size = 8))
+ggplot2::ggsave(filename = paste0("~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup7/Writeup7_ROSMAP_variance_GSEA_dot_plot.png"),
+                plot1, device = "png", width = 7, height = 7, units = "in")

@@ -97,6 +97,9 @@ var2adjust    =  setdiff(colnames(meta_ind), c("individual", "Study_Designation"
 var2test_type = "binary" 
 var_per_cell  =  "nCount_RNA" 
 
+# Rename the 'Study_Designation.Ctrl' column to 'Study_Designation'
+colnames(meta_ind)[colnames(meta_ind) == "Study_Designation.Ctrl"] <- "Study_Designation"
+
 ###########
 
 save(meta_cell, meta_ind,
