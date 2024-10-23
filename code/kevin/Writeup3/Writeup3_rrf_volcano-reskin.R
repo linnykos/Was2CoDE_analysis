@@ -42,4 +42,4 @@ plot1 <- EnhancedVolcano::EnhancedVolcano(
 
 ggplot2::ggsave(plot1,
                 filename = paste0(plot_folder, "Writeup3_rrf_volcano-reskin.png"),
-                width = 5.5, height = 7)
+                width = 5.5, height = 7.5)

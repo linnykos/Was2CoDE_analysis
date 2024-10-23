@@ -41,7 +41,7 @@ eSVD_obj <- eSVD2::reparameterization_esvd_covariates(
 print("First fit")
 eSVD_obj <- eSVD2::opt_esvd(input_obj = eSVD_obj,
                              l2pen = 0.1,
-                             max_iter = 100,
+                             max_iter = 50,
                              offset_variables = setdiff(colnames(eSVD_obj$covariates), "cc_1"),
                              tol = 1e-6,
                              verbose = 1,
@@ -57,7 +57,7 @@ eSVD_obj <- eSVD2::reparameterization_esvd_covariates(
 print("Second fit")
 eSVD_obj <- eSVD2::opt_esvd(input_obj = eSVD_obj,
                              l2pen = 0.1,
-                             max_iter = 100,
+                             max_iter = 50,
                              offset_variables = NULL,
                              tol = 1e-6,
                              verbose = 1,

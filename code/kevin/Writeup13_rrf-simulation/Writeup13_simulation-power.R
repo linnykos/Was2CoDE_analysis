@@ -46,7 +46,7 @@ for(i in 1:k){
 gene_topic_simplex <- simplex
 gene_topic_latent_gaussian_noise <- 0.1*diag(k)
 gene_topic_casecontrol_name <- c("none", "weak-negative", "strong-negative", "weak-positive", "strong-positive")
-gene_topic_casecontrol_size <- c(0, -0.5, -0.75, 0.5, .75)
+gene_topic_casecontrol_size <- c(0, -0.05, -0.1, 0.05, .1)
 gene_topic_casecontrol_proportion <- c(0.4, 0.2, 0.1, 0.2, 0.1)
 mat <- matrix(0, nrow = length(gene_nuisance_values), ncol = length(gene_topic_casecontrol_size))
 mat[,1] <- c(0.8,0.15,0.05)
