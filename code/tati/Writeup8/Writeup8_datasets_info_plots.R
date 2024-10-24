@@ -85,11 +85,11 @@ library(scales)
 
 ############ Prater's ###############
 
-# Data for gender distribution (Case vs Control)
+# Data for gender distributio
 gender_data <- data.frame(
   Group = c('Case', 'Control'),
   Female = c(9, 6),
-  Male = c(3, 4)  # Switched order to match template style
+  Male = c(3, 4)
 )
 
 # Data for APOE4 distribution
@@ -109,7 +109,6 @@ age_data <- data.frame(
 
 create_stacked_bar <- function(data, title, fill_label) {
   data_long <- reshape2::melt(data, id.vars = 'Group')
-  # Ensure that the variable is treated as a factor with the correct levels
   data_long$variable <- factor(data_long$variable)
   ggplot(data_long, aes(y = Group, x = value, fill = variable)) +
     geom_bar(stat = "identity", position = "stack") +
@@ -152,11 +151,11 @@ age_plot <- create_stacked_bar(age_data, "Age Distribution", "Age Group") +
 ####################################
 
 ############ SEA-AD ###############
-# Data for gender distribution (Case vs Control)
+# Data for gender distribution
 gender_data <- data.frame(
   Group = c('Case', 'Control'),
   Female = c(36, 12),
-  Male = c(23, 9)  # Switched order to match template style
+  Male = c(23, 9) 
 )
 
 # Data for APOE4 distribution
@@ -176,7 +175,6 @@ age_data <- data.frame(
 
 create_stacked_bar <- function(data, title, fill_label) {
   data_long <- reshape2::melt(data, id.vars = 'Group')
-  # Ensure that the variable is treated as a factor with the correct levels
   data_long$variable <- factor(data_long$variable)
   ggplot(data_long, aes(y = Group, x = value, fill = variable)) +
     geom_bar(stat = "identity", position = "stack") +
@@ -219,11 +217,11 @@ age_plot <- create_stacked_bar(age_data, "Age Distribution", "Age Group") +
 ################################
 
 ############ ROSMAP ###############
-# Data for gender distribution (Case vs Control)
+# Data for gender distribution 
 gender_data <- data.frame(
   Group = c('Case', 'Control'),
   Female = c(101, 74),
-  Male = c(91, 79)  # Switched order to match template style
+  Male = c(91, 79)  
 )
 
 # Data for APOE4 distribution
@@ -243,7 +241,6 @@ age_data <- data.frame(
 
 create_stacked_bar <- function(data, title, fill_label) {
   data_long <- reshape2::melt(data, id.vars = 'Group')
-  # Ensure that the variable is treated as a factor with the correct levels
   data_long$variable <- factor(data_long$variable)
   ggplot(data_long, aes(y = Group, x = value, fill = variable)) +
     geom_bar(stat = "identity", position = "stack") +
