@@ -239,6 +239,14 @@ age_data <- data.frame(
   check.names = FALSE  # Disable automatic conversion of column names
 )
 
+age_data2 <- data.frame(
+  Group = c('Case', 'Control'),
+  `>=86` = c(136, 104),      
+  `71-85` = c(56, 49),
+  `<=70` = c(0, 0),
+  check.names = FALSE  # Disable automatic conversion of column names
+)
+
 create_stacked_bar <- function(data, title, fill_label) {
   data_long <- reshape2::melt(data, id.vars = 'Group')
   data_long$variable <- factor(data_long$variable)
