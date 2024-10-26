@@ -1,11 +1,11 @@
 #!/bin/bash
 
 #SBATCH --account=biostat
-#SBATCH --partition=all-12c128g
+#SBATCH --partition=all-20c96g
 #SBATCH --time=48:00:00
 
 #SBATCH --job-name=katie-was2
-#SBATCH --mem-per-cpu=100gb
+#SBATCH --mem-per-cpu=90gb
 
 #SBATCH --error=/home/users/%u/kzlinlab/projects/subject-de/out/tati/Writeup5/slurm/slurm_%j.err
 #SBATCH --output=/home/users/%u/kzlinlab/projects/subject-de/out/tati/Writeup5/slurm/slurm_%j.out
