@@ -9,11 +9,12 @@ library(ggrepel)
 library(dplyr)
 set.seed(10)
 
-load("~/kzlinlab/projects/subject-de/out/tati/Writeup6/Writeup6_SEA-AD_NEBULA.RData")
-load("~/kzlinlab/projects/subject-de/out/tati/Writeup6/Writeup6_SEA-AD_Pseudobulk-DEseq2.RData")
-load("~/kzlinlab/projects/subject-de/out/tati/Writeup6/Writeup6_SEA-AD_eSVD.RData")
-load("~/kzlinlab/projects/subject-de/out/tati/Writeup6/Writeup6_SEA-AD_was2_wilcox.RData")
-load("~/kzlinlab/projects/subject-de/out/tati/Writeup6/Writeup6_SEA-AD_variance_results.RData")
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup5/Writeup5_prater_NEBULA.RData")
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup5/Writeup5_prater_Pseudobulk-DEseq2.RData")
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup5/Writeup5_prater_esvd.RData")
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup5/Writeup5_prater_was2_wilcox.RData")
+load("~/kzlinlab/projects/subject-de/out/tati/Writeup5/Writeup5_Prater_variance_results.RData")
+
 
 dat_list <- list(
   eSVD = list(
@@ -32,8 +33,8 @@ dat_list <- list(
     genes = rownames(deseq2_res)
   ),
   NEBULA = list(
-    pvalue = nebula_res$summary[,"p_ADNCCase"],
-    logFC = nebula_res$summary[,"logFC_ADNCCase"],
+    pvalue = nebula_res$summary[,"p_Study_DesignationAD"],
+    logFC = nebula_res$summary[,"logFC_Study_DesignationAD"],
     genes = nebula_res$summary$gene
   )
 )
@@ -65,5 +66,5 @@ combined_df$Was2_logFC <- safe_match(dat_list$WAS2$logFC, dat_list$WAS2$genes, a
 combined_df$test_var_pval <- safe_match(result_df$P_Value, result_df$Gene, all_genes)
 combined_df$test_var_logFC <- safe_match(result_df$log2FC, result_df$Gene, all_genes)
 
-output_path <- "~/kzlinlab/projects/subject-de/out/tati/Writeup6/SEA-AD_dataset_ingredients.csv"
+output_path <- "~/kzlinlab/projects/subject-de/out/tati/Writeup5/Prater_dataset_ingredients.csv"
 write.csv(combined_df, file = output_path, row.names = FALSE)
