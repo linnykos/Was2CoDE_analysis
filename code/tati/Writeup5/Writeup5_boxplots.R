@@ -1,6 +1,4 @@
-# Libraries
 rm(list=ls())
-
 library(tidyverse)
 library(hrbrthemes)
 library(viridis)
@@ -98,13 +96,15 @@ names(pvalue_vec) <- rownames(results_mat)
 pvalue_vec_adjusted <- p.adjust(pvalue_vec, method = "BH")
 
 # Find genes with adjusted p-values <= 0.05
-genes_of_interest <- names(pvalue_vec_adjusted)[pvalue_vec_adjusted <= 0.05]
+# genes_of_interest <- names(pvalue_vec_adjusted)[pvalue_vec_adjusted <= 0.05]
+
+genes_of_interest <- c("RP11-356I2.4","MYO1E","LPL","ANXA2","POLN")
 
 # Ensure genes of interest are in the count matrix
-genes_of_interest <- intersect(genes_of_interest, rownames(count_mat))
+# genes_of_interest <- intersect(genes_of_interest, rownames(count_mat))
 
 
-pdf(file = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup5/Writeup5_was2_boxplots.pdf",
+pdf(file = "~/kzlinlab/projects/subject-de/git/subject-de_tati/figures/tati/Writeup5/Writeup5_was2_boxplots_5genes.pdf",
     width = 8, height = 8, onefile = TRUE)
 
 # Iterate over each gene of interest and create a boxplot
@@ -122,6 +122,8 @@ for (gene in genes_of_interest) {
       Study_Designation = meta_data$Study_Designation
     )
     
+    ylim <- c(min(df$expression), stats::quantile(df$expression, prob = 0.95))
+    
     # Set ordering of donors
     ordering <- c(names(color_mapping)[color_mapping == "red"],
                   names(color_mapping)[color_mapping == "blue"])
@@ -135,6 +137,7 @@ for (gene in genes_of_interest) {
       geom_boxplot() + 
       scale_fill_manual(values = color_mapping) +
       theme_minimal() +
+      ylim(ylim) +
       labs(title = paste("Expression of", gene, "\nwas2 LFC: ", round(was2_lfc, 2)), 
            x = "Donor", 
            y = "Expression")
@@ -148,3 +151,4 @@ for (gene in genes_of_interest) {
 
 # Close the PDF device
 graphics.off()
+
