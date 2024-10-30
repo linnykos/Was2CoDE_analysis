@@ -4,34 +4,10 @@ library(Seurat)
 library(org.Hs.eg.db)
 library(clusterProfiler)
 
-df <- read.csv("/Users/kevinlin/Library/CloudStorage/Dropbox/Collaboration-and-People/tati/out/tati/Writeup5/Prater_dataset_ingredients.csv")
+plot_folder <- "~/kzlinlab/projects/subject-de/git/subject-de_kevin/figures/kevin/Writeup14/"
+df <- read.csv("~/kzlinlab/projects/subject-de/out/tati/Writeup5/Prater_dataset_ingredients.csv")
 rownames(df) <- df$Gene
 df <- df[order(df$Was2_pval, decreasing = FALSE),]
-
-was2_pval <- df[,"Was2_pval"]
-was2_pval <- -log10(was2_pval)
-names(was2_pval) <- rownames(df)
-
-teststat_vec <- sort(was2_pval, decreasing = TRUE)
-
-set.seed(10)
-gse <- clusterProfiler::gseGO(
-  teststat_vec,
-  ont = "BP", # what kind of pathways are you interested in
-  keyType = "SYMBOL",
-  OrgDb = "org.Hs.eg.db",
-  pvalueCutoff = 0.05,       # p-value threshold for pathways
-  minGSSize = 10,            # minimum gene set size
-  maxGSSize = 500,            # maximum gene set size
-  scoreType = "pos"
-)
-
-gse_df <- as.data.frame(gse)
-
-gse_df[,c("Description", "NES")]
-
-###########
-
 
 Was2_logFC <- df[,"Was2_logFC"]
 names(Was2_logFC) <- rownames(df)
@@ -50,67 +26,80 @@ gse <- clusterProfiler::gseGO(
 )
 
 gse_df <- as.data.frame(gse)
+grep("ANXA2", gse_df$core_enrichment)
 
-gse_df[,c("Description", "NES")]
+########################################
 
-pval_adj <- stats::p.adjust(df[,"Was2_pval"], method = "BH")
-idx <- which(pval_adj <= 0.05)
-fdr_genes <- names(was2_pval)[idx]
-color_vec <- rep(rgb(0.5, 0.5, 0.5, 0.5), length(pval_adj))
-names(color_vec) <- names(was2_pval)
-color_vec[fdr_genes] <- "red"
+# to find which pathways to use, run GSEA on all 3 methods on Katie's data
+teststat_vec <- df[,"DESeq2_logFC"]
+names(teststat_vec) <- rownames(df)
+teststat_vec <- sort(teststat_vec, decreasing = TRUE)
+set.seed(10)
+gse_deseq2 <- clusterProfiler::gseGO(
+  teststat_vec,
+  ont = "BP", # what kind of pathways are you interested in
+  keyType = "SYMBOL",
+  OrgDb = "org.Hs.eg.db",
+  pvalueCutoff = 0.05,       # p-value threshold for pathways
+  minGSSize = 10,            # minimum gene set size
+  maxGSSize = 500            # maximum gene set size
+)
 
-plot(x = Was2_logFC,
-     y = was2_pval,
-     col = color_vec,
-     pch = 16)
+teststat_vec <- df[,"eSVD_logFC"]
+names(teststat_vec) <- rownames(df)
+teststat_vec <- sort(teststat_vec, decreasing = TRUE)
+set.seed(10)
+gse_esvd <- clusterProfiler::gseGO(
+  teststat_vec,
+  ont = "BP", # what kind of pathways are you interested in
+  keyType = "SYMBOL",
+  OrgDb = "org.Hs.eg.db",
+  pvalueCutoff = 0.05,       # p-value threshold for pathways
+  minGSSize = 10,            # minimum gene set size
+  maxGSSize = 500            # maximum gene set size
+)
 
-sort(Was2_logFC, decreasing = TRUE)[1:5]
-names(sort(Was2_logFC, decreasing = TRUE)[1:5])
+teststat_vec <- df[,"NEBULA_logFC"]
+names(teststat_vec) <- rownames(df)
+teststat_vec <- sort(teststat_vec, decreasing = TRUE)
+set.seed(10)
+gse_nebula <- clusterProfiler::gseGO(
+  teststat_vec,
+  ont = "BP", # what kind of pathways are you interested in
+  keyType = "SYMBOL",
+  OrgDb = "org.Hs.eg.db",
+  pvalueCutoff = 0.05,       # p-value threshold for pathways
+  minGSSize = 10,            # minimum gene set size
+  maxGSSize = 500            # maximum gene set size
+)
 
-##########
 
-load("/Users/kevinlin/Library/CloudStorage/Dropbox/Collaboration-and-People/tati/out/tati/Writeup5/Writeup5_microglia_ideascustom.RData")
+########################################
 
-load("/Users/kevinlin/Library/CloudStorage/Dropbox/Collaboration-and-People/tati/out/kevin/Writeup10/Writeup10_prater_scVI-postprocessed.RData")
+# among the pathways in gse, pick the ones not in the others
+pathway_others <- unique(c(gse_deseq2$ID,
+                           gse_esvd$ID,
+                           gse_nebula$ID))
+gse_subset <- gse[!gse$ID %in%pathway_others]
+gse_subset$Description
+grep("ANXA2", gse_subset$core_enrichment)
 
-donor_df <- ss_data_norm@meta.data[,c("Pt_ID","Study_Designation")]
-donor_df <- unique(donor_df)
-case_pt <- donor_df[which(donor_df$Study_Designation == "AD"),"Pt_ID"]
-control_pt <- donor_df[which(donor_df$Study_Designation == "Ctrl"),"Pt_ID"]
+selected_pathways <- gse_subset[c(7,27,47,64),"ID"]
 
-case_pt <- as.character(case_pt)
-control_pt <- as.character(control_pt)
+# Filter the gseaResult object based on selected pathways
+gse_subset2 <- gse
+gse_subset2@result <- gse@result[gse@result$ID %in% selected_pathways, ]
 
-# https://github.com/TatiZhang/IdeasCustom/blob/main/R/divergence.R
-.compute_mean_difference <- function(mat,
-                                     case_pt,
-                                     control_pt){
-  stopifnot(all(rownames(mat) == colnames(mat)),
-            length(rownames(mat)) == length(colnames(mat)))
-  
-  diag(mat) <- NA
-  case_idx <- which(rownames(mat) %in% case_pt)
-  control_idx <- which(rownames(mat) %in% control_pt)
-  
-  case_mean <- mean(mat[case_idx,case_idx], na.rm = TRUE)
-  control_mean <- mean(mat[control_idx,control_idx], na.rm = TRUE)
-  
-  case_mean - control_mean
-}
+plot1 <-  enrichplot::ridgeplot(gse_subset2)
+ggplot2::ggsave(filename = paste0(plot_folder, "Writeup14_Was2_gsea.png"),
+                plot1,
+                height = 5,
+                width = 5)
 
-logfc_vec <- sapply(1:dim(dist_list[["location_sign"]])[1], function(j){
-  mat <- dist_list[["location_sign"]][j,,]
-  .compute_mean_difference(
-    mat = mat,
-    case_pt = case_pt,
-    control_pt = control_pt
-  )
-})
-
-plot(x = logfc_vec,
-     y = was2_pval)
-
-# we probably need to do a signed thing -- so plot the % mean difference, and then sign it?
+plot1 <-  enrichplot::ridgeplot(gse_subset2) + Seurat::NoLegend()
+ggplot2::ggsave(filename = paste0(plot_folder, "Writeup14_Was2_gsea_zoomin.png"),
+                plot1,
+                height = 7,
+                width = 7)
 
 

@@ -75,3 +75,7 @@ ggplot2::ggsave(plot1,
                 filename = paste0(plot_folder, "Writeup14_rosmap-umap.pdf"),
                 height = 4, width = 4)
 
+################
+
+df <- read.csv("~/kzlinlab/projects/subject-de/out/tati/Writeup5/Prater_dataset_ingredients.csv")
+
